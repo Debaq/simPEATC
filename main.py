@@ -90,6 +90,7 @@ class Window():
     
         fig = Figure(figsize=(5, 4), dpi=100)
         t = np.arange(0, 3, .01)
+        
         fig.add_subplot(121).plot(t, 2 * np.sin(2 * np.pi * t),color="red")
         fig.add_subplot(122).plot(t, 2 * np.sin(2 * np.pi * t),color="blue")
 
