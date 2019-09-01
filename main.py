@@ -9,6 +9,8 @@ from matplotlib.backends.backend_tkagg import (
 # Implement the default Matplotlib key bindings.
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+
 import numpy as np
 
 
@@ -87,20 +89,13 @@ class Window():
         self.graficar()
 
     def graficar(self):
+        fig, ax = plt.subplots(figsize=(3,3))
+        plt.yticks([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17])
+        plt.axis([0,12,0,18])
+        ax.grid(True)
+
     
-        fig = Figure(figsize=(5, 4), dpi=100)
-        t = np.arange(0, 3, .01)
-        
-        fig.add_subplot(121).plot(t, 2 * np.sin(2 * np.pi * t),color="red")
-        fig.add_subplot(122).plot(t, 2 * np.sin(2 * np.pi * t),color="blue")
-
-        canvas = FigureCanvasTkAgg(fig, master=self.frame_contenido)  # A tk.DrawingArea.
-        canvas.draw()
-        canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-
-        toolbar = NavigationToolbar2Tk(canvas, root)
-        toolbar.update()
-        canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+ 
 
     def open_user(self):
         self.window_newUser = Toplevel(self.master)

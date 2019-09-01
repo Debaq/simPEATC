@@ -20,9 +20,7 @@ out_b= np.asarray(a)
 x_watts = out_a ** 2
 target_noise_db = 30
 
-end = len(out_b)
-print(out_b[-1])
-print(out_b[end-1])
+
 
 
 
@@ -40,7 +38,9 @@ for i in range(40):
 	plt.title('PEATC')
 	plt.ylabel('Amplitud (uV)')
 	plt.xlabel('Tiempo (ms)')
-
+	plt.yticks([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17])
+	plt.axis([0,12,0,18])
+	ax.grid(True)
 	target_noise_db = target_noise_db - 1
 	target_noise_watts = 10 ** (target_noise_db / 10)
 	mean_noise = 0
@@ -71,4 +71,7 @@ for i in range(40):
 
 	plt.pause(0.3)
 	plt.cla()
+
+print("ok")
 plt.show()
+
