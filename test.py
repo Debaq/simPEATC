@@ -1,3 +1,4 @@
+# http://effbot.org/tkinterbook/
 from tkinter import *
 from tkinter import ttk
 from random import randint
@@ -190,31 +191,76 @@ def app():
 
 #Tab1, frame1: Estimulo
     frame_estimulo =Frame(tab_registro, relief=GROOVE, borderwidth=2)
-    label_nivel = ('intensidad : '+str(niveldb)+' db nHL')
-    Label(frame_estimulo, text=label_nivel).pack(side=TOP,anchor=NW)
-    Label(frame_estimulo, text='Estimulo : Click').pack(side=TOP,anchor=NW)
-    Label(frame_estimulo, text='Mask : Off').pack(side=TOP,anchor=NW)
-    Label(frame_estimulo, text='Estimulo',font=("Courier",10)).place(relx=0, rely=0,anchor=W)
+    label_nivel = ('Intensidad : '+str(niveldb)+' db nHL')
+    Label(frame_estimulo, text=label_nivel).grid(row=1,sticky=W)
+    Label(frame_estimulo, text='Estimulo : Click').grid(row=2,sticky=W)
+    Label(frame_estimulo, text='Mask : Off').grid(row=3,sticky=W)
+    Label(frame_estimulo, text='Estimulo',font=("Courier",10)).grid(row=0)
     frame_estimulo.place(rely=0.03)
 
 #Tab1, frame2: Nuevo test
     frame_new_test=Frame(tab_registro, relief=GROOVE, borderwidth=2)
-    check_array = ['0 db', '10 db', '20 db', '30 db',
-                    '40 db', '50 db', '60 db', '70db', '80 dB',
-                    '90 db', '100 db']
+    check_array = ['0db', '10db', '20db', '30db',
+                    '40db', '50db', '60db', '70db', '80dB',
+                    '90db', '100db']
     check_vars = []
     for i in range(len(check_array)):
             check_vars.append(StringVar())
             check_vars[-1].set(0)
             c = Checkbutton(frame_new_test, text=check_array[i], variable=check_vars[-1], command=lambda i=i: printSelection(i), onvalue=1, offvalue=0)
-            c.pack(side=TOP,anchor=NW)
-    Label(frame_new_test, text='Prueba',font=("Courier",10)).place(relx=0, rely=0,anchor=W)
+            if i < 1:
+                c.grid(row=i+1,sticky=W)
+            else:
+                c.grid(row=i,sticky=W)
+    Lado_estimulo = [
+        ("OD", "1"),
+        ("OI", "2"),
+        ("Bilateral", "3")]
+
+    v = StringVar()
+    v.set("1") # initialize
+
+    for text, mode in Lado_estimulo:
+         b = Radiobutton(frame_new_test, text=text,
+                         variable=v, value=mode)
+         b.grid(sticky=W)
+    Label(frame_new_test, text='Prueba',font=("Courier",10)).grid(row=0)
     frame_new_test.place(rely=0.03, relx=0.6)
 
 
+#Tab1, frame3: reproductibilidad
+    frame_reproductibilidad=Frame(tab_registro, relief=GROOVE, borderwidth=2)
+    reproductibilidad = ttk.Progressbar(frame_reproductibilidad, 
+                                        orient="horizontal",length=200, mode="determinate")
+    reproductibilidad.grid(row=2, columnspan=3)
+    Label(frame_reproductibilidad, text='0').grid(row=1, column=0, sticky=W)
+    Label(frame_reproductibilidad, text='50').grid(row=1, column=1, sticky=W+E)
+    Label(frame_reproductibilidad, text='100').grid(row=1, column=2, sticky=E)
+    Label(frame_reproductibilidad, text='% de reproductibilidad ',
+            font=("Courier",10)).grid(row=0, columnspan=3)
+    frame_reproductibilidad.place(rely=0.47, relx=0)
 
 
-    #frame2.pack()
+#Tab1, frame4: promediaciones
+    frame_promediaciones=Frame(tab_registro, relie=GROOVE, borderwidth=2)
+    Label(frame_promediaciones, text='Promediaciones',
+            font=("Courier",10)).grid(row=0)
+    prom_estim=0
+    rechazos=0
+    Label(frame_promediaciones,text=('Promediaciones: '+str(prom_estim))).grid(row=1, sticky=W)
+    Label(frame_promediaciones,text=('Rechazos: '+str(rechazos))).grid(row=2,sticky=W)
+    frame_promediaciones.place(rely=0.3, relx=0)
+
+#Tab1, frame 5: Botones de control
+    frame_iniciar=Frame(tab_registro, relie=GROOVE, borderwidth=0)
+
+    Button(frame_iniciar,text="Iniciar", height=2, widt=25).grid(row=1)
+    Button(frame_iniciar,text="Pausa", height=1, widt=25).grid(row=2)
+    Button(frame_iniciar,text="Siguiente estimulo", height=1, widt=25).grid(row=3)
+
+    frame_iniciar.place(rely=0.6, relx=0.02)
+
+
 
     def printSelection(i):
             print(check_vars[i].get())
