@@ -3,11 +3,11 @@
 
 ## Estado actual del proyecto
 
-* **[]Pantalla Inicial**
-* **[]Insertar Matplotlib seteado**
-* **[]i18n**
-* **[]Configuración de tonos**
-* **[]Desarrollo del Hadware**
+* **[:ok:]Pantalla Inicial**
+* **[:speak_no_evil:]Insertar Matplotlib seteado**
+* **[:construction_worker:]i18n**
+* **[:rat:]Configuración de tonos**
+* **[:rat:]Desarrollo del Hadware**
 
 ![Imagen pantalla inicial](images/Screenshot1.png "Pantalla Inicial")
 
