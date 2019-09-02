@@ -14,7 +14,7 @@
 
 ## Imágenes 
 
-![Imagen pantalla inicial](images/Screenshot1.png | width=100 "Pantalla Inicial")
+![Imagen pantalla inicial](images/Screenshot1.png|width=100 "Pantalla Inicial")
 
 
 ### Pre-requisitos
