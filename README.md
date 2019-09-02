@@ -14,7 +14,7 @@
 
 ## Imágenes 
 
-![Imagen pantalla inicial](images/Screenshot1.png "Pantalla Inicial"){:height="50%" width="50%"}
+![Imagen pantalla inicial](images/Screenshot1.png?v=4&s=200 "Pantalla Inicial")
 
 
 ### Pre-requisitos
