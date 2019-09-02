@@ -13,12 +13,12 @@
 </div>
 
 
-# simPEATC, Simulador de Potenciales Evocados de Tronco Cerebral.
+### simPEATC, Simulador de Potenciales Evocados de Tronco Cerebral.
 
 simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisiología auditiva
 
 
-## Estado actual del proyecto
+### Estado actual del proyecto
 
 * **[:ok:]Pantalla Inicial**
 * **[:speak_no_evil:]Insertar Matplotlib seteado**
@@ -29,11 +29,11 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 
 :ok::OK, :speak_no_evil::50/50, :construction_worker::en construcción, :rat:: nivel rata(no funciona, ¡aún!)
 
-## Imágenes 
+### Imágenes 
 _Pantalla inicial:_
 <img src="images/Screenshot1.png" width="200">
 
-### Pre-requisitos
+#### Pre-requisitos
 _Para correr este script de Python es necesario tener instalado:_
 
 ```
@@ -46,7 +46,7 @@ csv
 ```
 
 
-## Construido con 🛠️
+### Construido con 🛠️
 
 _Este proyecto se ha desarrollado con las siguientes herramenientas_
 
@@ -56,7 +56,7 @@ _Este proyecto se ha desarrollado con las siguientes herramenientas_
 
 
 
-## Autores ✒️
+### Autores ✒️
 
 _Este sofware a sido construido por:_
 
@@ -64,11 +64,11 @@ _Este sofware a sido construido por:_
 * **Maria Paz Latorre Gonzalez** - *Casos* - 
 * **Ignacia Inarejo Inarejo** - *Casos* - 
 
-## Licencia 📄
+### Licencia 📄
 
 Este proyecto está bajo la Licencia MIT - mira el archivo [LICENSE.md](LICENSE.md) para detalles
 
-## Agradecimientos 🎁
+### Agradecimientos 🎁
 
 * Escuela de Tecnología Médica Universidad Austral de Chile - Sede Puerto Montt -  [TM-PM](http://tmedicapm.uach.cl/)
 
