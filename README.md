@@ -8,8 +8,8 @@
 
 [![Universidad Austral PM](https://img.shields.io/badge/UACH-PM-green.svg)](http://www.pmontt.uach.cl/)
 [![TecMed](https://img.shields.io/badge/TM-PM-critical.svg)](http://tmedicapm.uach.cl/)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 [![Twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=flat&logo=twitter)](https://twitter.com/intent/tweet?hashtags=imagesharp,dotnet,oss&text=simPEATC.Un+simulador+de+potenciales+evocados+auditivos+de+tronco+cerebral+en+Python+https://github.com/debaq/simPEATC+#simPEATC+#simulador+#UACH+#TM-PM)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 
 
 </div>
