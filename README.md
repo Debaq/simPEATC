@@ -14,7 +14,7 @@
 
 ## Imágenes 
 
-<img src="images/Screenshot1.png" width="100">
+<img src="images/Screenshot1.png" width="200">
 
 ### Pre-requisitos
 _Para correr este script de Python es necesario:_
