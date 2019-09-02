@@ -17,7 +17,7 @@ _Pantalla inicial:_
 <img src="images/Screenshot1.png" width="200">
 
 ### Pre-requisitos
-_Para correr este script de Python es necesario:_
+_Para correr este script de Python es necesario tener instalado:_
 
 ```
 Python 3.x
@@ -53,5 +53,6 @@ Este proyecto está bajo la Licencia MIT - mira el archivo [LICENSE.md](LICENSE.
 
 ## Agradecimientos 🎁
 
-* Escuela de Tecnología Médica Universidad Austral de Chile - Sede Puerto Montt -  [TM-PM](http://tmedicapm.uach.cl/)📢
+* Escuela de Tecnología Médica Universidad Austral de Chile - Sede Puerto Montt -  [TM-PM](http://tmedicapm.uach.cl/)
+
 
