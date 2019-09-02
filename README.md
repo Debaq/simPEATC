@@ -47,6 +47,12 @@ Numpy
 csv
 ```
 
+#### Paquetes de instalación
+|           |Paquete|Código|
+|-----------|-------|------|
+|**Linux**  |[![Build Status](https://img.shields.io/badge/build-faling-critical.svg))](/#)|[![Build Status](https://img.shields.io/badge/code-10%-green.svg))](/#)|
+|**windows**|[![Build Status](https://img.shields.io/badge/build-faling-critical.svg))](/#)|[![Build Status](https://img.shields.io/badge/code-0%-red.svg))](/#)|
+
 
 ### Construido con 🛠️
 

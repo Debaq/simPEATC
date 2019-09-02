@@ -1,6 +1,7 @@
 # http://effbot.org/tkinterbook/
 # https://icons8.com/icon/set/i/metro
 # https://www.machinelearningplus.com/plots/top-50-matplotlib-visualizations-the-root-plots-python/
+# https://codecov.io/gh/Debaq/simPEATC
 from tkinter import *
 from tkinter import ttk
 from random import randint
