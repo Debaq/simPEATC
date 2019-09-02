@@ -2,7 +2,7 @@
  Simulador de Potenciales Evocados de Tronco Cerebral
 
 ##Objetivos
-
+*Desarrollar un software de simulación de potenciales evocados auditivos de Tronco Cerebral
 ### Pre-requisitos
 _Para correr este script de Python es necesario:_
 
@@ -30,7 +30,18 @@ _Este proyecto se ha desarrollado con las siguientes herramenientas_
 
 _Este sofware a sido construido por:_
 
-* **David Ávila Quezada** - *Trabajo Inicial* - [villanuevand](https://github.com/villanuevand)
-* **Maria Paz Latorre Gonzalez** - *Casos* - [fulanitodetal](#fulanito-de-tal)
-* **Ignacia Inarejo Inarejo** - *Casos* - [fulanitodetal](#fulanito-de-tal)
+* **David Ávila Quezada** - *Trabajo Inicial* - [Davila](http://tmedicapm.uach.cl/docentes/david-%C3%A1vila-quezada)
+* **Maria Paz Latorre Gonzalez** - *Casos* - 
+* **Ignacia Inarejo Inarejo** - *Casos* - 
+
+## Licencia 📄
+
+Este proyecto está bajo la Licencia MIT - mira el archivo [LICENSE.md](LICENSE.md) para detalles
+
+## Agradecimientos 🎁
+
+* Comenta a otros sobre este proyecto 📢
+* Invita una cerveza 🍺 a alguien del equipo. 
+* Da las gracias públicamente 🤓.
+* etc.
 
