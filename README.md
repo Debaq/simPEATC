@@ -9,7 +9,7 @@
 * **[]Configuración de tonos**
 * **[]Desarrollo del Hadware**
 
-![Imagen pantalla inicial](https://raw.githubusercontent.com/Debaq/simPEATC/master/images/Screenshot1.png?raw=true "Pantalla Inicial")
+![Imagen pantalla inicial](images/Screenshot1.png "Pantalla Inicial")
 
 
 ### Pre-requisitos
