@@ -1,0 +1,11 @@
+#proporciones de los frames principales [height,with,x,y]
+
+size_window=[0,1280,720]
+size_window[0]=str(size_window[1])+'x'+str(size_window[2])
+
+size_frame={'up':[1,.045,0,0], 'down':[1,.03,0,0],
+            'izq':[.19,0,0,0,0,240],'der':[0,0,0,0]}
+size_frame['der'][1]=(1-(size_frame['up'][1]+size_frame['down'][1]))
+size_frame['izq'][1]=(size_frame['der'][1])
+size_frame['der'][0]=(1-(size_frame['izq'][0]))
+size_frame['down'][3]=(size_frame['der'][1]+size_frame['up'][1])

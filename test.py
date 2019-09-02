@@ -1,4 +1,5 @@
 # http://effbot.org/tkinterbook/
+#https://icons8.com/icon/set/i/metro
 from tkinter import *
 from tkinter import ttk
 from random import randint
@@ -11,7 +12,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.patches import Ellipse
 from matplotlib.text import OffsetFrom
 from matplotlib.gridspec import GridSpec
-
+import setting as stt
 import numpy as np
 import csv
 
@@ -29,6 +30,11 @@ GridTrue = True
 
 
 continuePlotting = False
+
+
+def cmd(icon):
+    pass
+
 
 def change_state():
     global continuePlotting
@@ -63,6 +69,34 @@ def averageTick(average):
         ticks.append(suma)
     return ticks
 
+class CreateToolTip(object):
+    '''
+    create a tooltip for a given widget
+    '''
+    def __init__(self, widget, text='widget info'):
+        self.widget = widget
+        self.text = text
+        self.widget.bind("<Enter>", self.enter)
+        self.widget.bind("<Leave>", self.close)
+ 
+    def enter(self, event=None):
+        x = y = 0
+        x, y, cx, cy = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 25
+        y += self.widget.winfo_rooty() + 20
+        # creates a toplevel window
+        self.tw = Toplevel(self.widget)
+        # Leaves only the label and removes the app window
+        self.tw.wm_overrideredirect(True)
+        self.tw.wm_geometry("+%d+%d" % (x, y))
+        label = Label(self.tw, text=self.text, justify='left',
+                       background='white', relief='solid', borderwidth=1,
+                       font=("arial", "10", "normal"))
+        label.pack(ipadx=1)
+ 
+    def close(self, event=None):
+        if self.tw:
+            self.tw.destroy()
 
 def graph():
     
@@ -119,38 +153,38 @@ def OD_plotter():
 
 
 def app():
-    # initialise a window.
+# Se inicia la ventana
     root = Tk()
     root.config(background='white')
-    root.geometry("1000x700")
-    
+    root.geometry(stt.size_window[0])#Tamaño inicial de la ventana
     root.update_idletasks()
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-    geometry_X =  int(screen_width/2) - int(1280/2)
-    geometry_Y = int(screen_height/2) - int(720/2)
-    size="1280x720+"+str(geometry_X)+"+"+str(geometry_Y)
-    root.geometry(size)
-    root.minsize(1280, 720)
-    root.call('wm', 'iconphoto', root._w, ImageTk.PhotoImage(Image.open('resources/icon.ico')))
+    root.minsize(stt.size_window[1], stt.size_window[2])#Tamaño minimo de la ventana
+    #root.maxsize(stt.size_window[1], stt.size_window[2])#mantiene un tamaño fijo 
+
+    root.call('wm', 'iconphoto', root._w, ImageTk.PhotoImage(Image.open('resources/icon.ico')))#Icono de la ventana
     root.title("simPEATC") ##Titulo de la ventana
-    root.title("simPEATC") ##Titulo de la ventana
-    frame_name = Frame(bd=1, bg="blue",relief="sunken") ##crea la caja superior
-    frame_contenido = Frame(bd=1, bg="green",relief="sunken") ##crea la caja central
-    frame_info = Frame(bd=1, bg="red",relief="sunken") ##crea la caja inferior
-    frame_command = Frame(bd=1, bg="black",relief="sunken") ##crea la caja inferior
+    
+#Configuración de los Frames, proporciones en setting.py variable stt.size_frame
+    frame_quick = Frame(bd=1,relief="sunken") ##crea la caja superior
+    frame_contenido = Frame(bd=1, bg="white",relief="sunken") ##crea la caja derecha
+    frame_info = Frame(bd=1,relief="sunken") ##crea la caja inferior
+    frame_command = Frame(bd=1,relief="sunken") ##crea la caja izquierda
 
-    #split = 0.5
-    frame_name.place(rely=0, relheight=.03, relwidth=1)
-    frame_contenido.place(rely=.03, relx=.2, relheight=1.0-0.03, relwidth=.8)
-    frame_command.place(rely=.03, relheight=1.0-0.03, relwidth=.2)
+    frame_quick.place(relx=0, rely=0, relwidth=stt.size_frame['up'][0], relheight=stt.size_frame['up'][1])
+    frame_contenido.place(relx=stt.size_frame['izq'][0],rely=stt.size_frame['up'][1],
+                        relwidth=stt.size_frame['der'][0], relheight=stt.size_frame['der'][1])
+    #frame_command.place(relx=0, rely=stt.size_frame['up'][1], relwidth=stt.size_frame['izq'][0],
+    #                    relheight=stt.size_frame['izq'][1])
+    frame_command.place(relx=0,rely=stt.size_frame['up'][1],relheight=stt.size_frame['izq'][1], width=stt.size_frame['izq'][5])
+    frame_info.place(relx=0, rely=stt.size_frame['down'][3], relwidth=stt.size_frame['down'][0],
+                    relheight=stt.size_frame['down'][1])
 
-    frame_info.place(rely=1.0-0.03, relheight=.03, relwidth=1)
-
+#Se llama al grafico para que se posicione sobre la caja Derecha como canvas
     fig = graph()
     graphy = FigureCanvasTkAgg(fig, master=frame_contenido)
     graphy.get_tk_widget().pack(side="top",fill='both',expand=True)
 
+#Menú
     menu = Menu(root)
     root.config(menu=menu)
     file = Menu(menu, tearoff=0)
@@ -167,28 +201,32 @@ def app():
 
     edit.add_command(label="Abrir prueba suelta")
 
-    menu.add_cascade(label="Editar prueba", menu=edit)
+    menu.add_cascade(label="Editar", menu=edit)
 
     help = Menu(menu, tearoff=0)
     help.add_command(label="Ayuda")
     help.add_separator()
     help.add_command(label="Acerca de nosotros",)
     menu.add_cascade(label="Ayuda", menu=help)
-    label_name = StringVar()
-    label_name = Label(frame_name, textvariable=label_name, text="Label")
-    label_name.pack(side = LEFT)
-    
+
+ #Comandos para actualizar información sobre la pantalla, y obtener la información del ancho y alto   
     root.update()
     fr_cmd_with = frame_command.winfo_width()
     fr_cmd_height = frame_command.winfo_height()
 
 #Tabs en comandos cuadro izquierdo pantalla principal
-    note_command = ttk.Notebook(frame_command, width=fr_cmd_with, height=fr_cmd_height)
-    note_command.grid(row=1, column=0, columnspan=50, rowspan=49, sticky='NESW')
+    note_command = ttk.Notebook(frame_command, width=stt.size_frame['izq'][5], height=fr_cmd_height)
+    #note_command.grid(row=1, column=0, columnspan=50, rowspan=49, sticky='NESW')
+    note_command.pack(expand=True, fill=BOTH)
 #Tab 1: registro
     tab_registro= Frame(note_command)
     note_command.add(tab_registro, text='Registro')
 
+    tab_mark= Frame(note_command)
+    note_command.add(tab_mark, text='Editar')
+    tab_latency= Frame(note_command)
+    note_command.add(tab_latency, text='Latencias')
+        
 #Tab1, frame1: Estimulo
     frame_estimulo =Frame(tab_registro, relief=GROOVE, borderwidth=2)
     label_nivel = ('Intensidad : '+str(niveldb)+' db nHL')
@@ -225,7 +263,7 @@ def app():
                          variable=v, value=mode)
          b.grid(sticky=W)
     Label(frame_new_test, text='Prueba',font=("Courier",10)).grid(row=0)
-    frame_new_test.place(rely=0.03, relx=0.6)
+    frame_new_test.place(rely=0.03, relx=0.65)
 
 
 #Tab1, frame3: reproductibilidad
@@ -238,7 +276,7 @@ def app():
     Label(frame_reproductibilidad, text='100').grid(row=1, column=2, sticky=E)
     Label(frame_reproductibilidad, text='% de reproductibilidad ',
             font=("Courier",10)).grid(row=0, columnspan=3)
-    frame_reproductibilidad.place(rely=0.47, relx=0)
+    frame_reproductibilidad.place(rely=0.5, relx=0.07)
 
 
 #Tab1, frame4: promediaciones
@@ -254,11 +292,31 @@ def app():
 #Tab1, frame 5: Botones de control
     frame_iniciar=Frame(tab_registro, relie=GROOVE, borderwidth=0)
 
-    Button(frame_iniciar,text="Iniciar", height=2, widt=25).grid(row=1)
-    Button(frame_iniciar,text="Pausa", height=1, widt=25).grid(row=2)
-    Button(frame_iniciar,text="Siguiente estimulo", height=1, widt=25).grid(row=3)
+    Button(frame_iniciar, state=DISABLED,text="Iniciar", height=2, width=22).grid(row=1)
+    Button(frame_iniciar, state=DISABLED,text="Pausa", height=1, width=22).grid(row=2)
+    Button(frame_iniciar, state=DISABLED,text="Siguiente estimulo", height=1, width=22).grid(row=3)
 
-    frame_iniciar.place(rely=0.6, relx=0.02)
+    frame_iniciar.place(rely=0.65, relx=0.07)
+
+#Quick Bar
+    #Button(frame_quick, text='Ayuda').pack(anchor=W)
+    width = 50
+    height = 50
+    icons = ('new', 'save', 'saveas', 'print', 'potential', 'config', 'help')
+    names = ('Nuevo', 'Guardar', 'Guardar como...','Imprimir', 'Potenciales', 'Configurar', 'Ayuda')
+    for i, icon in enumerate(icons):
+        tool_bar_icon = PhotoImage(file='resources/icons/{}.png'.format(icon))
+        #cmd = eval(icon)
+        small_logo = tool_bar_icon.subsample(4, 4)
+        tool_bar = Button(frame_quick, bd=0, image=small_logo, )
+        tool_bar.image = small_logo
+        button1_ttp = CreateToolTip(tool_bar, names[i])
+        tool_bar.pack(side='left')
+    test = StringVar()
+    select_test = ttk.Combobox(frame_quick, textvariable=test,state="readonly")
+    select_test['values']=['PEAT, Tono Click','PEAT, tono Burst', 'PEAT tono Chirp']
+    select_test.current(0)
+    select_test.pack(side='left')
 
 
 
