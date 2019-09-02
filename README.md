@@ -1,7 +1,10 @@
 # simPEATC
  Simulador de Potenciales Evocados de Tronco Cerebral
 
-##Objetivos
+
+
+##Estado actual del proyecto
+![Imagen pantalla inicial](https://raw.githubusercontent.com/Debaq/simPEATC/master/images/Screenshot1.png?token=ADVI3TLF7G3MQPFNDR2FWT25NU7WQ)
 *Desarrollar un software de simulación de potenciales evocados auditivos de Tronco Cerebral
 ### Pre-requisitos
 _Para correr este script de Python es necesario:_
@@ -40,8 +43,5 @@ Este proyecto está bajo la Licencia MIT - mira el archivo [LICENSE.md](LICENSE.
 
 ## Agradecimientos 🎁
 
-* Comenta a otros sobre este proyecto 📢
-* Invita una cerveza 🍺 a alguien del equipo. 
-* Da las gracias públicamente 🤓.
-* etc.
+* Escuela de Tecnología Médica Universidad Austral de Chile - Sede Puerto Montt -  [TM-PM](http://tmedicapm.uach.cl/)📢
 
