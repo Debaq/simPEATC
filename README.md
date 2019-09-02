@@ -5,10 +5,11 @@
 
 ##Estado actual del proyecto
 
-*[]Pantalla Inicial
-*[*]Insertar Matplotlib seteado
-*[]
-*[]
+* **[]Pantalla Inicial**
+* **[]Insertar Matplotlib seteado**
+* **[]i18n**
+* **[]Configuración de tonos**
+* **[]**
 ![Imagen pantalla inicial](https://raw.githubusercontent.com/Debaq/simPEATC/master/images/Screenshot1.png?token=ADVI3TLF7G3MQPFNDR2FWT25NU7WQ)
 
 ### Pre-requisitos
