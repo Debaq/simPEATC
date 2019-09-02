@@ -2,15 +2,13 @@
 
 <img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/images/logo.png" alt="SixLabors.ImageSharp" width="256"/>
 <br/>
-simPEATC
 </h1>
 
 <div align="center">
 
 [![GitHub license](https://img.shields.io/badge/license-MIT%202-blue.svg)](LICENSE.md)
 [![Twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=flat&logo=twitter)](https://twitter.com/intent/tweet?hashtags=imagesharp,dotnet,oss&text=simPEATC.Un+simulador+de+potenciales+evocados+auditivos+de+tronco+cerebral+en+Python+https://github.com/debaq/simPEATC+#simPEATC+#simulador+#UACH+#TM-PM)
-[![OpenCollective](https://opencollective.com/imagesharp/backers/badge.svg)](#backers)
-[![OpenCollective](https://opencollective.com/imagesharp/sponsors/badge.svg)](#sponsors)
+
 
 </div>
 
