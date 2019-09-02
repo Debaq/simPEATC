@@ -13,7 +13,7 @@
 :ok::OK, :speak_no_evil::50/50, :construction_worker::en construcción, :rat:: nivel rata(no funciona, ¡aún!)
 
 ## Imágenes 
-Pantalla inicial:
+_Pantalla inicial:_
 <img src="images/Screenshot1.png" width="200">
 
 ### Pre-requisitos
