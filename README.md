@@ -1,5 +1,25 @@
-# simPEATC
- Simulador de Potenciales Evocados de Tronco Cerebral
+<h1 align="center">
+
+<img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/images/logo.png" alt="SixLabors.ImageSharp" width="256"/>
+<br/>
+simPEATC
+</h1>
+
+<div align="center">
+
+[![GitHub license](https://img.shields.io/badge/license-MIT%202-blue.svg)](LICENSE.md)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ImageSharp/General?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=flat&logo=twitter)](https://twitter.com/intent/tweet?hashtags=imagesharp,dotnet,oss&text=ImageSharp.+A+new+cross-platform+2D+graphics+API+in+C%23&url=https%3a%2f%2fgithub.com%2fSixLabors%2fImageSharp&via=sixlabors)
+[![OpenCollective](https://opencollective.com/imagesharp/backers/badge.svg)](#backers)
+[![OpenCollective](https://opencollective.com/imagesharp/sponsors/badge.svg)](#sponsors)
+
+</div>
+
+
+# simPEATC, Simulador de Potenciales Evocados de Tronco Cerebral.
+
+simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisiología auditiva
+
 
 ## Estado actual del proyecto
 
