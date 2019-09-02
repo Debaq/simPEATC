@@ -10,9 +10,7 @@
 * **[:rat:]Desarrollo del Hadware**
 
 
-```
-:ok: :OK, :speak_no_evil:: 50/50, :construction_worker: :en construcción, :rat: : nivel rata(no funciona, aún?)
-```
+* :ok: :OK, :speak_no_evil:: 50/50, :construction_worker: :en construcción, :rat: : nivel rata(no funciona, aún?)
 
 
 ![Imagen pantalla inicial](images/Screenshot1.png "Pantalla Inicial")
