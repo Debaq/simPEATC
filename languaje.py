@@ -1,26 +1,20 @@
-def i18n(a,b):
+def i18n(a,b,*f):
 	words={
-		'nuevo':['Nuevo','New'],
-		'registro':['Registro','Record'],
-		'editar':['Editar','Edit'],
-		'archivo':['Archivo','File'],
-		'ayuda':['Ayuda', 'Help'],
-		'intensidad':['Intensidad','Level'],
-		'estimulo':['Tipo','Type'],
-		'masking':['Enmascaramiento', 'Mask'],
-		'tasa':['Tasa','Rate'],
-		'polaridad':['Polaridad','Polarity'],
-		'alternada':['Alternada', 'Alternated']
+		'new':['nuevo','new'],
+		'record':['Registro','Record'],
+		'edit':['Editar','Edit'],
+		'file':['Archivo','File'],
+		'help':['Ayuda', 'Help'],
+		'level':['Intensidad','Level'],
+		'type':['Tipo','Type'],
+		'mark':['Enmascaramiento', 'Mask'],
+		'rate':['Tasa','Rate'],
+		'polarity':['Polaridad','Polarity'],
+		'alt':['Alternada', 'Alternated']
 	}
+	if f:
+		return words[a][b].capitalize()
+	else:
+		return words[a][b].lower()
 
-	return words[a][b]
 
-print(i18n('nuevo',0))
-
-
-# print(words['nuevo'][1])
-# values = words.values()
-# i = 0
-# for f in values:
-# 	print(list(words.values())[i][1])
-# 	i=i+1

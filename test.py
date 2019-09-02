@@ -18,6 +18,9 @@ import csv
 
 import time
 import threading
+
+import languaje as lang
+
 ##Variables de forma del grafico
 Y_ampl = 18
 X_time = 10
@@ -30,7 +33,7 @@ GridTrue = True
 
 
 continuePlotting = False
-
+print(lang.i18n('rate',0,1))
 
 def cmd(icon):
     pass
