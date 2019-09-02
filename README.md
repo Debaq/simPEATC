@@ -1,16 +1,16 @@
 # simPEATC
  Simulador de Potenciales Evocados de Tronco Cerebral
 
-
-
-##Estado actual del proyecto
+## Estado actual del proyecto
 
 * **[]Pantalla Inicial**
 * **[]Insertar Matplotlib seteado**
 * **[]i18n**
 * **[]Configuración de tonos**
-* **[]**
-![Imagen pantalla inicial](https://raw.githubusercontent.com/Debaq/simPEATC/master/images/Screenshot1.png?token=ADVI3TLF7G3MQPFNDR2FWT25NU7WQ)
+* **[]Desarrollo del Hadware**
+
+![Imagen pantalla inicial](https://raw.githubusercontent.com/Debaq/simPEATC/master/images/Screenshot1.png?raw=true "Pantalla Inicial")
+
 
 ### Pre-requisitos
 _Para correr este script de Python es necesario:_
