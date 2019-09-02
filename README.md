@@ -4,8 +4,13 @@
 
 
 ##Estado actual del proyecto
+
+*[]Pantalla Inicial
+*[*]Insertar Matplotlib seteado
+*[]
+*[]
 ![Imagen pantalla inicial](https://raw.githubusercontent.com/Debaq/simPEATC/master/images/Screenshot1.png?token=ADVI3TLF7G3MQPFNDR2FWT25NU7WQ)
-*Desarrollar un software de simulación de potenciales evocados auditivos de Tronco Cerebral
+
 ### Pre-requisitos
 _Para correr este script de Python es necesario:_
 
