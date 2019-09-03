@@ -1,29 +1,33 @@
-# http://effbot.org/tkinterbook/
-# https://icons8.com/icon/set/i/metro
-# https://www.machinelearningplus.com/plots/top-50-matplotlib-visualizations-the-root-plots-python/
-# https://codecov.io/gh/Debaq/simPEATC
+# Librerias Necesarias
 from tkinter import *
 from tkinter import ttk
-from random import randint
 from PIL import ImageTk, Image
+import numpy as np
+import sys
+sys.path.insert(1, 'config/')
+import languaje as lang
+import setting as stt
 
-# these two imports are important
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-#from matplotlib.figure import Figure
 from matplotlib.patches import Ellipse
 from matplotlib.text import OffsetFrom
 from matplotlib.gridspec import GridSpec
-import setting as stt
-import numpy as np
-import csv
 
-import time
-import threading
+import json 
 
-import languaje as lang
 
-##Variables de forma del grafico
+
+
+
+
+def i18n(a,b,*f):
+    i18n = lang.i18n(a,b)
+    return i18n
+
+print(i18n('record',0))
+
+##Variables de forma del gráfico
 Y_ampl = 18
 X_time = 10
 average = 2000
@@ -32,10 +36,9 @@ niveldb = 80
 fonticksmini = {'fontsize': 6}
 
 GridTrue = True
-
+LANG=0
 
 continuePlotting = False
-print(lang.i18n('rate',0,1))
 
 def cmd(icon):
     pass
@@ -121,7 +124,6 @@ def graph():
     ax1.set_yticklabels(['D','I'],fontdict=fonticksmini,horizontalalignment='left')
 
     ax2 = plt.subplot(gs1[0:1, 3:8])
-    #ax2.yaxis.set_major_formatter(plt.NullFormatter()) 
     ax2.grid(GridTrue)
     ax2.set_xlim(0,average)
     ax2.set_ylim(0,200)
@@ -153,8 +155,6 @@ def graph():
 def OD_plotter():
     L1 = ax3.plot([1,2,3,4,5,6,7,8,9,10],[5,5,5,5,5,5,5,5,5,5])
     pass
-
-
 
 
 def app():
@@ -225,18 +225,18 @@ def app():
     note_command.pack(expand=True, fill=BOTH)
 #Tab 1: registro
     tab_registro= Frame(note_command)
-    note_command.add(tab_registro, text='Registro')
+    note_command.add(tab_registro, text=lang.i18n('record',LANG,0))
 
     tab_mark= Frame(note_command)
-    note_command.add(tab_mark, text='Editar')
+    note_command.add(tab_mark, text=lang.i18n('edit',LANG,0))
     tab_latency= Frame(note_command)
-    note_command.add(tab_latency, text='Latencias')
+    note_command.add(tab_latency, text=lang.i18n('latency',LANG,0))
         
 #Tab1, frame1: Estimulo
     frame_estimulo =Frame(tab_registro, relief=GROOVE, borderwidth=2)
-    label_nivel = ('Intensidad : '+str(niveldb)+' db nHL')
+    label_nivel = (lang.i18n('level',LANG,0)+':'+str(niveldb)+' db nHL')
     Label(frame_estimulo, text=label_nivel).grid(row=1,sticky=W)
-    Label(frame_estimulo, text='Estimulo : Click').grid(row=2,sticky=W)
+    Label(frame_estimulo, text=lang.i18n('record',LANG,0)+':'+ lang.stim[0]).grid(row=2,sticky=W)#el stimulo debe ser modificable
     Label(frame_estimulo, text='Mask : Off').grid(row=3,sticky=W)
     Label(frame_estimulo, text='Estimulo',font=("Courier",10)).grid(row=0)
     frame_estimulo.place(rely=0.03)
@@ -342,9 +342,7 @@ def app():
         change_state()
         threading.Thread(target=OD_plotter).start()
 
- #   b = Button(root, text="Start/Stop", command=plotter, bg="red", fg="white")
-  #  b.pack()
-    
+ 
     root.mainloop()
  
 if __name__ == '__main__':
