@@ -20,12 +20,11 @@ import json
 
 
 
-
+##Lenguaje
 def i18n(a,b,*f):
     i18n = lang.i18n(a,b)
     return i18n
 
-print(i18n('record',0))
 
 ##Variables de forma del gráfico
 Y_ampl = 18
