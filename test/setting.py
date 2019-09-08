@@ -1,15 +1,21 @@
 
-import csv
+import pandas as pd
 
 def i18n():
 	file = open('translation.csv','r')
-	reader = csv.reader(f)
+	reader = csv.reader(file)
 	people = {}
 	for row in reader:
 		people[row[0]]={'value':row[1],'value2':row[2]}
 	print(people)
 
 
+def get():
+	df = pd.read_csv('setting.csv')
+	saved_column = df['conf']
+	font=[]
+	font=df.iloc[:,0]
+	print(font)
 
 
 
@@ -25,3 +31,4 @@ size_frame['izq'][1]=(size_frame['der'][1])
 size_frame['der'][0]=(1-(size_frame['izq'][0]))
 size_frame['down'][3]=(size_frame['der'][1]+size_frame['up'][1])
 
+get()

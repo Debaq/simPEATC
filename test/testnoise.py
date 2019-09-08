@@ -4,15 +4,15 @@ import matplotlib.animation as animation
 from matplotlib.text import OffsetFrom
 import numpy as np
 import csv
-##https://shinao.github.io/PathToPoints/
 a = []
 b = []
 
-with open('curva.txt','r') as csvfile:
+with open('curvatest.csv','r') as csvfile:
     plots = csv.reader(csvfile, delimiter=',')
     for row in plots:
-        a.append(float(row[0]))
-        b.append(float(row[1]))
+        a.append(float(row[0])/10)
+        b.append(float(row[1])/10)
+        print(a)
 
 t = np.linspace(1, 12, 26)
 out_a= np.asarray(b)
@@ -34,20 +34,20 @@ el = Ellipse((2, -1), 0.5, 0.5)
 ax.add_patch(el)
 
 
-for i in range(40):
+for i in range(10):
 	plt.title('PEATC')
 	plt.ylabel('Amplitud (uV)')
 	plt.xlabel('Tiempo (ms)')
-	plt.yticks([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17])
-	plt.axis([0,12,0,18])
+	#plt.yticks([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17])
+	#plt.axis([0,12,0,18])
 	ax.grid(True)
 	target_noise_db = target_noise_db - 1
 	target_noise_watts = 10 ** (target_noise_db / 10)
 	mean_noise = 0
 	noise_volts = np.random.normal(mean_noise, np.sqrt(target_noise_watts), len(x_watts))
 	y_volts = out_a + noise_volts
-	ytext=y_volts[-1]
-	xtext=out_b[-1]
+	ytext=y_volts[1]
+	xtext=out_b[1]
 	prom=prom+1
 	line, = ax.plot(out_b, y_volts)
 	ann = ax.annotate(text,
@@ -69,7 +69,7 @@ for i in range(40):
       #  verticalalignment='bottom',
        # transform=ax.transAxes)
 
-	plt.pause(0.3)
+	plt.pause(0.2)
 	plt.cla()
 
 print("ok")
