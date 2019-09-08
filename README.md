@@ -31,9 +31,9 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 
 :ok::OK, :speak_no_evil::50/50, :construction_worker::en construcción, :rat:: nivel rata(no funciona, ¡aún!)
 
-### Imágenes 
-_Pantalla inicial:__
-_<img src="images/video.gif" width="500">_
+### Imágenes: 
+
+ <div align="center"><img src="images/video.gif" width="600"></div>
 
 #### Pre-requisitos
 _Para correr este script de Python es necesario tener instalado:_
