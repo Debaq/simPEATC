@@ -35,7 +35,7 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 
  <div align="center"><img src="images/video.gif" width="600"></div>
 
-#### Pre-requisitos
+### Pre-requisitos
 _Para correr este script de Python es necesario tener instalado:_
 
 ```
@@ -47,7 +47,7 @@ Numpy
 csv
 ```
 
-#### Paquetes de instalación
+### Paquetes de instalación
 |           |Paquete|Código|
 |-----------|-------|------|
 |**Linux**  |[![Build Status](https://img.shields.io/badge/build-faling-critical.svg)](https://github.com/Debaq/simPEATC)|[![Build Status](https://img.shields.io/badge/code-10-green.svg)](https://github.com/Debaq/simPEATC)|
