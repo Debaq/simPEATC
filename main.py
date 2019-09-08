@@ -11,9 +11,9 @@ import setting as stt
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.patches import Ellipse
+import matplotlib.animation as animation
 from matplotlib.text import OffsetFrom
 from matplotlib.gridspec import GridSpec
-import matplotlib.animation as animation
 import csv
 
 import json 
@@ -138,7 +138,7 @@ class windows():
         el = Ellipse((2, -1), 0.5, 0.5)
         self.ax3.add_patch(el)
 
-
+        self.Btn_iniciar.configure(text="Detener")
 
         for i in range(55):
             target_noise_db = target_noise_db - 1
@@ -150,8 +150,6 @@ class windows():
             xtext=out_b[0]
             prom=prom+1
             self.ax3.plot(out_b, y_volts, color=color)
-            #self.graphy.draw()
-            #self.ax3.clear()
             self.ax3.grid(True)
             self.ax3.yaxis.set_major_formatter(plt.NullFormatter()) 
             self.ax3.grid(GridTrue, linestyle='--')
@@ -159,10 +157,10 @@ class windows():
             self.ax3.set_yticks(np.arange(Y_ampl+1))
             self.ax3.set_xlim(0,X_time)
             self.ax3.set_ylim(0,Y_ampl)
-            ann = self.ax3.annotate(text,
+            self.ann = self.ax3.annotate(text,
                           xy=(xtext,ytext), xycoords='data',
                           xytext=(8, 0), textcoords='offset points',
-                          size=8, va="center",
+                          size=30, va="center",
                           bbox=dict(boxstyle="round", fc=(color), ec="none"),
                           arrowprops=dict(arrowstyle="wedge,tail_width=1.",
                                           fc=(color), ec="none",
@@ -171,8 +169,7 @@ class windows():
                                           relpos=(0.2, 0.5)))
             self.graphy.draw()
             self.ax3.clear()
-
-            #self.graphy.pause(0.2)
+            self.graphy.pause(0.2)
             #plt.cla()
 
 
@@ -363,9 +360,12 @@ class windows():
     #Tab1, frame 5: Botones de control
         frame_iniciar=Frame(tab_registro, relie=GROOVE, borderwidth=0)
 
-        Button(frame_iniciar, state=NORMAL,text="Iniciar", height=2, width=22, command=self.anim).grid(row=1)
-        Button(frame_iniciar, state=DISABLED,text="Pausa", height=1, width=22).grid(row=2)
-        Button(frame_iniciar, state=DISABLED,text="Siguiente estimulo", height=1, width=22).grid(row=3)
+
+        self.Btn_iniciar = Button(frame_iniciar, state=NORMAL,text="Iniciar", height=2, width=22, command=self.anim)
+        self.Btn_iniciar.grid(row=1)
+
+        self.Btn_pause=Button(frame_iniciar, state=DISABLED,text="Pause", height=1, width=22).grid(row=2)
+        self.Btn_next=Button(frame_iniciar, state=DISABLED,text="Siguiente estimulo", height=1, width=22).grid(row=3)
 
         frame_iniciar.place(rely=0.65, relx=0.07)
 
@@ -389,6 +389,8 @@ class windows():
         select_test.current(0)
         select_test.pack(side='left')
 
+    def change_name(self):
+        self.Btn_iniciar.config(text="hhh")
 
 
     def printSelection(i):

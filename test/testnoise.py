@@ -46,14 +46,14 @@ for i in range(10):
 	mean_noise = 0
 	noise_volts = np.random.normal(mean_noise, np.sqrt(target_noise_watts), len(x_watts))
 	y_volts = out_a + noise_volts
-	ytext=y_volts[1]
-	xtext=out_b[1]
+	ytext=y_volts[0]
+	xtext=out_b[0]
 	prom=prom+1
 	line, = ax.plot(out_b, y_volts)
 	ann = ax.annotate(text,
                   xy=(xtext,ytext), xycoords='data',
                   xytext=(8, 0), textcoords='offset points',
-                  size=8, va="center",
+                  size=30, va="center",
                   bbox=dict(boxstyle="round", fc=(color), ec="none"),
                   arrowprops=dict(arrowstyle="wedge,tail_width=1.",
                                   fc=(color), ec="none",
