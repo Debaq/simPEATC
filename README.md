@@ -36,7 +36,7 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 <!-- #######  YAY, I AM THE SOURCE EDITOR! #########-->
 <p>&nbsp;</p>
 <p><strong>&nbsp;01-10-2019:<br /></strong></p>
-<p style="text-align: justify;">- Se agregan formatos STL, para impresi&oacute;n en 3d del preamplificador y portaelectros (carpeta STL)</p>
+<p style="text-align: justify;">- Se agregan formatos STL, para impresi&oacute;n en 3d del preamplificador y portaelectros (carpeta STL): Se construyo el porta electrodos para poder fabricar electrodos con pin dupont de 1 pin</p>
 <p style="text-align: justify;">&nbsp;</p>
 <p align="center">
 <table>
