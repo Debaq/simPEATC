@@ -31,9 +31,38 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 
 :ok::OK, :speak_no_evil::50/50, :construction_worker::en construcción, :rat:: nivel rata(no funciona, ¡aún!)
 
-### Imágenes: 
+### Avances:
 
- <div align="center"><img src="images/video.gif" width="600"></div>
+<!-- #######  YAY, I AM THE SOURCE EDITOR! #########-->
+<p>&nbsp;</p>
+<p><strong>&nbsp;01-10-2019:<br /></strong></p>
+<p style="text-align: justify;">- Se agregan formatos STL, para impresi&oacute;n en 3d del preamplificador y portaelectros (carpeta STL)</p>
+<p style="text-align: justify;">&nbsp;</p>
+<table>
+<tbody>
+<tr>
+<td style="width: 252px; text-align: center;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/bak/stl/img/portaelectrodo1.jpg" alt="Porta Electrodos" width="252" height="189" /></td>
+<td style="width: 236px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/bak/stl/img/preamplificador.jpg" alt="Preamplificador" width="236" height="177" /></td>
+<td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/bak/stl/img/Impresi%C3%B3n3d.jpeg" alt="impresi&oacute;n3d" width="263" height="230" /></td>
+</tr>
+<tr>
+<td style="width: 252px;">porta electrodos</td>
+<td style="width: 236px;">preamplificador</td>
+<td style="width: 263px;">impresi&oacute;n 3d</td>
+</tr>
+</tbody>
+</table>
+<p style="text-align: justify;">&nbsp;</p>
+<p style="text-align: justify;">&nbsp;</p>
+<p style="text-align: justify;"><strong>08-09-2019:</strong></p>
+<p style="text-align: justify;">- Se consigue generar animaci&oacute;n de la formaci&oacute;n de los potenciales evocados dentro de la gui.</p>
+<p style="text-align: justify;"><em>bugs:</em> el sistema queda en un bucle de matplotlib impidiendo realizar acciones mientras se genera el potencial</p>
+<p style="text-align: justify;">&nbsp;</p>
+<p><img style="display: block; margin-left: auto; margin-right: auto;" src="https://raw.githubusercontent.com/Debaq/simPEATC/bak/images/video.gif" alt="Video generaci&oacute;n de curva" width="505" height="284" /></p>
+<p style="text-align: justify;">&nbsp;</p>
+<p style="text-align: justify;"><strong>02-09-2019:</strong></p>
+<p style="text-align: justify;">- Se realiza gui completa de la pantalla principal</p>
+<p><img style="display: block; margin-left: auto; margin-right: auto;" src="https://raw.githubusercontent.com/Debaq/simPEATC/bak/images/Screenshot1.png" alt="Gui principal completo" width="505" height="306" /></p>
 
 ### Pre-requisitos
 _Para correr este script de Python es necesario tener instalado:_
