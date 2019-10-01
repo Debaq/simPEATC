@@ -22,11 +22,11 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 
 ### Estado actual del proyecto
 
-* **[:ok:]Pantalla Inicial**
+* **[:speak_no_evil:]GUI**
 * **[:speak_no_evil:]Insertar Matplotlib seteado**
 * **[:construction_worker:]i18n**
 * **[:rat:]Configuración de tonos**
-* **[:rat:]Desarrollo del Hadware**
+* **[:speak_no_evil:]Desarrollo del Hadware**
 
 
 :ok::OK, :speak_no_evil::50/50, :construction_worker::en construcción, :rat:: nivel rata(no funciona, ¡aún!)
