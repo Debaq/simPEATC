@@ -1,29 +1,78 @@
-import matplotlib.pyplot as plt
-import numpy as np
+# The code for changing pages was derived from: http://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
+# License: http://creativecommons.org/licenses/by-sa/3.0/   
 
-# use ggplot style for more sophisticated visuals
-plt.style.use('ggplot')
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.figure import Figure
+import matplotlib.animation as animation
+from matplotlib import style
+from tkinter import *
+from tkinter import ttk
 
-def live_plotter(x_vec,y1_data,line1,identifier='',pause_time=0.1):
-    if line1==[]:
-        # this is the call to matplotlib that allows dynamic plotting
-        plt.ion()
-        fig = plt.figure(figsize=(13,6))
-        ax = fig.add_subplot(111)
-        # create a variable for the line so we can later update it
-        line1, = ax.plot(x_vec,y1_data,'-o',alpha=0.8)        
-        #update plot label/title
-        plt.ylabel('Y Label')
-        plt.title('Title: {}'.format(identifier))
-        plt.show()
+
+LARGE_FONT= ("Verdana", 12)
+style.use("ggplot")
+
+f = Figure(figsize=(5,5), dpi=100)
+a = f.add_subplot(111)
+
+
+def animate(i):
+    pullData = open("sampleText.txt","r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    yList = []
+    for eachLine in dataList:
+        if len(eachLine) > 1:
+            x, y = eachLine.split(',')
+            xList.append(int(x))
+            yList.append(int(y))
+
+    a.clear()
+    a.plot(xList, yList)
+
     
-    # after the figure, axis, and line are created, we only need to update the y-data
-    line1.set_ydata(y1_data)
-    # adjust limits if new data goes beyond bounds
-    if np.min(y1_data)<=line1.axes.get_ylim()[0] or np.max(y1_data)>=line1.axes.get_ylim()[1]:
-        plt.ylim([np.min(y1_data)-np.std(y1_data),np.max(y1_data)+np.std(y1_data)])
-    # this pauses the data so the figure/axis can catch up - the amount of pause can be altered above
-    plt.pause(pause_time)
-    
-    # return line so we can update it again in the next iteration
-    return line1
+            
+
+class Lelitxipawe():
+
+
+    def __init__(self, root): #Se inicia la ventana con sus caracteristicas predeterminadas
+        self.root = root
+        self.root.config(background='white')#Color de fondo
+        self.root.update_idletasks()
+        #self.w, self.h = root.winfo_screenwidth(), root.winfo_screenheight()
+        self.w,self.h = 1280,720
+
+        self.root.geometry("%dx%d+0+0" % (self.w, self.h))
+        self.root.minsize(self.w, self.h)#Tamaño minimo de la ventana
+        #self.root.maxsize(self.w, self.h)#Tamaño minimo de la ventana
+        self.root.attributes('-zoomed', True)
+#       self.root.overrideredirect(True)
+        self.root.title("simPEATC") ##Titulo de la ventana
+
+        self.frame_contenido = Frame(bd=1, bg="white",relief="sunken").pack()
+        Button(self.frame_contenido, text="hola").pack()
+        Button(self.frame_contenido, text="lola").pack()
+        
+        
+
+        canvas = FigureCanvasTkAgg(f, master=self.frame_contenido)
+        canvas.show()
+        canvas.get_tk_widget().pack(side=BOTTOM, fill=BOTH, expand=True)
+
+        toolbar = NavigationToolbar2Tk(canvas, self.frame_contenido)
+        toolbar.update()
+        canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=True)
+
+
+
+if __name__ == '__main__':
+
+    root = Tk()
+
+    my_gui = Lelitxipawe(root)
+    ani = animation.FuncAnimation(f, animate, interval=1000)
+
+    root.mainloop()
