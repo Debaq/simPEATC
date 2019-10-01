@@ -49,7 +49,7 @@ class Lelitxipawe():
         self.root.minsize(self.w, self.h)#Tamaño minimo de la ventana
         #self.root.maxsize(self.w, self.h)#Tamaño minimo de la ventana
         self.root.attributes('-zoomed', True)
-#       self.root.overrideredirect(True)
+#       self.root.overrideredirect(True) 
         self.root.title("simPEATC") ##Titulo de la ventana
 
         self.frame_contenido = Frame(bd=1, bg="white",relief="sunken").pack()
