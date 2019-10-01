@@ -58,11 +58,11 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 <p style="text-align: justify;">- Se consigue generar animaci&oacute;n de la formaci&oacute;n de los potenciales evocados dentro de la gui.</p>
 <p style="text-align: justify;"><em>bugs:</em> el sistema queda en un bucle de matplotlib impidiendo realizar acciones mientras se genera el potencial</p>
 <p style="text-align: justify;">&nbsp;</p>
-<p><img style="display: block; margin-left: auto; margin-right: auto;" src="https://raw.githubusercontent.com/Debaq/simPEATC/bak/images/video.gif" alt="Video generaci&oacute;n de curva" width="505" height="284" /></p>
+<p><img align="center" style="display: block; margin-left: auto; margin-right: auto;" src="https://raw.githubusercontent.com/Debaq/simPEATC/bak/images/video.gif" alt="Video generaci&oacute;n de curva" width="505" height="284" /></p>
 <p style="text-align: justify;">&nbsp;</p>
 <p style="text-align: justify;"><strong>02-09-2019:</strong></p>
 <p style="text-align: justify;">- Se realiza gui completa de la pantalla principal</p>
-<p><img style="display: block; margin-left: auto; margin-right: auto;" src="https://raw.githubusercontent.com/Debaq/simPEATC/bak/images/Screenshot1.png" alt="Gui principal completo" width="505" height="306" /></p>
+<p><img align="center" style="display: block; margin-left: auto; margin-right: auto;" src="https://raw.githubusercontent.com/Debaq/simPEATC/bak/images/Screenshot1.png" alt="Gui principal completo" width="505" height="306" /></p>
 
 ### Pre-requisitos
 _Para correr este script de Python es necesario tener instalado:_
