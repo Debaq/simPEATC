@@ -1,6 +1,6 @@
 <h1 align="center">
 
-<img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/images/logo.png" alt="SixLabors.ImageSharp" width="256"/>
+<img src="Images/logo.png" alt="SixLabors.ImageSharp" width="256"/>
 <br/>
 </h1>
 
