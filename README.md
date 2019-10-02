@@ -42,9 +42,9 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 <table>
 <tbody>
 <tr>
-<td style="width: 252px; text-align: center;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/STL/img/portaelectrodo1.jpg" alt="Porta Electrodos" width="252" height="189" /></td>
-<td style="width: 236px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/STL/img/preamplificador.jpg" alt="Preamplificador" width="236" height="177" /></td>
-<td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/STL/img/Impresi%C3%B3n3d.jpeg" alt="impresi&oacute;n3d" width="263" height="230" /></td>
+<td style="width: 252px; text-align: center;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/STL/img/portaelectrodo1.jpg" alt="Porta Electrodos" width="252" height="189" /></td>
+<td style="width: 236px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/STL/img/preamplificador.jpg" alt="Preamplificador" width="236" height="177" /></td>
+<td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/STL/img/Impresi%C3%B3n3d.jpeg" alt="impresi&oacute;n3d" width="263" height="230" /></td>
 </tr>
 <tr>
 <td style="width: 252px;">porta electrodos</td>
@@ -61,12 +61,12 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 <p style="text-align: justify;"><em>bugs:</em> el sistema queda en un bucle de matplotlib impidiendo realizar acciones mientras se genera el potencial</p>
 <p style="text-align: justify;">&nbsp;</p>
 <p align="center">
-<img width="505" height="284" src="https://raw.githubusercontent.com/Debaq/simPEATC/Images/video.gif" alt="Video generaci&oacute;n de curva"  /></p>
+<img width="505" height="284" src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/video.gif" alt="Video generaci&oacute;n de curva"  /></p>
 <p style="text-align: justify;">&nbsp;</p>
 <p style="text-align: justify;"><strong>02-09-2019:</strong></p>
 <p style="text-align: justify;">- Se realiza gui completa de la pantalla principal</p>
 <p align="center">
-<img width="505" height="306" src="https://raw.githubusercontent.com/Debaq/simPEATC/Images/Screenshot1.png" alt="Gui principal completo"  /></p>
+<img width="505" height="306" src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/Screenshot1.png" alt="Gui principal completo"  /></p>
 
 ### Pre-requisitos
 _Para correr este script de Python es necesario tener instalado:_
