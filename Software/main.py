@@ -136,6 +136,7 @@ class windows():
         c_blue=[0.5,0.5,1.0]
         color=c_red
         el = Ellipse((2, -1), 0.5, 0.5)
+        plt.ion()
         self.ax3.add_patch(el)
 
         self.Btn_iniciar.configure(text="Detener")
@@ -169,7 +170,7 @@ class windows():
                                           relpos=(0.2, 0.5)))
             self.graphy.draw()
             self.ax3.clear()
-            self.graphy.pause(0.2)
+            plt.pause(0.2)
             #plt.cla()
 
 
