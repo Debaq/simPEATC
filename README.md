@@ -132,7 +132,7 @@ Investigadores Asociados:
 <table>
 	<tbody>
 		<tr>
-			<td style="width: 263px; border: 1px solid black;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/Stickers_preamplificador_portaelectrodos.jpeg" alt="Stickers" width="263" height="230" /></td>		
+			<td style="width: 263px; border: 10px solid black;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/Stickers_preamplificador_portaelectrodos.jpeg" alt="Stickers" width="263" height="230" /></td>		
 			<td style="width: 263px;">Fritzing -  Preamplificador</td>
 		</tr>
 	</tbody>
