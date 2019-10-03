@@ -134,7 +134,7 @@ _Este proyecto se ha desarrollado con las siguientes herramenientas_
 				David Ávila Quezada
 			<a href="http://tmedicapm.uach.cl/docentes/david-%C3%A1vila-quezada">(Davila)</a>
 			<p>
-				<a href="www.linkedin.com/in/david-avila-quezada-9a577113a"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Linkedin.svg/1200px-Linkedin.svg.png></a>
+				<a href="www.linkedin.com/in/david-avila-quezada-9a577113a"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Linkedin.svg/1200px-Linkedin.svg.png  width="100" height="100" ></a>
 			</p>
 			</td>
 		</tr>
