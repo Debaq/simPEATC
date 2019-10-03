@@ -45,11 +45,13 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 <td style="width: 252px; text-align: center;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/STL/img/portaelectrodo1.jpg" alt="Porta Electrodos" width="252" height="189" /></td>
 <td style="width: 236px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/STL/img/preamplificador.jpg" alt="Preamplificador" width="236" height="177" /></td>
 <td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/STL/img/Impresi%C3%B3n3d.jpeg" alt="impresi&oacute;n3d" width="263" height="230" /></td>
+<td></td>
 </tr>
 <tr>
 <td style="width: 252px;">porta electrodos</td>
 <td style="width: 236px;">preamplificador</td>
 <td style="width: 263px;">impresi&oacute;n 3d</td>
+<td style="width: 263px;">Stickers</td>
 </tr>
 </tbody>
 </table>
