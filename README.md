@@ -124,7 +124,8 @@ _Este proyecto se ha desarrollado con las siguientes herramenientas_
 ### Autores ✒️
 
 
-##Investigador Principal:
+<h2>Investigador Principal:</h2>
+
 <table>
 	<tbody>
 		<tr>
@@ -137,7 +138,8 @@ _Este proyecto se ha desarrollado con las siguientes herramenientas_
 	</tbody>
 </table>
 
-##Investigadores Asociados:
+<h2>Investigadores Asociados:</h2>
+
 <table>
 	<tbody>
 		<tr>
@@ -157,7 +159,6 @@ _Este proyecto se ha desarrollado con las siguientes herramenientas_
 		</tr>
 	</tbody>
 </table>
-* **Ignacia Inarejo Inarejo** - *Casos* - 
 
 ### Licencia 📄
 
