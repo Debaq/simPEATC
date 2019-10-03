@@ -134,9 +134,8 @@ Investigadores Asociados:
 		<tr>
 			<td style="width: 263px; border: 10px solid black;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/Autores/Ávila.jpg" alt="Stickers" width="100" height="100" /></td>		
 			<td style="width: 263px;">
-				* **David Ávila Quezada** - *Trabajo Inicial* - [Davila](http://tmedicapm.uach.cl/docentes/david-%C3%A1vila-quezada)
-
-
+				David Ávila Quezada
+			<a href="http://tmedicapm.uach.cl/docentes/david-%C3%A1vila-quezada">Davila</a>
 			</td>
 		</tr>
 	</tbody>
