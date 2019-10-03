@@ -143,12 +143,16 @@ _Este proyecto se ha desarrollado con las siguientes herramenientas_
 		<tr>
 		<td style="width: 263px; border: 10px solid black;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/Autores/Latorre.jpg" alt="Latorre" width="100" height="100" /></td>	
 				<td style="width: 263px;">
-		Maria Paz Latorre Gonzalez
+		María Paz Latorre Gonzalez
 		<a href="mailto:Marialatorre.1f@gmail.com">Email</a>
 	</td>
 </tr>
 		<tr>
 		<td style="width: 263px; border: 10px solid black;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/Autores/Inarejo.jpg" alt="Inarejo" width="100" height="100" /></td>
+			<td style="width: 263px;">
+			Ignacia Inarejo Inarejo
+		<a href="ignaciainarejoinarejo@gmail.com">Email</a>
+	</td>
 	</tr>
 		</tr>
 	</tbody>
