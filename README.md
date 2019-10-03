@@ -33,8 +33,6 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 
 ### Avances:
 
-<!-- #######  YAY, I AM THE SOURCE EDITOR! #########-->
-<p>&nbsp;</p>
 <p><strong>&nbsp;02-10-2019:<br /></strong></p>
 
 <p style="text-align: justify;">- Se agregan stickers para preamplificador y portaelectrodos en formato SVG de Inkscaper</p>
