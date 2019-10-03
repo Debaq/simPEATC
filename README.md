@@ -43,9 +43,9 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 <tbody>
 <tr>
 <td style="width: 252px; text-align: center;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/portaelectrodo1.jpg" alt="Porta Electrodos" width="252" height="189" /></td>
-<td style="width: 236px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/STL/preamplificador.jpg" alt="Preamplificador" width="236" height="177" /></td>
-<td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/STL/Impresi%C3%B3n3d.jpeg" alt="impresi&oacute;n3d" width="263" height="230" /></td>
-<td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/Stickers_preamplificador_portaelectrodos.jpeg" alt="impresi&oacute;n3d" width="263" height="230" /></td>
+<td style="width: 236px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/preamplificador.jpg" alt="Preamplificador" width="236" height="177" /></td>
+<td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/3d_preamplificador_portaelectrodos.jpeg" alt="impresi&oacute;n3d" width="263" height="230" /></td>
+<td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/Stickers_preamplificador_portaelectrodos.jpeg" alt="Stickers" width="263" height="230" /></td>
 </tr>
 
 <tr>
