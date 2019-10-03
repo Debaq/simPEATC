@@ -124,7 +124,7 @@ _Este proyecto se ha desarrollado con las siguientes herramenientas_
 ### Autores ✒️
 
 
-<h2>Investigador Principal:</h2>
+<h3>Investigador Principal:</h3>
 
 <table>
 	<tbody>
@@ -138,7 +138,7 @@ _Este proyecto se ha desarrollado con las siguientes herramenientas_
 	</tbody>
 </table>
 
-<h2>Investigadores Asociados:</h2>
+<h3>Investigadores Asociados:</h3>
 
 <table>
 	<tbody>
