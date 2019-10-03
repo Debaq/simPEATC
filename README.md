@@ -124,15 +124,11 @@ _Este proyecto se ha desarrollado con las siguientes herramenientas_
 ### Autores ✒️
 
 
-Investigador Principal:
-
-
-Investigadores Asociados:
-
+##Investigador Principal:
 <table>
 	<tbody>
 		<tr>
-			<td style="width: 263px; border: 10px solid black;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/Autores/Ávila.jpg" alt="Stickers" width="100" height="100" /></td>		
+			<td style="width: 263px; border: 10px solid black;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/Autores/Ávila.jpg" alt="Davila" width="100" height="100" /></td>		
 			<td style="width: 263px;">
 				David Ávila Quezada
 			<a href="http://tmedicapm.uach.cl/docentes/david-%C3%A1vila-quezada">Davila</a>
@@ -140,9 +136,22 @@ Investigadores Asociados:
 		</tr>
 	</tbody>
 </table>
-_Este sofware a sido construido por:_
 
-* **Maria Paz Latorre Gonzalez** - *Casos* - 
+##Investigadores Asociados:
+<table>
+	<tbody>
+		<tr>
+		<td style="width: 263px; border: 10px solid black;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/Autores/Latorre.jpg" alt="Latorre" width="100" height="100" /></td>	
+		<td style="width: 263px; border: 10px solid black;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/Autores/Inarejo.jpg" alt="Inarejo" width="100" height="100" /></td>
+		</tr>
+		<tr>
+		<td style="width: 263px;">
+		Maria Paz Latorre Gonzalez
+		<a href="mailto:Marialatorre.1f@gmail.com">Email</a>
+	</tr>
+		</tr>
+	</tbody>
+</table>
 * **Ignacia Inarejo Inarejo** - *Casos* - 
 
 ### Licencia 📄
