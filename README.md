@@ -123,6 +123,20 @@ _Este proyecto se ha desarrollado con las siguientes herramenientas_
 
 ### Autores ✒️
 
+
+Investigador Principal:
+
+
+Investigadores Asociados:
+
+<table>
+	<tbody>
+		<tr>
+			<td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/Stickers_preamplificador_portaelectrodos.jpeg" alt="Stickers" width="263" height="230" /></td>		
+			<td style="width: 263px;">Fritzing -  Preamplificador</td>
+		</tr>
+	</tbody>
+</table>
 _Este sofware a sido construido por:_
 
 * **David Ávila Quezada** - *Trabajo Inicial* - [Davila](http://tmedicapm.uach.cl/docentes/david-%C3%A1vila-quezada)
