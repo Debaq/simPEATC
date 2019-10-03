@@ -131,8 +131,9 @@ _Este proyecto se ha desarrollado con las siguientes herramenientas_
 		<tr>
 			<td style="width: 263px; border: 10px solid black;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/Autores/Ávila.jpg" alt="Davila" width="100" height="100" /></td>		
 			<td style="width: 263px;">
-				David Ávila Quezada
+			David Ávila Quezada
 			<p>
+			<a href="david.avila@uach.cl"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/externos/mail.png"  width="20" height="20" ></a>
 			<a href="http://tmedicapm.uach.cl/docentes/david-%C3%A1vila-quezada"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/externos/TMPM.png"  width="20" height="20" ></a>
 			<a href="http://www.linkedin.com/in/david-avila-quezada-9a577113a"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/externos/Linkedin.png"  width="20" height="20" ></a>
 			</p>
@@ -147,7 +148,7 @@ _Este proyecto se ha desarrollado con las siguientes herramenientas_
 	<tbody>
 		<tr>
 		<td style="width: 263px; border: 10px solid black;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/Autores/Latorre.jpg" alt="Latorre" width="100" height="100" /></td>	
-				<td style="width: 263px;">
+		<td style="width: 263px;">
 		María Paz Latorre Gonzalez
 		<p>
 		<a href="mailto:Marialatorre.1f@gmail.com"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/externos/mail.png"  width="20" height="20" ></a>
