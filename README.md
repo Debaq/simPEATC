@@ -48,9 +48,11 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 	<tbody>
 		<tr>
 			<td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/Stickers_preamplificador_portaelectrodos.jpeg" alt="Stickers" width="263" height="230" /></td>
+			<td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/Preamplificador_electronica_1.png" alt="Electronica" width="263" height="230" /></td>
 		</tr>
 		<tr>
 			<td style="width: 263px;">Stickers</td>
+			<td style="width: 263px;">Fritzing -  Preamplificador</td>
 		</tr>
 	</tbody>
 </table>
