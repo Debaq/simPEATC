@@ -132,14 +132,17 @@ Investigadores Asociados:
 <table>
 	<tbody>
 		<tr>
-			<td style="width: 263px; border: 10px solid black;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/Stickers_preamplificador_portaelectrodos.jpeg" alt="Stickers" width="263" height="230" /></td>		
-			<td style="width: 263px;">Fritzing -  Preamplificador</td>
+			<td style="width: 263px; border: 10px solid black;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Images/Autores/Ávila.jpg" alt="Stickers" width="263" height="230" /></td>		
+			<td style="width: 263px;">
+				* **David Ávila Quezada** - *Trabajo Inicial* - [Davila](http://tmedicapm.uach.cl/docentes/david-%C3%A1vila-quezada)
+
+
+			</td>
 		</tr>
 	</tbody>
 </table>
 _Este sofware a sido construido por:_
 
-* **David Ávila Quezada** - *Trabajo Inicial* - [Davila](http://tmedicapm.uach.cl/docentes/david-%C3%A1vila-quezada)
 * **Maria Paz Latorre Gonzalez** - *Casos* - 
 * **Ignacia Inarejo Inarejo** - *Casos* - 
 
