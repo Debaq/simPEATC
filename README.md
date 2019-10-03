@@ -35,6 +35,26 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 
 <!-- #######  YAY, I AM THE SOURCE EDITOR! #########-->
 <p>&nbsp;</p>
+<p><strong>&nbsp;02-10-2019:<br /></strong></p>
+
+<p style="text-align: justify;">- Se agregan stickers para preamplificador y portaelectrodos en formato SVG de Inkscaper</p>
+<p style="text-align: justify;">- Se modifica orden de las carpetas y archivos para una mejor interpretación</p>
+
+<p style="text-align: justify;">&nbsp;</p>
+<p align="center">
+<table>
+	<tbody>
+		<tr>
+			<td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/Stickers_preamplificador_portaelectrodos.jpeg" alt="Stickers" width="263" height="230" /></td>
+		</tr>
+		<tr>
+			<td style="width: 263px;">Stickers</td>
+		</tr>
+	</tbody>
+</table>
+</p>
+
+<p>&nbsp;</p>
 <p><strong>&nbsp;01-10-2019:<br /></strong></p>
 <p style="text-align: justify;">- Se agregan formatos STL, para impresi&oacute;n en 3d del preamplificador y portaelectros (carpeta STL): Se construyo el porta electrodos para poder fabricar electrodos con pin dupont de 1 pin</p>
 <p style="text-align: justify;">&nbsp;</p>
@@ -45,14 +65,13 @@ simPEATC, es un proyecto de simulador de PEATC, para estudiantes de electrofisio
 <td style="width: 252px; text-align: center;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/portaelectrodo1.jpg" alt="Porta Electrodos" width="252" height="189" /></td>
 <td style="width: 236px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/preamplificador.jpg" alt="Preamplificador" width="236" height="177" /></td>
 <td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/3d_preamplificador_portaelectrodos.jpeg" alt="impresi&oacute;n3d" width="263" height="230" /></td>
-<td style="width: 263px;"><img src="https://raw.githubusercontent.com/Debaq/simPEATC/master/Hardware/img/Stickers_preamplificador_portaelectrodos.jpeg" alt="Stickers" width="263" height="230" /></td>
+
 </tr>
 
 <tr>
 <td style="width: 252px;">porta electrodos</td>
 <td style="width: 236px;">preamplificador</td>
 <td style="width: 263px;">impresi&oacute;n 3d</td>
-<td style="width: 263px;">Stickers</td>
 </tr>
 </tbody>
 </table>
