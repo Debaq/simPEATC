@@ -12,7 +12,7 @@ os.environ["SDL_MOUSEDRV"] = "TSLIB"
 pygame.init()
 pygame.mouse.set_visible(0)
 screen.fill(red)
-    pygame.display.update()
+pygame.display.update()
 
 
 
