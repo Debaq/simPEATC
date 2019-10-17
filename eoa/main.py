@@ -11,6 +11,13 @@ os.environ["SDL_MOUSEDRV"] = "TSLIB"
 # Initialize pygame and hide mouse
 pygame.init()
 pygame.mouse.set_visible(0)
+
+
+size = width, height = 480, 320
+screen = pygame.display.set_mode(size)
+
+
+
 screen.fill(red)
 pygame.display.update()
 
