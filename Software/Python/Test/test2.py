@@ -22,8 +22,7 @@ import json
 
 ##Lenguaje
 def i18n(a,b,*f):
-    i18n = lang.i18n(a,b)
-    return i18n
+    return lang.i18n(a,b)
 
 
 ##Variables de forma del gráfico
@@ -47,10 +46,7 @@ def change_state():
     global continuePlotting
     print(2)
 
-    if continuePlotting == True:
-        continuePlotting = False
-    else:
-        continuePlotting = True
+    continuePlotting = continuePlotting != True
     
  
 def data_points():
@@ -69,11 +65,7 @@ def data_points():
 def averageTick(average):
     ticksAverage = average/13
     ticks =[0]
-    i = 0
-    while i < 13:
-        i = i+1
-        suma = ticksAverage * i
-        ticks.append(suma)
+    ticks.extend(ticksAverage * i for i in range(1, 14))
     return ticks
 
 class CreateToolTip(object):
@@ -153,7 +145,6 @@ def graph():
 
 def OD_plotter():
     L1 = ax3.plot([1,2,3,4,5,6,7,8,9,10],[5,5,5,5,5,5,5,5,5,5])
-    pass
 
 
 def app():
@@ -167,7 +158,6 @@ def app():
 
     root.call('wm', 'iconphoto', root._w, ImageTk.PhotoImage(Image.open('resources/icon.ico')))#Icono de la ventana
     root.title("simPEATC") ##Titulo de la ventana
-    
 #Configuración de los Frames, proporciones en setting.py variable stt.size_frame
     frame_quick = Frame(bd=1,relief="sunken") ##crea la caja superior
     frame_contenido = Frame(bd=1, bg="white",relief="sunken") ##crea la caja derecha
@@ -182,12 +172,10 @@ def app():
     frame_command.place(relx=0,rely=stt.size_frame['up'][1],relheight=stt.size_frame['izq'][1], width=stt.size_frame['izq'][5])
     frame_info.place(relx=0, rely=stt.size_frame['down'][3], relwidth=stt.size_frame['down'][0],
                     relheight=stt.size_frame['down'][1])
-
 #Se llama al grafico para que se posicione sobre la caja Derecha como canvas
     fig = graph()
     graphy = FigureCanvasTkAgg(fig, master=frame_contenido)
     graphy.get_tk_widget().pack(side="top",fill='both',expand=True)
-
 #Menú
     menu = Menu(root)
     root.config(menu=menu)
@@ -212,12 +200,10 @@ def app():
     help.add_separator()
     help.add_command(label="Acerca de nosotros",)
     menu.add_cascade(label="Ayuda", menu=help)
-
  #Comandos para actualizar información sobre la pantalla, y obtener la información del ancho y alto   
     root.update()
     fr_cmd_with = frame_command.winfo_width()
     fr_cmd_height = frame_command.winfo_height()
-
 #Tabs en comandos cuadro izquierdo pantalla principal
     note_command = ttk.Notebook(frame_command, width=stt.size_frame['izq'][5], height=fr_cmd_height)
     #note_command.grid(row=1, column=0, columnspan=50, rowspan=49, sticky='NESW')
@@ -230,7 +216,6 @@ def app():
     note_command.add(tab_mark, text=lang.i18n('edit',LANG,0))
     tab_latency= Frame(note_command)
     note_command.add(tab_latency, text=lang.i18n('latency',LANG,0))
-        
 #Tab1, frame1: Estimulo
     frame_estimulo =Frame(tab_registro, relief=GROOVE, borderwidth=2)
     label_nivel = (lang.i18n('level',LANG,0)+':'+str(niveldb)+' db nHL')
@@ -239,7 +224,6 @@ def app():
     Label(frame_estimulo, text='Mask : Off').grid(row=3,sticky=W)
     Label(frame_estimulo, text='Estimulo',font=("Courier",10)).grid(row=0)
     frame_estimulo.place(rely=0.03)
-
 #Tab1, frame2: Nuevo test
     frame_new_test=Frame(tab_registro, relief=GROOVE, borderwidth=2)
     check_array = ['0db', '10db', '20db', '30db',
@@ -268,8 +252,6 @@ def app():
          b.grid(sticky=W)
     Label(frame_new_test, text='Prueba',font=("Courier",10)).grid(row=0)
     frame_new_test.place(rely=0.03, relx=0.65)
-
-
 #Tab1, frame3: reproductibilidad
     frame_reproductibilidad=Frame(tab_registro, relief=GROOVE, borderwidth=2)
     reproductibilidad = ttk.Progressbar(frame_reproductibilidad, 
@@ -281,18 +263,18 @@ def app():
     Label(frame_reproductibilidad, text='% de reproductibilidad ',
             font=("Courier",10)).grid(row=0, columnspan=3)
     frame_reproductibilidad.place(rely=0.5, relx=0.07)
-
-
 #Tab1, frame4: promediaciones
     frame_promediaciones=Frame(tab_registro, relie=GROOVE, borderwidth=2)
     Label(frame_promediaciones, text='Promediaciones',
             font=("Courier",10)).grid(row=0)
     prom_estim=0
     rechazos=0
-    Label(frame_promediaciones,text=('Promediaciones: '+str(prom_estim))).grid(row=1, sticky=W)
-    Label(frame_promediaciones,text=('Rechazos: '+str(rechazos))).grid(row=2,sticky=W)
-    frame_promediaciones.place(rely=0.3, relx=0)
+    Label(frame_promediaciones, text=f'Promediaciones: {prom_estim}').grid(
+        row=1, sticky=W
+    )
 
+    Label(frame_promediaciones, text=f'Rechazos: {rechazos}').grid(row=2, sticky=W)
+    frame_promediaciones.place(rely=0.3, relx=0)
 #Tab1, frame 5: Botones de control
     frame_iniciar=Frame(tab_registro, relie=GROOVE, borderwidth=0)
 
@@ -301,7 +283,6 @@ def app():
     Button(frame_iniciar, state=DISABLED,text="Siguiente estimulo", height=1, width=22).grid(row=3)
 
     frame_iniciar.place(rely=0.65, relx=0.07)
-
 #Quick Bar
     #Button(frame_quick, text='Ayuda').pack(anchor=W)
     width = 50
@@ -336,12 +317,12 @@ def app():
 
             graph.draw()
             time.sleep(1)
- 
+
     def gui_handler():
         change_state()
         threading.Thread(target=OD_plotter).start()
 
- 
+
     root.mainloop()
  
 if __name__ == '__main__':

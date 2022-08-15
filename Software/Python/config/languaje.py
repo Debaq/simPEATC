@@ -14,10 +14,7 @@ def i18n(a,b,*f):
 		'test':['prueba', 'test'],
 		'latency':['Latencia','Latency'],
 	}
-	if f:
-		return words[a][b].capitalize()
-	else:
-		return words[a][b].lower()
+	return words[a][b].capitalize() if f else words[a][b].lower()
 
 stim=['click','chirp','burst']
 

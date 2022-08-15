@@ -2,13 +2,11 @@ from pylive import live_plotter
 import numpy as np
 
 size = 100
-x_vec = np.linspace(0,1,size+1)[0:-1]
+x_vec = np.linspace(0,1,size+1)[:-1]
 y_vec = np.random.randn(len(x_vec))
 
 line1 = []
-a = 0
-while (a<30):
-    a =a+1
+for _ in range(30):
     y_vec = np.random.randn(len(x_vec))
 
     #rand_val = np.random.randn(1)
