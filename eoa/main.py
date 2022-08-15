@@ -28,8 +28,8 @@ pygame.display.update()
 class Icon:
 
         def __init__(self, name):
-          self.name = name
-          try:
-            self.bitmap = pygame.image.load(iconPath + '/' + name + '.png')
-          except:
-            pass
+                self.name = name
+                try:
+                        self.bitmap = pygame.image.load(f'{iconPath}/{name}.png')
+                except:
+                  pass

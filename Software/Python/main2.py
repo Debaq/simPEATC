@@ -165,13 +165,11 @@ class Lelitxipawe():
 
 	def generator(self):
 		size = 100
-		x_vec = np.linspace(0,1,size+1)[0:-1]
+		x_vec = np.linspace(0,1,size+1)[:-1]
 		y_vec = np.random.randn(len(x_vec))
 
 		line1 = []
-		a = 0
-		while (a<30):
-			a =a+1
+		for _ in range(30):
 			y_vec = np.random.randn(len(x_vec))
 			line1 = self.wirikan_2(x_vec,y_vec,line1)
 			print(type(line1))
@@ -198,11 +196,7 @@ class Lelitxipawe():
 	def averageTick(self,average):
 		ticksAverage = average/13
 		ticks =[0]
-		i = 0
-		while i < 13:
-			i = i+1
-			suma = ticksAverage * i
-			ticks.append(suma)
+		ticks.extend(ticksAverage * i for i in range(1, 14))
 		return ticks
 
 

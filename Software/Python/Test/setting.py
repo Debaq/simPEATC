@@ -4,9 +4,7 @@ import pandas as pd
 def i18n():
 	file = open('translation.csv','r')
 	reader = csv.reader(file)
-	people = {}
-	for row in reader:
-		people[row[0]]={'value':row[1],'value2':row[2]}
+	people = {row[0]: {'value':row[1],'value2':row[2]} for row in reader}
 	print(people)
 
 
@@ -22,7 +20,7 @@ def get():
 #proporciones de los frames principales [height,with,x,y]
 
 size_window=[0,1280,720]
-size_window[0]=str(size_window[1])+'x'+str(size_window[2])
+size_window[0] = f'{str(size_window[1])}x{str(size_window[2])}'
 
 size_frame={'up':[1,.045,0,0], 'down':[1,.03,0,0],
             'izq':[.19,0,0,0,0,240],'der':[0,0,0,0]}

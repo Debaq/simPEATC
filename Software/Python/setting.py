@@ -4,16 +4,14 @@ import csv
 def i18n():
 	file = open('translation.csv','r')
 	reader = csv.reader(f)
-	people = {}
-	for row in reader:
-		people[row[0]]={'value':row[1],'value2':row[2]}
+	people = {row[0]: {'value':row[1],'value2':row[2]} for row in reader}
 	print(people)
 
 def tres_simple(a,b,tipo=None):
 	d=b*100
 	d=d/a
 	p=tipo
-	if(p==None):
+	if p is None:
 		return d/100
 	if(p=="invert"):
 		return 1-(d/100)

@@ -24,8 +24,7 @@ import json
 
 ##Lenguaje
 def i18n(a,b,*f):
-    i18n = lang.i18n(a,b)
-    return i18n
+    return lang.i18n(a,b)
 
 
 ##Variables de forma del gráfico
@@ -49,10 +48,7 @@ def change_state():
     global continuePlotting
     print(2)
 
-    if continuePlotting == True:
-        continuePlotting = False
-    else:
-        continuePlotting = True
+    continuePlotting = continuePlotting != True
     
  
 
@@ -61,11 +57,7 @@ def change_state():
 def averageTick(average):
     ticksAverage = average/13
     ticks =[0]
-    i = 0
-    while i < 13:
-        i = i+1
-        suma = ticksAverage * i
-        ticks.append(suma)
+    ticks.extend(ticksAverage * i for i in range(1, 14))
     return ticks
 
 
@@ -141,10 +133,10 @@ class windows():
 
         self.Btn_iniciar.configure(text="Detener")
 
-        for i in range(55):
+        mean_noise = 0
+        for _ in range(55):
             target_noise_db = target_noise_db - 1
             target_noise_watts = 10 ** (target_noise_db / 10)
-            mean_noise = 0
             noise_volts = np.random.normal(mean_noise, np.sqrt(target_noise_watts), len(x_watts))
             y_volts = out_a + noise_volts
             ytext=y_volts[0]
@@ -152,7 +144,7 @@ class windows():
             prom=prom+1
             self.ax3.plot(out_b, y_volts, color=color)
             self.ax3.grid(True)
-            self.ax3.yaxis.set_major_formatter(plt.NullFormatter()) 
+            self.ax3.yaxis.set_major_formatter(plt.NullFormatter())
             self.ax3.grid(GridTrue, linestyle='--')
             self.ax3.set_xticks(np.arange(X_time+1))
             self.ax3.set_yticks(np.arange(Y_ampl+1))
