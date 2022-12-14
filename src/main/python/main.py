@@ -33,15 +33,6 @@ from lib.pdf_abr import dataset as dataset_pdf
 from lib.pdf_abr import image_ABR, create_pdf
 
 
-def printer(self, widget):
-    screen = QApplication.primaryScreen()
-    screenshot = screen.grabWindow(widget)
-    now = datetime.now()
-    current_time = now.strftime("%d-%m-%y_%H_%M_%S")
-    file = str(QFileDialog.getExistingDirectory(self, "Seleccionar destino"))
-    name = f'{file}/{current_time}.jpg'
-    screenshot.save(name, 'jpg')
-
 
 class ABR_control(QWidget, Ui_ABR_config):
     def __init__(self):
