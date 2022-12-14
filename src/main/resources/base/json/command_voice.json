@@ -1,0 +1,28 @@
+{
+    "command_voice": {
+        "silencio" : "X_X_X",
+        "colocar_fonos": "THR_A_X",
+        "escuche_mi_voz": "L_SDT_X",
+        "dictar_palabras":"L_UMD_X",
+        "pitos_fuertes":"S_LDL_X",
+        "aerea_+_ruido":"THR_A_MKG",
+        "colocar_vibrador":"THR_O_X",
+        "vibrador_+_ruido":"THR_O_MKG",
+        "dos_pitos":"S_FOWLER_X",
+        "cambie_de_volumen":"S_SISI_X",
+        "mano_levantada":"S_CARHART_X",
+        "mano_levantada_en_ruido":"S_STAT_X",
+        "muy_fuerte" : "X_X_X",
+        "molesta" : "X_X_X",
+        "sonidos_iguales":"X_X_X",
+        "solo_si_molesta" : "X_X_X",
+        "molesto_o" : "X_X_X",
+        "en_qué_oído" : "X_X_X",
+        "pa_pa_pa":"X_X_X",
+        "dejo_de_escuchar": "X_X_X",
+        "escucha" : "X_X_X",
+        "no_entiende" : "X_X_X"
+
+
+    }
+}

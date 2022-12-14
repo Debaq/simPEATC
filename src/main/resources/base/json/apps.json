@@ -1,0 +1,38 @@
+{
+  "APP_des" : "lista que contiene 0,tooltip,posición en z,size,estado (pre o development)",
+  "APP": {
+    "LOGIN": [true, "Ingreso", 0, [true, true], [410, 140],"pre"],
+    "A": [false, "Audiómetro", 1, [true, true], [740, 560],"pre"],
+    "W": [false, "Lista de Palabras", 2, [true, true], [170, 500],"pre"],
+    "Z": [false, "Impedanciómetro", 3, [true, true], [740, 560],"pre"],
+    "ABR": [false,"Potencial evocado auditivo de tronco cerebral",4,[false, true],[1000, 600], "pre"],
+    "VEMP": [false, "Potenciales evocados vestibulares miogénicos", 5,[false, true],[1000, 600], "development"],
+    "EOAS": [false, "Emisor Otoacústico de Screening", 6,[false, true],[1000, 600], "development"],
+    "EOAC": [false, "Emisor Otoacústico Clínico", 7,[false, true],[1000, 600], "development"],
+    "VNG": [false, "Videonistagmografía", 8,[false, true],[1000, 600], "development"],
+    "VHIT": [false, "Video Head Impulse Test", 9,[false, true],[1000, 600], "development"],
+    "POS": [false, "Posturografía", 10, [false, true],[1000, 600], "development"],
+    "CVOICE": [false, "Comandos de Voz", 11, [true, true], [420, 200],"pre"],
+    "CVC": [false, "Campo Visual Computarizado", 12, [true, true], [420, 200],"pre"],
+    "AGENDA": [false, "Agenda", 13, [true, true], [900,400], "pre"],
+    "CREATE_A":[false, "Nuevo Usuario", 14, [true, true], [900,650], "pre"]
+
+   
+
+  },
+  "SECTORS": {
+    "Camara_sono": "Usuario en cámara sonoamortiguada",
+    "Z_OD": "Usuario con oliva en OD",
+    "Z_OI": "Usuario con oliva en OI",
+    "none": "Usuario en el Box",
+    "ABR": "Usuario en PEATC",
+    "CVC": "Usuario en CVC"
+  },
+  "BOXS": {
+    "sala_espera": [true,["AGENDA"], "Sala de Espera"],
+    "Box_1": [true,["A", "Z"], "Box Audiología"],
+    "Box_2": [true,["ABR", "VEMP", "EOAS"], "Box Electrofisiología"],
+    "Box_3": [true,["VNG", "VHIT", "POS"], "Box Otoneurología"],
+    "Box_4": [true,["CVC"], "Box campimetría"]
+  }
+}

@@ -1,0 +1,35 @@
+{
+    "CVC":{
+
+    "config_param_thres_cvc":{
+        "Estrategia de prueba":[
+            "SITA-Standard",
+            "SITA-Fast",
+            "Umbral completo",
+            "FastPac"],
+        "Velocidad de Prueba":[
+            "Normal",
+            "Lento"],
+        "Objetivo de fijación":[
+            "Central",
+            "Diamante pequeño",
+            "Diamante grande",
+            "LED inferior"],
+        "Monitorización de fijación":[
+            "Mirada/Mancha ciega",
+            "Seguimiento de mirada",
+            "Mancha ciega",
+            "Apagado"],
+        "Azul - amarillo":[
+            "Apagado",
+            "Encendido"],
+        "Umbral foveal":[
+            "Apagado",
+            "Encendido"],
+        "Tamaño del estímulo":["I","II","III","IV"],
+        "Color de estímulo":["Blanco", "Rojo", "Azul"],
+        "Fluctuación":["Apagado",
+            "Encendido"]
+}
+    }
+}
