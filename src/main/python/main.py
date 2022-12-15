@@ -363,7 +363,7 @@ class MainWindow(QWidget, Ui_ABRSim):
         if side == 0:
             x, y, dx,dy = ABR_Curve(none=False, nHL=intencity, p_I=1.3, a_V = 0.6, zeros=False, VrelI = False)
         else: 
-            x, y, dcx,dy = ABR_Curve(none=False, nHL=intencity, p_I=1.3, a_V = 0.6, zeros=False, VrelI = False)
+            x, y, dcx,dy = ABR_Curve(none=False, nHL=intencity, p_I=2, a_V = 0.3, zeros=False, VrelI = False)
         self.store[name]['ipsi_xy'][0] = x
         self.store[name]['ipsi_xy'][1] = y
         self.disabled_in_capture()
@@ -371,6 +371,12 @@ class MainWindow(QWidget, Ui_ABRSim):
         self.updateGraph()
         name_curve = {'curve':name}
         self.selectCurve(name_curve)
+
+    def cases(self, n):
+        neural = {}
+        coclear = {}
+        transmissión = {}
+        normal = {"threshold":20, }
 
     def updateGraph(self):
         self.graph_right.update_data(self.store)
