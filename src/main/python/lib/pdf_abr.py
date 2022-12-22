@@ -5,7 +5,7 @@ from base import context
 
 
 def dataset(data):
-    data_c = [("Curva", "Estimulo", "Polaridad", "Intencidad", "Masking","Tasa", "Filtros","Promediaciones", "I", "II", "III", "I-III", "III-V", "I-V")]
+    data_c = [("Curva", "Estimulo", "Polaridad", "Intencidad", "Masking","Tasa", "Filtros","Promediaciones", "I", "III", "V", "I-III", "III-V", "I-V")]
     for i in data:
         view = data[i]["view"]
         if view:
@@ -22,7 +22,7 @@ def dataset(data):
             I_III = round(III - I,2)
             I_V = round(V - I,2)
             III_V = round(V - III,2)
-            new_line = (i,stim,pol,intencity,mkg,rate,fil,prom,f"{I}ms.",f"{III}ms.",f"{V}ms.", f"{I_III}ms.", f"{I_V}ms.", f"{III_V}ms.")
+            new_line = (i,stim,pol,intencity,mkg,rate,fil,prom,f"{I}ms.",f"{III}ms.",f"{V}ms.", f"{I_III}ms.", f"{III_V}ms.", f"{I_V}ms.")
             data_c.append(new_line)
     return data_c
 
@@ -44,7 +44,7 @@ def create_pdf(table):
     pdf.cell(200, 10, txt = "POTENCIALES EVOCADOS AUDITIVOS DE TRONCO CEREBRAL", ln = 1, align = 'C')
     pdf.cell(200, 10, txt = "PEATC", ln = 1, align = 'C')
     pdf.image(context.get_resource("merged_image.jpg"), 15, 35, 180)
-    pdf.ln(90)
+    pdf.ln(100)
 
     # Setting font: Times 12
     pdf.set_font("Times", size=7)

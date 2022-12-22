@@ -10,7 +10,6 @@
 import random
 import sys
 
-import numpy as np
 from base import context
 
 from PySide6.QtWidgets import QPushButton, QWidget
@@ -20,7 +19,6 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication, QFileDialog
 from datetime import datetime
 
-import lib.bezier_prop as bz
 from lib.ABR_generator import ABR_creator
 from lib.ABR_graph import GraphABR
 from lib.EEG import EEG
@@ -31,6 +29,11 @@ from UI.Ui_ABR_detail import Ui_ABR_detail
 from UI.Ui_ABR_lat_select import Ui_ABR_lat_select
 from lib.pdf_abr import dataset as dataset_pdf
 from lib.pdf_abr import image_ABR, create_pdf
+from lib.ABR_generator_2 import ABR_Curve
+
+
+######COSAS PARA EL WIDGET DE LA PRUEBA
+from PySide6.QtWidgets import QMessageBox, QSpinBox, QScrollArea, QVBoxLayout, QLabel
 
 
 
@@ -222,6 +225,31 @@ class ABR_ctrl_curve(QWidget, Ui_ABR_control_curve):
                         'data':{'curve': curve}})
 
 
+class CaseSelect(QMessageBox):
+    sig = Signal(int)
+    def __init__(self, l, *args, **kwargs):
+        QMessageBox.__init__(self, *args, **kwargs)
+        self.get_n = QSpinBox(self)
+        self.get_n.setMaximum(26)
+        self.get_n.setMinimum(1)
+        self.get_n.setPrefix("Caso: ")
+               
+        lay = QVBoxLayout()
+        lay.addWidget(self.get_n)
+
+        self.setStyleSheet("QScrollArea{min-width:300 px; min-height: 400px}")
+        #self.buttons[0].clicked.connect(self.test)
+
+        
+    def closeEvent(self, *args):
+        self.sig.emit(self.get_n.value())
+        
+    def changeEvent(self, *args):
+        self.sig.emit(self.get_n.value())
+
+        
+        
+
 
 class MainWindow(QWidget, Ui_ABRSim):
     def __init__(self):
@@ -240,12 +268,12 @@ class MainWindow(QWidget, Ui_ABRSim):
         self.ctrl_curve_left = ABR_ctrl_curve(1)
         self.ctrl_curve_rigth.data.connect(self.capture_actions)
         self.ctrl_curve_left.data.connect(self.capture_actions)
-        
+
         self.graph_right = GraphABR(0)
         self.graph_left = GraphABR(1)
         self.graph_right.data_info.connect(self.capture_actions)
         self.graph_left.data_info.connect(self.capture_actions)
-        
+
         #LAYOUTS
         self.layout_left.addWidget(self.control)
         self.layout_left.addWidget(self.detail)
@@ -268,6 +296,16 @@ class MainWindow(QWidget, Ui_ABRSim):
         self.detail.btn_stop.clicked.connect(self.printer)
 
         self.current_curves = [None, None]
+        self.cases_list = [str(i) for i in range(25)]
+        self.cases_()
+        self.repro = 0
+        
+
+    def cases_(self):
+      result = CaseSelect(self.cases_list, None)
+      result.sig.connect(self.cases)
+      result.exec()
+    
 
     def printer(self):
         #print(self.store)     
@@ -360,10 +398,13 @@ class MainWindow(QWidget, Ui_ABRSim):
         
         self.data.set_intencity(intencity)
         #x, y = self.data.get()
+        control_setting = self.control.get_data()
         if side == 0:
-            x, y, dx,dy = ABR_Curve(none=False, nHL=intencity, p_I=1.3, a_V = 0.6, zeros=False, VrelI = False)
+            x,y, dx, dy, self.repro = ABR_Curve(intencity, control_setting, self.case_master[0], self.repro)
         else: 
-            x, y, dcx,dy = ABR_Curve(none=False, nHL=intencity, p_I=2, a_V = 0.3, zeros=False, VrelI = False)
+            x,y, dx, dy, self.repro = ABR_Curve(intencity, control_setting, self.case_master[1], self.repro)
+        
+            
         self.store[name]['ipsi_xy'][0] = x
         self.store[name]['ipsi_xy'][1] = y
         self.disabled_in_capture()
@@ -373,10 +414,36 @@ class MainWindow(QWidget, Ui_ABRSim):
         self.selectCurve(name_curve)
 
     def cases(self, n):
-        neural = {}
-        coclear = {}
-        transmissión = {}
-        normal = {"threshold":20, }
+        #n: normal
+        #c: coclear
+        #t: transmission
+        #m: normal
+        #latI80 : latencia onda I a 80
+        #ink: interpeaks [1_3, 1_5]
+        #amp: amplitud [1,5]
+        #repro: reproductividad
+        #morfo: morfología
+        #th : umbral
+        n_1 = {"lat": 1.5, "ink":[3, 5], "amp":[1, .1], "repro": False, "morfo": [True, False, False], "th":70}
+        n_2 = {"lat": 1.7, "ink":[3.5, 5.5], "amp":[.4, .5], "repro": False, "morfo": [True, True, True], "th":50}
+        n_3 = {"lat": 1.6, "ink":[4, 6], "amp":[.4, .4], "repro": True, "morfo": [True, False, True], "th":40}
+        c_1 = {"lat": 2.6, "ink":[2.2, 4], "amp":[.7, 1], "repro": True, "morfo": [False, True, True], "th":60}
+        c_2 = {"lat": 3.6, "ink":[2.4, 3.8], "amp":[.7, 1], "repro": True, "morfo": [False, True, True], "th":70}
+        c_3 = {"lat": 2.1, "ink":[1.9, 4.1], "amp":[.7, 1], "repro": True, "morfo": [False, True, True], "th":40}
+        t_1 = {"lat": 2.0, "ink":[2, 4], "amp":[.5, .5], "repro": True, "morfo": [True, True, True], "th":60}
+        t_2 = {"lat": 3.1, "ink":[2.2, 3.8], "amp":[.4, .5], "repro": True, "morfo": [True, True, True], "th":70}
+        m_1 = {"lat": 1.5, "ink":[2, 3.8], "amp":[.7, .9], "repro": True, "morfo": [True, True, True], "th":20}
+        m_2 = {"lat": 1.7, "ink":[2.1, 4], "amp":[.3, .8], "repro": True, "morfo": [True, True, True], "th":30}
+        m_3 = {"lat": 1.6, "ink":[1.8, 3.6], "amp":[.5, .9], "repro": True, "morfo": [True, True, True], "th":10}
+
+        cases = [[n_1,m_1],[m_2,n_2],[n_3,m_3],[c_1,m_1],[m_2,c_2],[c_3,m_3],[m_1,t_1],
+                 [t_2,m_2],[n_1,c_1],[c_2,n_2],[n_3,c_3],[n_1,t_1],[t_2,n_2],[c_1,t_1],
+                 [t_2,c_2],[m_1,n_3],[c_1,m_2],[m_3,n_1],[t_2,n_1],[c_2,n_3],[m_3,c_2],
+                 [c_3,n_2],[n_2,m_1],[m_1,t_2],[n_1,m_2],[m_2,n_3]]
+        self.case_master = cases[n-1]
+        
+        
+        
 
     def updateGraph(self):
         self.graph_right.update_data(self.store)
@@ -459,143 +526,6 @@ class MainWindow(QWidget, Ui_ABRSim):
             self.graph_right.update_marks(idx,subidx,flag)
         else:
             self.graph_left.update_marks(idx,subidx,flag)
-
-def ABR_Curve(none = False, nHL = 80, p_I=1.6, p_III=3.7, p_V=5.6, a_V = 0.8, VrelI = True, zeros = False):
-    if none:
-        nHL = -15
-
-    att = 0
-    lam = 0
-    varInt = abs(80 - nHL)
-    fvarInt = varInt/5
-    if nHL > 80:
-        sideAmp = 1
-        sideLat = -1
-    else:
-        sideAmp = -1
-        sideLat = 1
-
-    if nHL >=50:
-        fvarLat = .15
-        fvarAmp = .06
-    else:
-        fvarLat = .2
-        fvarAmp = .08
-
-    att = (fvarLat * fvarInt) * sideLat
-    lam = (fvarAmp * fvarInt) * sideAmp/2
-
-    peak_I =  p_I + att
-    peak_II =  p_I+1+ att
-
-    peak_III =  p_III + att
-    peak_V =  p_V + att
-
-    peak_IV = peak_V-.5
-    end = 12 + att
-    amp_V = a_V + lam
-    amp_V = max(amp_V, 0)
-    VrelI = VrelI
-
-    var = random.uniform(0,0.2)
-    amp_I = amp_V / 3 if VrelI else amp_V / 1
-    amp_I = amp_I + lam
-    amp_I = max(amp_I, 0)
-    amp_Ip = -(amp_I/2)
-    amp_II = amp_Ip+0.1
-    amp_IIp = amp_II-.02
-
-    if amp_Ip == 0:
-        amp_II = 0
-        amp_IIp=0
-
-    amp_III = 0.3 +lam
-    amp_III = max(amp_III, 0)
-    amp_IIIp = 0
-
-    amp_VI = amp_V -.3
-
-    amp_VI = max(amp_VI, 0)
-    curve_cm = (0.6+att, 0.15)
-    curve_cmp = (0.7+att, -0.05)
-
-    curve_I = (peak_I,amp_I/2)
-    curve_Ip = (curve_I[0]+.5,amp_Ip)
-
-    curve_II = (peak_II, amp_II)
-    curve_IIp = (curve_II[0]+.3,curve_II[1]-.02)
-
-    curve_III = (peak_III,amp_III)
-    curve_IIIp = (curve_III[0]+.9,amp_IIIp)
-
-    #curve_III = (peak_III,amp_III)
-    #curve_IIIp = (curve_III[0]+.9,0)
-
-
-    VrefIII = (random.uniform(-.1,.1)) + curve_III[1]
-    curve_V = (peak_V,VrefIII)
-
-    amp_IV = VrefIII-.05
-    amp_IV = max(amp_IV, 0)
-    amp_IVp = amp_IV-.05
-    amp_IVp = max(amp_IVp, 0)
-    sn10refV = curve_V[1] - amp_V
-    sn10refV = min(sn10refV, 0)
-    sn10 = (curve_V[0]+1,sn10refV)
-
-    curve_IV = (peak_IV, amp_IV)
-    curve_IVp = (curve_IV[0]+.05, amp_IVp)
-
-    curve_VI = (sn10[0]+1.5, amp_VI)
-    curve_VIp = (curve_VI[0]+1.5, curve_VI[1]-.3)
-    curve_VII = (curve_VIp[0]+1.5, curve_VIp[1]+.6)
-
-    #print(sn10refV)
-
-    points = np.array([
-            [0,0],
-
-
-            [curve_cmp[0],curve_cmp[1]],
-
-            [curve_I[0],curve_I[1]],
-            [curve_Ip[0],curve_Ip[1]],
-
-            [curve_II[0],curve_II[1]],
-            [curve_IIp[0],curve_IIp[1]],
-
-            [curve_III[0],curve_III[1]],
-            [curve_IIIp[0],curve_IIIp[1]],
-
-            [curve_IV[0], curve_IV[1]],
-            [curve_IVp[0], curve_IVp[1]],
-
-            [curve_V[0],curve_V[1]],
-            [sn10[0],sn10[1]],
-
-            [curve_VI[0],curve_VI[1]],
-            [curve_VIp[0],curve_VIp[1]],
-            [curve_VII[0],curve_VII[1]],
-            [end,0]        
-    ])
-    Bezi = bz.Bezier()
-    path = Bezi.evaluate_bezier(points, 20)
-
-    # extract x & y coordinates of points
-    x, y = points[:,0], points[:,1]
-    px, py = path[:,0], path[:,1]
-    if none:
-        y_noise = np.random.normal(0, .06, py.shape)
-    else:
-        y_noise = np.random.normal(0, .03, py.shape)
-    y_new = py + y_noise
-
-    if zeros:
-        px = np.zeros(20)
-        y_new = np.zeros(20)
-    return px, y_new, x, y
-
-#px, y_new = ABR_Curve()
 
 if __name__ == '__main__':
     window = MainWindow()

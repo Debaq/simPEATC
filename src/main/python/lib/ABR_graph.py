@@ -3,10 +3,11 @@ import numpy as np
 import pyqtgraph as pg
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget
+from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
 from lib.helpers import Storage
-import pyqtgraph.exporters
 from base import context
+import pyqtgraph.exporters
 
 class GraphABR(QWidget):
     data_info = Signal(dict)
@@ -61,7 +62,7 @@ class GraphABR(QWidget):
             self.pw1.removeItem(self.inf_a)
             self.pw1.removeItem(self.inf_b)
         #Variables internas
-        pen1 = pg.mkPen('b', width=.5, style=Qt.PenStyle.DashLine)
+        pen1 = pg.mkPen('b', width=1, style=Qt.PenStyle.DashLine)
         opst = {'position':0.9, 'color': (255,255,255), 'fill': (0,0,0,255), 'movable': True}
         name_a = f"A{self.side}"
         name_b = f"B{self.side}"
@@ -150,8 +151,11 @@ class GraphABR(QWidget):
         id_X = self.marks[curve][idx].get(subidx)
         lat = self.data[curve]['ipsi_xy'][0][id_X]
         amp = self.data[curve]['ipsi_xy'][1][id_X] + self.data[curve]['gap']
-        curve_mark = f"|{lbl}"
-        text = pg.TextItem(text = curve_mark, anchor=(0.34,0.5), color=(0,0,0,255))
+        curve_mark = f"<h3>&darr;<sup>{lbl}</sup></h3>"
+        text = pg.TextItem(html = curve_mark, anchor=(0.34,0.6), color=(0,0,0,255))
+        font = QFont()
+        font.setPixelSize(13)
+        text.setFont(font)
         text.setPos(lat, amp+0.1)
         self.pw1.addItem(text)
 
