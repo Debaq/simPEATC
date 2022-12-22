@@ -313,7 +313,7 @@ class MainWindow(QWidget, Ui_ABRSim):
         self.graph_left.save_image()
         table = dataset_pdf(self.store)
         image_ABR()
-        create_pdf(table)
+        create_pdf(table, self.number_user_case)
         
         """
 
@@ -414,6 +414,7 @@ class MainWindow(QWidget, Ui_ABRSim):
         self.selectCurve(name_curve)
 
     def cases(self, n):
+        self.number_user_case = n
         #n: normal
         #c: coclear
         #t: transmission

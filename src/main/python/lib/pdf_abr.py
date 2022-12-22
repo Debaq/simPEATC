@@ -37,12 +37,14 @@ def image_ABR():
     new_image.save(context.get_resource("merged_image.jpg"),"JPEG")
     
     
-def create_pdf(table):
+def create_pdf(table, n):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size = 15)
-    pdf.cell(200, 10, txt = "POTENCIALES EVOCADOS AUDITIVOS DE TRONCO CEREBRAL", ln = 1, align = 'C')
-    pdf.cell(200, 10, txt = "PEATC", ln = 1, align = 'C')
+    pdf.cell(200, 10, txt = "POTENCIALES EVOCADOS AUDITIVOS DE TRONCO CEREBRAL (PEATC)", ln = 1, align = 'C')
+    text = f"caso: {n}"
+    pdf.cell(200, 10, txt = text, ln = 1, align = 'C')
+
     pdf.image(context.get_resource("merged_image.jpg"), 15, 35, 180)
     pdf.ln(100)
 
