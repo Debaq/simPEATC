@@ -103,7 +103,6 @@ class GraphABR(QWidget):
                 if color_name == 0:
                     if act :
                         color = pg.mkColor(255, 0, 0, 255)
-                        #fill = (255,0,0)
                         fill = (14, 250, 0)
 
                     else:
@@ -111,7 +110,6 @@ class GraphABR(QWidget):
                         fill = (180,0,0)
                 elif act:
                     color = pg.mkColor(106, 154, 242, 255)
-                    #fill = (106,154,242)
                     fill = (14, 250, 0)
                     
                 else:
@@ -204,7 +202,6 @@ class GraphABR(QWidget):
                                 'data': {'side':self.side, 'non_prima':non_prima,
                                         'prima': prima, 'curve':self.act_curve}}
             self.data_info.emit(data_emit)
-            #print(data_emit)
             
     def activeCurve(self, curves:list):
         self.act_curve = curves[self.side]
@@ -258,3 +255,8 @@ class GraphABR(QWidget):
         exporter.parameters()['width'] = 800
         file = context.get_resource(f'image_{self.side}.png')
         exporter.export(file)
+
+
+class LatencyIntencity():
+    def __init__(self) -> None:
+        pass
