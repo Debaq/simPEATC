@@ -6,8 +6,21 @@ from PySide6.QtWidgets import QWidget
 from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
 from lib.helpers import Storage
-from base import context
 import pyqtgraph.exporters
+import sys
+
+
+def resource_path(relative_path):
+    """ Obtén la ruta absoluta del recurso, funciona para el desarrollo y para el ejecutable congelado """
+    if getattr(sys, 'frozen', False):
+        # Modo congelado (ejecutable)
+        base_path = sys._MEIPASS
+    else:
+        # Modo de desarrollo
+        script_dir = os.path.dirname(os.path.abspath(__file__))  # Directorio del script actual
+        base_path = os.path.abspath(os.path.join(script_dir, '..', '..', 'resources/base'))  # Subimos dos niveles y entramos en 'resources'
+        
+    return os.path.join(base_path, relative_path)
 
 class GraphABR(QWidget):
     data_info = Signal(dict)
@@ -253,7 +266,7 @@ class GraphABR(QWidget):
     def save_image(self):
         exporter = pg.exporters.ImageExporter(self.pw1)
         exporter.parameters()['width'] = 800
-        file = context.get_resource(f'image_{self.side}.png')
+        file = resource_path(f'image_{self.side}.png')
         exporter.export(file)
 
 

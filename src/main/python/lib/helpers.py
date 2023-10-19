@@ -19,8 +19,21 @@ Store: clase para crear almacenamientos
 
 import json
 import codecs
-from base import context
+import os
+import sys
 
+
+def resource_path(relative_path):
+    """ Obtén la ruta absoluta del recurso, funciona para el desarrollo y para el ejecutable congelado """
+    if getattr(sys, 'frozen', False):
+        # Modo congelado (ejecutable)
+        base_path = sys._MEIPASS
+    else:
+        # Modo de desarrollo
+        script_dir = os.path.dirname(os.path.abspath(__file__))  # Directorio del script actual
+        base_path = os.path.abspath(os.path.join(script_dir, '..', '..', 'resources/base'))  # Subimos dos niveles y entramos en 'resources'
+        
+    return os.path.join(base_path, relative_path)
 
 class CasesOffline():
     """
@@ -31,12 +44,12 @@ class CasesOffline():
     def __init__(self) -> None:
         pass
     def get_cases(self, username:str) -> dict:
-        """
+        """reso
         Recupera los casos de un usuario
         Args:
             username (str): username del login
         """
-        cases_file = context.get_resource(f'cases/{username}.json')
+        cases_file = resource_path(f'cases/{username}.json')
 
         with codecs.open(cases_file, 'r', 'utf-8') as json_file:
             list_data = json.load(json_file)
@@ -49,13 +62,13 @@ class CasesOffline():
             username (str): username del login
             cases (dict): casos del usuario
         """
-        cases_file = context.get_resource(f'cases/{username}.json')
+        cases_file = resource_path(f'cases/{username}.json')
         with codecs.open(cases_file, 'w', 'utf-8') as json_file:
             json.dump(cases, json_file, ensure_ascii=False)
 
 class Shedule:
     def __init__(self):
-        preferences_file = context.get_resource('json/schedule.json')
+        preferences_file = resource_path('json/schedule.json')
         with codecs.open(preferences_file, 'r', 'utf-8') as json_file:
             list_data = json.load(json_file)
         self.data = list_data
@@ -78,12 +91,13 @@ class Preferences:
     """
 
     def __init__(self):
-        preferences_file = context.get_resource('json/json_list.json')
+        preferences_file = resource_path('json/json_list.json')
+        print(preferences_file)
         with codecs.open(preferences_file, 'r', 'utf-8') as json_file:
             list_data = json.load(json_file)
         self.data = {}
         for i in list_data:
-            file = context.get_resource(f'json/{list_data[i]}')
+            file = resource_path(f'json/{list_data[i]}')
             with codecs.open(file, 'r', 'utf-8') as json_file:
                 data = json.load(json_file)
             self.data.update(data)
@@ -117,7 +131,7 @@ class Preferences:
         #####ESTO NO DEBERIA ESTAR AQUI, hay que cambiarlo a un gui_helpers#####
         style_pred = self.data["styles"][0]
         style = self.data["styles"][1][style_pred]
-        style = context.get_resource(f'styles/{style}.qss')
+        style = resource_path(f'styles/{style}.qss')
         with open(style,"r",encoding="utf8") as f_h:
             wid.setStyleSheet(f_h.read())
 
@@ -142,7 +156,7 @@ class Lang:
     def __init__(self):
         class_pref = Preferences()
         lang = class_pref.get("Lang")
-        file_po = context.get_resource(f'json/{lang}.json')
+        file_po = resource_path(f'json/{lang}.json')
         with codecs.open(file_po, 'r', 'utf-8') as json_file:
             self.lng_po = json.load(json_file)
 

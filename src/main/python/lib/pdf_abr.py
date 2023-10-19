@@ -1,8 +1,19 @@
 from PIL import Image
 from fpdf import FPDF
-from base import context
+import os
+import sys
 
-
+def resource_path(relative_path):
+    """ Obtén la ruta absoluta del recurso, funciona para el desarrollo y para el ejecutable congelado """
+    if getattr(sys, 'frozen', False):
+        # Modo congelado (ejecutable)
+        base_path = sys._MEIPASS
+    else:
+        # Modo de desarrollo
+        script_dir = os.path.dirname(os.path.abspath(__file__))  # Directorio del script actual
+        base_path = os.path.abspath(os.path.join(script_dir, '..', '..', 'resources/base'))  # Subimos dos niveles y entramos en 'resources'
+        
+    return os.path.join(base_path, relative_path)
 
 def dataset(data):
     data_c = [("Curva", "Estimulo", "Polaridad", "Intencidad", "Masking","Tasa", "Filtros","Promediaciones", "I", "III", "V", "I-III", "III-V", "I-V")]

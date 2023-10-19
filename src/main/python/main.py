@@ -10,7 +10,6 @@
 import random
 import sys
 
-from base import context
 
 from PySide6.QtWidgets import QPushButton, QWidget
 from PySide6.QtPrintSupport import QPrintDialog, QPrinter
@@ -600,7 +599,14 @@ class MainWindow(QWidget, Ui_ABRSim):
             self.graph_left.update_marks(idx,subidx,flag)
 
 if __name__ == '__main__':
+    app = QApplication(sys.argv)
+
+    # Crea y muestra tu ventana principal
     window = MainWindow()
     window.show()
-    exit_code = context.app.exec()
+
+    # Ejecuta el loop de eventos
+    exit_code = app.exec()
+
+    # Finaliza el programa
     sys.exit(exit_code)
