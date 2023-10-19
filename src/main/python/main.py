@@ -30,7 +30,7 @@ from UI.Ui_ABR_lat_select import Ui_ABR_lat_select
 from lib.pdf_abr import dataset as dataset_pdf
 from lib.pdf_abr import image_ABR, create_pdf
 from lib.ABR_generator_2 import ABR_Curve
-
+from PySide6.QtCore import QTimer
 
 ######COSAS PARA EL WIDGET DE LA PRUEBA
 from PySide6.QtWidgets import QMessageBox, QSpinBox, QScrollArea, QVBoxLayout, QLabel
@@ -292,14 +292,44 @@ class MainWindow(QWidget, Ui_ABRSim):
 
         self.detail.btn_start.setText("EMPEZAR")
         self.detail.btn_stop.setText("IMPRIMIR")
-        self.detail.btn_start.clicked.connect(self.capture)
+        self.detail.btn_start.clicked.connect(self.init_capture)
         self.detail.btn_stop.clicked.connect(self.printer)
 
         self.current_curves = [None, None]
         self.cases_list = [str(i) for i in range(25)]
         self.cases_()
         self.repro = 0
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.anim_upgradeGraph)
+        #self.prom = 20
+        self.count_prom = 0
+        self.new_curve = True
+        self.new_current_curve = ""
         
+        
+    def prom(self):
+        prom = self.control.sb_prom.value() 
+        result = prom / 100
+        result = result * 2
+        return result
+        
+    def init_capture (self):
+        self.disabled_in_capture()
+
+        self.timer.start(1000) # 1000 ms = 1 segundo
+
+    def anim_upgradeGraph(self):
+        prom = self.prom()
+        if self.count_prom < prom:
+            self.count_prom += 1
+            self.capture()
+        else:
+            self.timer.stop()
+            self.count_prom = 0
+            self.new_curve = True
+            self.disabled_in_capture(False)
+
+
 
     def cases_(self):
       result = CaseSelect(self.cases_list, None)
@@ -367,47 +397,66 @@ class MainWindow(QWidget, Ui_ABRSim):
         side,_ = x.split(':')
         side = 0 if side == 'R' else 1
         self.current_curves[side] = data['curve']
+        repro = self.store[data['curve']]["repro"]
+        self.detail.pb_repro.setValue(repro)
+
         self.graph_right.activeCurve(self.current_curves)
         self.graph_left.activeCurve(self.current_curves)
 
     def capture(self):
-        intencity = self.control.sb_intencity.value()
-        side = self.control.cb_side.currentText()
-        if side == 'OD':
-            side = 0
-            letter = 'R'
-        else: 
-            side = 1
-            letter = 'L'
-        gap = 1.8
-        name = f"{intencity}_{letter}:0"
-        if name in self.store:
-            name, _ = self.numberName(name, letter, intencity)
-        gap = self.calGap(letter, gap)
-        view = True
         repro = random.randint(80,99)
-        setting= (self.control.get_data())
-        
 
-        self.store[name] = {'ipsi_xy':[[],[]],'contra_xy':[[],[]],
-                            'side':side, 'intencity':intencity, 'repro':repro, 
-                            'view':view, 'gap':gap, 'stim':setting['stim'], 
-                            'pol':setting['pol'], 'mkg':setting['mkg'], 'rate':setting['rate'],
-                            'filter':f"{setting['filter_passhigh']}-{setting['filter_down']}",
-                            'prom':setting['prom'], 'marks' : [0,0,0,0,0]}
-        
-        self.data.set_intencity(intencity)
+        intencity = self.control.sb_intencity.value()
+        if self.new_curve:
+            self.new_curve = False
+            self.detail.pb_repro.setValue(0)
+
+            side = self.control.cb_side.currentText()
+            if side == 'OD':
+                side = 0
+                letter = 'R'
+            else: 
+                side = 1
+                letter = 'L'
+            gap = 1.8
+            name = f"{intencity}_{letter}:0"
+            if name in self.store:
+                name, _ = self.numberName(name, letter, intencity)
+            gap = self.calGap(letter, gap)
+            view = True
+            setting= (self.control.get_data())
+            
+            self.new_current_curve=name
+
+            self.store[name] = {'ipsi_xy':[[],[]],'contra_xy':[[],[]],
+                                'side':side, 'intencity':intencity, 'repro':repro, 
+                                'view':view, 'gap':gap, 'stim':setting['stim'], 
+                                'pol':setting['pol'], 'mkg':setting['mkg'], 'rate':setting['rate'],
+                                'filter':f"{setting['filter_passhigh']}-{setting['filter_down']}",
+                                'prom':setting['prom'], 'marks' : [0,0,0,0,0]}
+            
+        #self.data.set_intencity(intencity)
         #x, y = self.data.get()
+
         control_setting = self.control.get_data()
+        if self.new_curve is False:
+
+            self.detail.pb_repro.setValue(repro)
+            _, side = self.new_current_curve.split("_")
+            side , _ = side.split(":")
+            side = 0 if side == "R" else 1
+            name = self.new_current_curve
+        
+        prom = self.prom()
+                
         if side == 0:
-            x,y, dx, dy, self.repro = ABR_Curve(intencity, control_setting, self.case_master[0], self.repro)
+            x,y, dx, dy, self.repro = ABR_Curve(intencity, control_setting, self.case_master[0], self.repro, [self.count_prom, prom])
         else: 
-            x,y, dx, dy, self.repro = ABR_Curve(intencity, control_setting, self.case_master[1], self.repro)
+            x,y, dx, dy, self.repro = ABR_Curve(intencity, control_setting, self.case_master[1], self.repro, [self.count_prom, prom])
         
             
         self.store[name]['ipsi_xy'][0] = x
         self.store[name]['ipsi_xy'][1] = y
-        self.disabled_in_capture()
         self.updateFlagsCurves()
         self.updateGraph()
         name_curve = {'curve':name}
@@ -425,7 +474,7 @@ class MainWindow(QWidget, Ui_ABRSim):
         #repro: reproductividad
         #morfo: morfología
         #th : umbral
-        n_1 = {"lat": 1.5, "ink":[3, 5], "amp":[1, .1], "repro": False, "morfo": [True, False, False], "th":70}
+        n_1 = {"lat": 1.53, "ink":[3.58, 5.37], "amp":[.5, 1], "repro": True, "morfo": [True, True, True], "th":20}
         n_2 = {"lat": 1.7, "ink":[3.5, 5.5], "amp":[.4, .5], "repro": False, "morfo": [True, True, True], "th":50}
         n_3 = {"lat": 1.6, "ink":[4, 6], "amp":[.4, .4], "repro": True, "morfo": [True, False, True], "th":40}
         c_1 = {"lat": 2.6, "ink":[2.2, 4], "amp":[.7, 1], "repro": True, "morfo": [False, True, True], "th":60}
@@ -437,7 +486,7 @@ class MainWindow(QWidget, Ui_ABRSim):
         m_2 = {"lat": 1.7, "ink":[2.1, 4], "amp":[.3, .8], "repro": True, "morfo": [True, True, True], "th":30}
         m_3 = {"lat": 1.6, "ink":[1.8, 3.6], "amp":[.5, .9], "repro": True, "morfo": [True, True, True], "th":10}
 
-        cases = [[n_1,m_1],[m_2,n_2],[n_3,m_3],[c_1,m_1],[m_2,c_2],[c_3,m_3],[m_1,t_1],
+        cases = [[n_1,n_1],[m_2,n_2],[n_3,m_3],[c_1,m_1],[m_2,c_2],[c_3,m_3],[m_1,t_1],
                  [t_2,m_2],[n_1,c_1],[c_2,n_2],[n_3,c_3],[n_1,t_1],[t_2,n_2],[c_1,t_1],
                  [t_2,c_2],[m_1,n_3],[c_1,m_2],[m_3,n_1],[t_2,n_1],[c_2,n_3],[m_3,c_2],
                  [c_3,n_2],[n_2,m_1],[m_1,t_2],[n_1,m_2],[m_2,n_3]]
@@ -447,9 +496,14 @@ class MainWindow(QWidget, Ui_ABRSim):
         
 
     def updateGraph(self):
-        self.graph_right.update_data(self.store)
-        self.graph_left.update_data(self.store)
-        self.disabled_in_capture(False)
+        if self.new_curve is False:
+            _, side = self.new_current_curve.split("_")
+            side , _ = side.split(":")
+            if side == "R":
+                self.graph_right.update_data(self.store)
+            else:
+                self.graph_left.update_data(self.store)
+
 
     def updateFlagsCurves(self):
         btns_left = []

@@ -176,8 +176,8 @@ class Ui_ABR_control_curve(object):
         self.btn_scale_minus.setText(QCoreApplication.translate("ABR_control_curve", u"-", None))
         self.frame_curves.setTitle("")
         self.btn_contra.setText(QCoreApplication.translate("ABR_control_curve", u"C/I", None))
-        self.btn_up.setText(QCoreApplication.translate("ABR_control_curve", u"\u23f6", None))
-        self.btn_down.setText(QCoreApplication.translate("ABR_control_curve", u"\u23f7", None))
+        self.btn_up.setText(QCoreApplication.translate("ABR_control_curve", u"▲", None))
+        self.btn_down.setText(QCoreApplication.translate("ABR_control_curve", u"▼", None))
         self.btn_del.setText(QCoreApplication.translate("ABR_control_curve", u"Del", None))
     # retranslateUi
 
