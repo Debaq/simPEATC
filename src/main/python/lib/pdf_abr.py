@@ -37,7 +37,7 @@ def image_ABR():
     new_image.save(context.get_resource("merged_image.jpg"),"JPEG")
     
     
-def create_pdf(table, n):
+def create_pdf(table, n, dir):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size = 15)
@@ -70,6 +70,6 @@ def create_pdf(table, n):
     # Performing a line break:
     pdf.ln()
 
+    print(dir)
 
-
-    pdf.output(context.get_resource("GFG.pdf"))
+    pdf.output(dir)

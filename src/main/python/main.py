@@ -35,6 +35,8 @@ from PySide6.QtCore import QTimer
 ######COSAS PARA EL WIDGET DE LA PRUEBA
 from PySide6.QtWidgets import QMessageBox, QSpinBox, QScrollArea, QVBoxLayout, QLabel
 
+from PySide6.QtWidgets import QFileDialog
+
 
 
 class ABR_control(QWidget, Ui_ABR_config):
@@ -293,7 +295,7 @@ class MainWindow(QWidget, Ui_ABRSim):
         self.detail.btn_start.setText("EMPEZAR")
         self.detail.btn_stop.setText("IMPRIMIR")
         self.detail.btn_start.clicked.connect(self.init_capture)
-        self.detail.btn_stop.clicked.connect(self.printer)
+        self.detail.btn_stop.clicked.connect(self.open_save_dialog)
 
         self.current_curves = [None, None]
         self.cases_list = [str(i) for i in range(25)]
@@ -306,6 +308,21 @@ class MainWindow(QWidget, Ui_ABRSim):
         self.new_curve = True
         self.new_current_curve = ""
         
+    def open_save_dialog(self):
+        """
+        Abre un cuadro de diálogo para guardar un archivo.
+        
+        Args:
+        - parent (QWidget, optional): El widget padre para el cuadro de diálogo.
+        
+        Returns:
+        - str or None: La ruta del archivo seleccionado o None si se canceló.
+        """
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save File", "", "All Files (*);;Pdf (*.pdf)", options=options)
+        if file_name:
+            self.printer(file_name)
+        return None
         
     def prom(self):
         prom = self.control.sb_prom.value() 
@@ -337,13 +354,13 @@ class MainWindow(QWidget, Ui_ABRSim):
       result.exec()
     
 
-    def printer(self):
+    def printer(self, direccion):
         #print(self.store)     
         self.graph_right.save_image()
         self.graph_left.save_image()
         table = dataset_pdf(self.store)
         image_ABR()
-        create_pdf(table, self.number_user_case)
+        create_pdf(table, self.number_user_case, direccion)
         
         """
 
