@@ -512,7 +512,9 @@ class MainWindow(QWidget, Ui_ABRSim):
         
         
 
-    def updateGraph(self):
+    def updateGraph(self, remove = False):
+        if remove:
+            print("se esta eliminando")
         if self.new_curve is False:
             _, side = self.new_current_curve.split("_")
             side , _ = side.split(":")

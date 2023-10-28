@@ -1,46 +1,90 @@
-import contextlib
 import numpy as np
 import pyqtgraph as pg
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import QWidget
 from PySide6.QtGui import QFont
-from PySide6.QtCore import Qt
 from lib.helpers import Storage
-from base import context
+import contextlib
 import pyqtgraph.exporters
+from pyqtgraph import InfiniteLine
+from pyqtgraph import InfLineLabel
+from pyqtgraph import functions as fn
+from PySide6 import QtCore
+
+
+
+
+class InfiniteLine_mod(InfiniteLine):
+
+    def __init__(self, lbl, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        #if self.label:
+        #    self.label.scene().removeItem(self.label) # Esto elimina el label de la escena
+        self.label = None
+        
+        # Crea el label modificado
+        labelopt = kwargs['labelOpts']
+        self.label = InfiniteLineLabel_mod(self, text=lbl, **labelopt)
+
+
+class InfiniteLineLabel_mod(InfLineLabel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.pos_line = self.line.getPos()
+
+    def mouseDragEvent(self, ev):
+        super().mouseDragEvent(ev)
+        pos = ev.pos()
+        pos = self.mapToItem(self, pos)
+        prev_pos = self.line.getXPos()
+        new_pos = prev_pos + pos.x()/60
+        self.line.setPos([new_pos,0])
+
+    
+
+
+
+        
+
 
 class GraphABR(QWidget):
     data_info = Signal(dict)
+
     def __init__(self, side):
+        super().__init__()
         self.side = side
-        QWidget.__init__(self)
+        self.configure_pyqtgraph()
+        self.setup_ui_elements()
+        self.act_curve = None
+        self.marks = {}
+        self.inf_a = None
+        self.inf_b = None
+        self.data = {}
+
+    def configure_pyqtgraph(self):
         color_backgorund = pg.mkColor(255, 255, 255, 255)
         self.color_pen = pg.mkColor(0, 0, 0, 255)
         pg.setConfigOption('background', color_backgorund)
         pg.setConfigOption('foreground', self.color_pen)
+    
+    def setup_ui_elements(self):
+        """Set up UI elements for the graph"""
         self.win = pg.GraphicsLayoutWidget(show=True)
         self.pw1 = self.win.addPlot(row=1,col=0)
-        self.win.sigMouseReleased.connect(self.mouse_)
+        self.win.sigMouseReleased.connect(self.on_mouse_released)
 
         self.pw1.setRange(yRange=(-3, 3), xRange=(0, 13), disableAutoRange=True)
         self.grid = pg.GridItem(textPen='white')
         self.pw1.addItem(self.grid)
         self.grid.setTickSpacing(x=[1.0], y=[1.0])
 
-        #self.pw1.showGrid(x=True, y=True)
         self.pw1.setMouseEnabled(x=False, y=False)
         self.pw1.setMenuEnabled(False)
         self.pw1.hideButtons()
         ay = self.pw1.getAxis('left')
-        
         ay.setStyle(showValues=False)
-        self.act_curve = None
-        self.marks = {}
-        self.inf_a = None
-        self.inf_b = None
-        self.data = {}
-    
-    def mouse_(self, data):
+
+    def on_mouse_released(self, data):
         print(data)
 
     def scale(self, direction):
@@ -67,8 +111,8 @@ class GraphABR(QWidget):
         name_a = f"A{self.side}"
         name_b = f"B{self.side}"
         #Lineas infinitas
-        self.inf_a = pg.InfiniteLine(pos=pos_A, movable=True, angle=90, pen=pen1, label ="A", labelOpts=opst, name=name_a)
-        self.inf_b = pg.InfiniteLine(pos=pos_B, movable=True, angle=90, pen=pen1, label ="B", labelOpts=opst, name=name_b)
+        self.inf_a = InfiniteLine_mod(lbl='A', pos=pos_A, movable=True, angle=90, pen=pen1, labelOpts=opst, name=name_a)
+        self.inf_b = InfiniteLine_mod(lbl='B', pos=pos_B, movable=True, angle=90, pen=pen1, labelOpts=opst, name=name_b)
         #Posición en X de las lineas infinitas
         self.inf_a.sigPositionChanged.connect(self.get_amplitude)
         self.inf_b.sigPositionChanged.connect(self.get_amplitude)
@@ -96,44 +140,46 @@ class GraphABR(QWidget):
         with contextlib.suppress(Exception):
             pos_A = self.inf_a.getXPos()
             pos_B = self.inf_b.getXPos()
-        for i in self.data:
-            if self.data[i]['view']:
-                color_name = self.data[i]['side']
-                act = self.act_curve == i
+
+        for key, value in self.data.items():
+            if value['view']:
+                color_name = value['side']
+                act = self.act_curve == key
+
                 if color_name == 0:
-                    if act :
+                    if act:
                         color = pg.mkColor(255, 0, 0, 255)
                         fill = (14, 250, 0)
-
                     else:
                         color = pg.mkColor(180, 0, 0, 255)
-                        fill = (180,0,0)
+                        fill = (180, 0, 0)
                 elif act:
                     color = pg.mkColor(106, 154, 242, 255)
                     fill = (14, 250, 0)
-                    
                 else:
                     color = pg.mkColor(112, 142, 199, 255)
-                    fill = (112,142,199)
+                    fill = (112, 142, 199)
 
                 lbl = f"""
                     <div style='text-align: center'>
                     <span style='color: #000; font-size: 7pt;'>
-                    {self.data[i]['intencity']} dBnHl
+                    {value['intencity']} dBnHl
                     </span></div>
                     """
                 text = pg.TextItem(html=lbl, border="w", fill=fill)
                 self.pw1.addItem(text)
-                x = self.data[i]['ipsi_xy'][0]
-                y = self.data[i]['ipsi_xy'][1]  + self.data[i]['gap']
-                h = self.find_nearest(x,x.max(),y)
+                x = value['ipsi_xy'][0]
+                y = value['ipsi_xy'][1] + value['gap']
+                h = self.find_nearest(x, x.max(), y)
                 text.setPos(12, h)
-                self.pw1.plot(x,y, pen=color, name =i) #ahora cada curva tiene su nombre
-            try:
-                self.inifine_ab(pos_A, pos_B)
-                self.refresh_keys()
-            except Exception:
-                self.inifine_ab()
+                self.pw1.plot(x, y, pen=color, name=key)  # now each curve has its name
+
+        try:
+            self.inifine_ab(pos_A, pos_B)
+            self.refresh_keys()
+        except UnboundLocalError:
+            self.inifine_ab()
+
  
     def clearGraph(self):
         y, x = [],[]        
@@ -190,9 +236,8 @@ class GraphABR(QWidget):
         def idx2number(list_idx):
             input_list = list_idx.get_all()
             data = [0,0,0,0,0]
-            for i in range(len(input_list)):
-                pos = input_list[i]
-                data[i] = self.data[self.act_curve]['ipsi_xy'][0][pos] if pos != None else 0
+            for i, pos in enumerate(input_list):
+                data[i] = self.data[self.act_curve]['ipsi_xy'][0][pos] if pos is not None else 0
             return data
         
         if self.act_curve is not None:
