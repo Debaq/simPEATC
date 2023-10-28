@@ -5,16 +5,48 @@ from PySide6.QtWidgets import QWidget
 from PySide6.QtGui import QFont
 from lib.helpers import Storage
 import contextlib
-import pyqtgraph.exporters
 from pyqtgraph import InfiniteLine
 from pyqtgraph import InfLineLabel
-from pyqtgraph import functions as fn
-from PySide6 import QtCore
+from pyqtgraph import TextItem
+
+
+class TextItemMod(TextItem):
+    sigDragged = Signal(dict)
+    sigPositionChangeFinished = Signal(object)
+    sigPositionChangeStarted= Signal(str)
+
+    def __init__(self,name, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.moving = False
+        self.name = name
+
+
+    def mouseDragEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
+            if ev.isStart():
+                self.moving = True
+                self.cursorOffset = self.pos() - self.mapToParent(ev.buttonDownPos())
+                self.startPosition = self.pos()
+                self.pos_x = self.pos().x()
+                self.sigPositionChangeStarted.emit(self.name)
+            ev.accept()
+            
+            if not self.moving:
+                return
+            pos = self.cursorOffset + self.mapToParent(ev.pos())
+            
+            self.setPos(self.pos_x, pos.y())
+            list_pos = {"pos":(self.pos_x, pos.y()),"name":self.name}
+            self.sigDragged.emit(list_pos)
+
+            if ev.isFinish():
+                self.moving = False
+                self.sigPositionChangeFinished.emit(self)
 
 
 
 
-class InfiniteLine_mod(InfiniteLine):
+class InfiniteLineMod(InfiniteLine):
 
     def __init__(self, lbl, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -24,10 +56,10 @@ class InfiniteLine_mod(InfiniteLine):
         
         # Crea el label modificado
         labelopt = kwargs['labelOpts']
-        self.label = InfiniteLineLabel_mod(self, text=lbl, **labelopt)
+        self.label = InfiniteLineLabelMod(self, text=lbl, **labelopt)
 
 
-class InfiniteLineLabel_mod(InfLineLabel):
+class InfiniteLineLabelMod(InfLineLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.pos_line = self.line.getPos()
@@ -39,10 +71,6 @@ class InfiniteLineLabel_mod(InfLineLabel):
         prev_pos = self.line.getXPos()
         new_pos = prev_pos + pos.x()/60
         self.line.setPos([new_pos,0])
-
-    
-
-
 
         
 
@@ -111,8 +139,8 @@ class GraphABR(QWidget):
         name_a = f"A{self.side}"
         name_b = f"B{self.side}"
         #Lineas infinitas
-        self.inf_a = InfiniteLine_mod(lbl='A', pos=pos_A, movable=True, angle=90, pen=pen1, labelOpts=opst, name=name_a)
-        self.inf_b = InfiniteLine_mod(lbl='B', pos=pos_B, movable=True, angle=90, pen=pen1, labelOpts=opst, name=name_b)
+        self.inf_a = InfiniteLineMod(lbl='A', pos=pos_A, movable=True, angle=90, pen=pen1, labelOpts=opst, name=name_a)
+        self.inf_b = InfiniteLineMod(lbl='B', pos=pos_B, movable=True, angle=90, pen=pen1, labelOpts=opst, name=name_b)
         #Posición en X de las lineas infinitas
         self.inf_a.sigPositionChanged.connect(self.get_amplitude)
         self.inf_b.sigPositionChanged.connect(self.get_amplitude)
@@ -166,7 +194,9 @@ class GraphABR(QWidget):
                     {value['intencity']} dBnHl
                     </span></div>
                     """
-                text = pg.TextItem(html=lbl, border="w", fill=fill)
+                text = TextItemMod(name=key, html=lbl, border="w", fill=fill)
+                text.sigDragged.connect(self.print_drag)
+                text.sigPositionChangeStarted.connect(self.active_curve)
                 self.pw1.addItem(text)
                 x = value['ipsi_xy'][0]
                 y = value['ipsi_xy'][1] + value['gap']
@@ -179,6 +209,22 @@ class GraphABR(QWidget):
             self.refresh_keys()
         except UnboundLocalError:
             self.inifine_ab()
+
+
+    def update_graph_by_name(self, graph_name, new_x, new_y):
+        for item in self.pw1.listDataItems():
+            if item.name() == graph_name:
+                item.setData(new_x, new_y)
+                break
+
+    def print_drag(self, value):
+        gap_y = value['pos'][1]
+        print(gap_y)
+        curve = value['name']
+        self.data[curve]['gap'] = gap_y
+        x = self.data[curve]['ipsi_xy'][0]
+        y = self.data[curve]['ipsi_xy'][1] + gap_y
+        self.update_graph_by_name(curve, x, y)
 
  
     def clearGraph(self):
@@ -248,22 +294,26 @@ class GraphABR(QWidget):
                                         'prima': prima, 'curve':self.act_curve}}
             self.data_info.emit(data_emit)
             
-    def activeCurve(self, curves:list):
-        self.act_curve = curves[self.side]
+    def active_curve(self, curves):
+        if isinstance(curves, list):
+            self.act_curve = curves[self.side]
+        else:
+            self.act_curve = curves
+
         self.update_data_marks()
 
         self.update_graph()
 
-    def move_graph(self, str_ud):
-        if self.act_curve is not None:
-            curve = self.act_curve
-            y = self.data[curve]['gap']
-            if str_ud == "down":
-                y = y - .1
-            elif str_ud == "up":
-                y = y + .1
-            self.data[curve]['gap'] = y
-            self.update_graph()
+   #def move_graph(self, str_ud):
+   #    if self.act_curve is not None:
+   #        curve = self.act_curve
+   #        y = self.data[curve]['gap']
+   #        if str_ud == "down":
+   #            y = y - .1
+   #        elif str_ud == "up":
+   #            y = y + .1
+   #        self.data[curve]['gap'] = y
+   #        self.update_graph()
         
     
     def get_amplitude(self):

@@ -417,8 +417,8 @@ class MainWindow(QWidget, Ui_ABRSim):
         repro = self.store[data['curve']]["repro"]
         self.detail.pb_repro.setValue(repro)
 
-        self.graph_right.activeCurve(self.current_curves)
-        self.graph_left.activeCurve(self.current_curves)
+        self.graph_right.active_curve(self.current_curves)
+        self.graph_left.active_curve(self.current_curves)
 
     def capture(self):
         repro = random.randint(80,99)
@@ -445,7 +445,7 @@ class MainWindow(QWidget, Ui_ABRSim):
             
             self.new_current_curve=name
 
-            self.store[name] = {'ipsi_xy':[[],[]],'contra_xy':[[],[]],
+            self.store[name] = {'ipsi_xy':[[],[]],'contra_xy':[[],[]],'mem_a':[[],[]],'mem_b':[[],[]],
                                 'side':side, 'intencity':intencity, 'repro':repro, 
                                 'view':view, 'gap':gap, 'stim':setting['stim'], 
                                 'pol':setting['pol'], 'mkg':setting['mkg'], 'rate':setting['rate'],
