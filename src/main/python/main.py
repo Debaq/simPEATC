@@ -66,6 +66,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.graph_l.data_info.connect(self.measure_data)
         self.graph_r.change_value_mark.connect(self.table_r.change_value_lat)
         self.graph_l.change_value_mark.connect(self.table_l.change_value_lat)
+        self.tabWidget.currentChanged.connect(self.tab_change)
 
 
 
@@ -87,6 +88,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         #########TEMP
         self.count_averages = 0
+
+    def tab_change(self, sender):
+        if sender == 1:
+            self.dock_values.setVisible(False)
+            self.dock_parameter.setVisible(False)
+            self.detail.tabWidget.setCurrentIndex(1)
+        else:
+            self.dock_values.setVisible(True)
+            self.dock_parameter.setVisible(True)
+            self.detail.tabWidget.setCurrentIndex(0)
+
+
+
 
     def capture_state(self, state:str) -> None:
         if state == 'record':
