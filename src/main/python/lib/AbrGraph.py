@@ -168,6 +168,8 @@ class AbrGraph(GraphicsLayoutWidgetMod):
                         fill = self.inactive_fill_color
                         lbl = self.label_html(item.name, fill)
                         item.setHtml(lbl)
+        #se actualizan los datos de las marcas
+        print(self.marks[self.act_curve])
 
     def get_amplitude(self):
         if self.act_curve:
@@ -221,7 +223,6 @@ class AbrGraph(GraphicsLayoutWidgetMod):
             text.setFont(font)
             text.setPos(x, y+0.1)
             self.pw.addItem(text)
-  
         else:
             self.update_marks(x,y, name)
 
@@ -230,14 +231,12 @@ class AbrGraph(GraphicsLayoutWidgetMod):
         self.marks[name_curve][mark][0] = x
         self.marks[name_curve][mark][1] = y
         y = y + self.data[name_curve]['gap']
-
         for item in self.pw.items:                
             if isinstance(item, TextItemMod): 
                 if item.name == name and item.tipo == 'mark':
                     item.setPos(x,y)
-                    self.update_value_mark(mark) # este no es necesario
+                    self.update_value_mark(mark) 
       
-               
     def move_marks(self, name_curve):
         for mark in self.marks[name_curve]:
             x, y = self.marks[name_curve][mark]
