@@ -1,0 +1,21 @@
+{
+"comments":"n: normal; c: coclear; t: transmission; m: normal; latI80 : latencia onda I a 80;ink: interpeaks [1_3, 1_5]; amp: amplitud [1,5];repro: reproductividad;morfo: morfología; th : umbral",
+"standard":{},
+"types" : {
+    "n_1" : {"lat": 1.53, "ink":[3.58, 5.37], "amp":[0.5, 1.0], "repro": true, "morfo": [true, true, true], "th":20},
+    "n_2" : {"lat": 1.70, "ink":[3.50, 5.50], "amp":[0.4, 0.5], "repro": false, "morfo": [true, true, true], "th":50},
+    "n_3" : {"lat": 1.60, "ink":[4.00, 6.00], "amp":[0.4, 0.4], "repro": true, "morfo": [true, false, true], "th":40},
+    "c_1" : {"lat": 2.60, "ink":[2.20, 4.00], "amp":[0.7, 1.0], "repro": true, "morfo": [false, true, true], "th":60},
+    "c_2" : {"lat": 3.60, "ink":[2.40, 3.80], "amp":[0.7, 1.0], "repro": true, "morfo": [false, true, true], "th":70},
+    "c_3" : {"lat": 2.10, "ink":[1.90, 4.10], "amp":[0.7, 1.0], "repro": true, "morfo": [false, true, true], "th":40},
+    "t_1" : {"lat": 2.00, "ink":[2.00, 4.00], "amp":[0.5, 0.5], "repro": true, "morfo": [true, true, true], "th":60},
+    "t_2" : {"lat": 3.10, "ink":[2.20, 3.80], "amp":[0.4, 0.5], "repro": true, "morfo": [true, true, true], "th":70},
+    "m_1" : {"lat": 1.50, "ink":[2.00, 3.80], "amp":[0.7, 0.9], "repro": true, "morfo": [true, true, true], "th":20},
+    "m_2" : {"lat": 1.70, "ink":[2.10, 4.00], "amp":[0.3, 0.8], "repro": true, "morfo": [true, true, true], "th":30},
+    "m_3" : {"lat": 1.60, "ink":[1.80, 3.60], "amp":[0.5, 0.9], "repro": true, "morfo": [true, true, true], "th":10}
+},
+"cases_preset":[["n_1","n_1"],["m_2","n_22"],["n_3","m_3"],["c_1","m_1"],["m_2","c_2"],["c_3","m_3"],["m_1","t_1"],
+["t_2","m_2"],["n_1","c_1"],["c_2","n_2"],["n_3","c_3"],["n_1","t_1"],["t_2","n_2"],["c_1","t_1"],
+["t_2","c_2"],["m_1","n_3"],["c_1","m_2"],["m_3","n_1"],["t_2","n_1"],["c_2","n_3"],["m_3","c_2"],
+["c_3","n_2"],["n_2","m_1"],["m_1","t_2"],["n_1","m_2"],["m_2","n_3"]]
+}

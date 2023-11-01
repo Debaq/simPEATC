@@ -1,0 +1,13 @@
+{
+"stim" : {
+    "es" : ["click", "chirp","ls-chirp", "burst 500Hz", "burst 1kHz", "burst 2kHz", "burst 4kHz"],
+    "en" : ["click", "chirp","ls-chirp", "burst 500Hz", "burst 1kHz", "burst 2kHz", "burst 4kHz"]},
+"polarity": {
+    "es" : ["Alternada", "Condensación", "Rarefacción"],
+    "en" : ["Alternating", "Condensation", "Rarefaction"]
+},
+"filter_pass_high": [0.5, 1.0, 3,3, 10, 33, 100],
+"filter_pass_low": [100,300,750, 1000, 1500, 2000, 3000, 4000, 5000, 7500]    
+
+
+}
