@@ -16,15 +16,16 @@ from lib.AbrLatIntGraph import GraphLatInt
 from lib.AbrControl import AbrControl
 from lib.AbrDetail import AbrDetail
 from lib.AbrTable import AbrTable
+from lib.AbrDetailAllCurves import AbrDetailAllCurves
 from lib.AbrReport import AbrReport
-from UI.Ui_AbrAdvanceSettings import Ui_AdvanceSettings
+from UI.AbrAdvanceSettings_ui import Ui_AdvanceSettings
 from lib.EEG import EEG
 from lib.FSP import FSP
 
 from PySide6.QtWidgets import QMainWindow, QDialog
-from PySide6.QtCore import QCoreApplication, QTimer, Slot
+from PySide6.QtCore import QCoreApplication, QTimer, Slot, QSize
 from PySide6.QtWidgets import QSpacerItem, QSizePolicy
-from UI.Ui_MainABR import Ui_MainWindow
+from UI.AbrMain_ui import Ui_MainWindow
 
 tr = QCoreApplication.translate
 
@@ -41,6 +42,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.table_r = AbrTable(0)
         self.eeg = EEG()
         self.fmp = FSP()
+        self.detail_all = AbrDetailAllCurves()
         self.graph_r = AbrGraph(0)
         self.graph_l = AbrGraph(1)
         self.graph_lat_int = GraphLatInt()
@@ -51,24 +53,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.layout_report.addWidget(self.report)
         self.detail.layout_tab1_secction1.addWidget(self.eeg)
         self.detail.layout_tab1_secction2.addWidget(self.fmp)
+        self.detail.layout_tab2.addWidget(self.detail_all)
         self.layout_dock_parameter_content.addWidget(self.control)
         self.layout_dock_test_contents.addWidget(self.detail)
         self.layout_dock_values_contents.addWidget(self.table_r)
         self.layout_dock_values_contents.addWidget(self.table_l)
         self.layout_dock_values_contents.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
-
         ########Conexiones de slots
         self.actionP_rametros_Avanzados.triggered.connect(self.active_advance_setting)
-        self.table_r.measure_value.connect(self.measure_action)
-        self.table_l.measure_value.connect(self.measure_action)
-        self.graph_r.data_info.connect(self.measure_data)
-        self.graph_l.data_info.connect(self.measure_data)
-        self.graph_r.change_value_mark.connect(self.table_r.change_value_lat)
-        self.graph_l.change_value_mark.connect(self.table_l.change_value_lat)
+        self.table_r.sig_measure_value.connect(self.measure_action)
+        self.table_l.sig_measure_value.connect(self.measure_action)
+        self.graph_r.sig_data_info.connect(self.measure_data)
+        self.graph_l.sig_data_info.connect(self.measure_data)
+        self.graph_r.sig_change_value_mark.connect(self.table_r.change_value_lat)
+        self.graph_l.sig_change_value_mark.connect(self.table_l.change_value_lat)
+        self.graph_r.sig_curve_selected.connect(self.curve_selected)
+        self.graph_l.sig_curve_selected.connect(self.curve_selected)
+        self.graph_r.sig_del_curve.connect(self.update_delete_curve)
+        self.graph_l.sig_del_curve.connect(self.update_delete_curve)
+
         self.tabWidget.currentChanged.connect(self.tab_change)
-
-
+        self.detail_all.sig_selected_curve.connect(self.selected_)
+        self.btn_scale_minus.clicked.connect(self.scale_graph)
+        self.btn_scale_plus.clicked.connect(self.scale_graph)
 
         ######Variables de Estado
         self.control.capture.connect(self.capture_state)
@@ -81,25 +89,65 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.curves_R = []
         self.curves_L = []
         self.current_capture_curve = ""
+        self.current_curve_r = ""
+        self.current_curve_l = ""
         self.current_setting = {}
         self.total_averages = 20
         self.current_measuring = [None, None]
+        self.memory = {}
 
-
-        #########TEMP
+        #########TEMP TEST
         self.count_averages = 0
 
+    def update_delete_curve(self, curve):
+        if curve in self.memory:
+            table_letter = 'r' if curve[0] == 'R' else 'l'
+            table = f'table_{table_letter}'
+            getattr(self, table).clear_all()
+            self.detail_all.delete_row_by_header(curve)
+            del self.memory[curve]
+        
+    def curve_selected(self, curve):
+        table_letter = 'r' if curve[0] == 'R' else 'l'
+        try:
+            table = f'table_{table_letter}'
+            data = self.memory[curve]
+            getattr(self, table).update_latamp_table(data)
+        except KeyError:
+            pass
+
+    def scale_graph(self):
+        _,_,direction = self.sender().objectName().split('_')
+        value = self.graph_r.scale(direction)
+        self.graph_l.scale(direction)
+        value = int(round(value,0))
+        value = f"{value}µV"
+        self.lbl_scale.setText(value)
+
+    def selected_(self, curve):
+        letter = 'r' if curve[0] == 'R' else 'l'
+        graph = f'graph_{letter}'
+        getattr(self, graph).active_curve(curve) 
+        
     def tab_change(self, sender):
         if sender == 1:
             self.dock_values.setVisible(False)
             self.dock_parameter.setVisible(False)
             self.detail.tabWidget.setCurrentIndex(1)
+            self.dock_test.setFixedHeight(400)
+            self.graph_lat_int.plot_data(self.memory)
+        elif sender == 2:
+            self.dock_values.setVisible(False)
+            self.dock_parameter.setVisible(False)
+            self.detail.tabWidget.setCurrentIndex(1)
+            self.dock_test.setFixedHeight(300)
+            self.graph_r.export_()
         else:
             self.dock_values.setVisible(True)
             self.dock_parameter.setVisible(True)
             self.detail.tabWidget.setCurrentIndex(0)
-
-
+            self.dock_test.setFixedHeight(150)
+            self.graph_lat_int.clear_graph()
 
 
     def capture_state(self, state:str) -> None:
@@ -119,6 +167,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.state_capture == 'record':
             side = self.current_setting["side"]
             self.graph(side)
+            self.memory_curves()
         elif self.state_capture == 'pause':
             print("detenido")
 
@@ -134,8 +183,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             number_last_curve = int(db_curves[-1].strip(side_letter))
             curve =  f'{side_letter}{number_last_curve+1}'
-        
         getattr(self, side).append(curve)
+        table=f"table_{side_letter.lower()}"
+        getattr(self, table).clear_all()
+        self.selected_(curve)
         self.current_capture_curve = curve
         return curve
 
@@ -171,30 +222,56 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         side =  list(data.keys())[0]
         side_letter = 'r' if side == '0' else 'l'
         request = list(data[side].keys())[0]
-        curve,command = request.split('_')
+        mark,command = request.split('_')
         side = int(side)
         if command == 'L':
             value = self.current_measuring[side]['lat_A']
         elif command == 'A':
             value = self.current_measuring[side]['amp_AB']
+        self.memory_curves((mark,command,value), side_letter)
         data[str(side)][request] = value
         table = f'table_{side_letter}'
         graph = f'graph_{side_letter}'
         getattr(self, table).set_data(data)
-        getattr(self, graph).create_marks(curve)
-
-
+        getattr(self, graph).create_marks(mark)
 
     def measure_data(self, data):
         side = data["curve"][0]
         side = 0 if side == 'R' else 1
+        side_letter = 'r' if side == 0 else 'l'
         self.current_measuring[side] = data['data']
+        label = f"lbl_coord_{side_letter}"
+
+        for key in data['data']:
+            if isinstance(data['data'][key], float):  # Solo redondear si el valor es un flotante
+                data['data'][key] = round(data['data'][key], 1)
+
+        getattr(self,label).setText(f'{data}')
 
     def active_advance_setting(self):
         self.dialog = QDialog(self)
         self.ui = Ui_AdvanceSettings()
         self.ui.setupUi(self.dialog)
         self.dialog.exec()
+
+################INTERCAMBIO
+    def memory_curves(self, value=None, side=None):
+        if isinstance(value, tuple):
+            c,cmd,val = value
+            key = 'LatAmp' if cmd == 'L' or cmd == 'A' else 'InterPeaks'
+            column = 0 if cmd == 'L' else 1
+        model = {'LatAmp':{'I':[None,None], 'II':[None,None],'III':[None,None],'IV':[None,None],'V':[None,None]}}
+        if side:
+            graph = f'graph_{side}'
+            name_curve = getattr(self,graph).act_curve
+            if value is not None:
+                self.memory[name_curve][key][c][column] = val
+        else:
+            name_curve = self.current_capture_curve
+            sett = self.current_setting
+            self.memory[name_curve] = dict(sett, **model)
+        self.detail_all.process_and_fill_data(self.memory)
+
 
 
 

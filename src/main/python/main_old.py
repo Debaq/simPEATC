@@ -52,8 +52,8 @@ class MainWindow(QWidget, Ui_ABRSim):
 
         self.graph_right = AbrGraph(0)
         self.graph_left = AbrGraph(1)
-        self.graph_right.data_info.connect(self.capture_actions)
-        self.graph_left.data_info.connect(self.capture_actions)
+        self.graph_right.sig_data_info.connect(self.capture_actions)
+        self.graph_left.sig_data_info.connect(self.capture_actions)
 
         #LAYOUTS
         self.layout_left.addWidget(self.control)

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget
-from UI.Ui_AbrConfig import Ui_Abr_Config
+from UI.AbrConfig_ui import Ui_Abr_Config
 from PySide6.QtCore import QCoreApplication, Signal
 
 tr = QCoreApplication.translate

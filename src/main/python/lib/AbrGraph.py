@@ -3,6 +3,7 @@ import inspect
 
 import numpy as np
 import pyqtgraph as pg
+from pyqtgraph.exporters.SVGExporter import generateSvg
 from lib.helpers import Storage
 from lib.WidgetsMods import (GraphicsLayoutWidgetMod, InfiniteLineMod,
                              TextItemMod)
@@ -12,9 +13,10 @@ from PySide6.QtWidgets import QPushButton, QVBoxLayout, QWidget
 
 
 class AbrGraph(GraphicsLayoutWidgetMod):
-    data_info = Signal(dict)
-    del_curve = Signal(str)
-    change_value_mark = Signal(dict)
+    sig_data_info = Signal(dict)
+    sig_del_curve = Signal(str)
+    sig_change_value_mark = Signal(dict)
+    sig_curve_selected = Signal(str)
 
     def __init__(self, side):
         super().__init__()
@@ -29,9 +31,9 @@ class AbrGraph(GraphicsLayoutWidgetMod):
         self.current_lat = 0
 
     def configure_pyqtgraph(self):
-        color_background = pg.mkColor(255, 255, 255, 255)
+        self.color_background = pg.mkColor(255, 255, 255, 255)
         self.color_pen = pg.mkColor(0, 0, 0, 255)
-        self.setBackground(color_background)
+        self.setBackground(self.color_background)
     
     def setup_ui_elements(self):
         """Set up UI elements for the graph"""
@@ -40,11 +42,14 @@ class AbrGraph(GraphicsLayoutWidgetMod):
         self.grid = pg.GridItem(textPen='white')
         self.pw.addItem(self.grid)
         self.grid.setTickSpacing(x=[1.0], y=[1.0])
-        self.pw.setMouseEnabled(x=False, y=False)
+        self.pw.setMouseEnabled(x=False, y=True)
+       
         self.pw.setMenuEnabled(False)
         self.pw.hideButtons()
         ay = self.pw.getAxis('left')
         ay.setStyle(showValues=False)
+        view_box = self.pw.getViewBox()
+        view_box.setMouseMode(pg.ViewBox.PanMode)
 
     def colors_side(self):
         if self.side == 0:
@@ -145,8 +150,11 @@ class AbrGraph(GraphicsLayoutWidgetMod):
                 delete = True
 
         if delete:
-            self.del_curve.emit(self.act_curve)
+            self.sig_del_curve.emit(self.act_curve)
             self.act_curve = None
+
+    def get_active(self):
+        return self.act_curve
 
     def active_curve(self, sender):
         self.act_curve = sender
@@ -168,42 +176,53 @@ class AbrGraph(GraphicsLayoutWidgetMod):
                         fill = self.inactive_fill_color
                         lbl = self.label_html(item.name, fill)
                         item.setHtml(lbl)
+        self.sig_curve_selected.emit(self.act_curve)
         #se actualizan los datos de las marcas
-        print(self.marks[self.act_curve])
+        #print(self.marks[self.act_curve])
 
     def get_amplitude(self):
+        # Obtener posiciones actuales de las líneas
+        lat_a = self.inf_a.getXPos()
+        lat_b = self.inf_b.getXPos()
+
+        # Asegurarse de que las líneas no superen los límites de 0 y 12
+        lat_a = max(0, min(12, lat_a))
+        lat_b = max(0, min(12, lat_b))
+
+        # Establecer las posiciones corregidas
+        self.inf_a.setPos((lat_a, 0))
+        self.inf_b.setPos((lat_b, 0))
         if self.act_curve:
             x = self.data[self.act_curve]['ipsi_xy'][0]
             y = self.data[self.act_curve]['ipsi_xy'][1]
-            lat_a = self.inf_a.getXPos()
-            if lat_a > 12:
-                pos_b = self.inf_b.getXPos()
-                self.inf_a.setPos(12,0)
-                self.inf_b.setPos(pos_b,0)
-            if lat_a < 0:
-                pos_b = self.inf_b.getXPos
-                self.inf_a.setPos(0,0)
-                self.inf_b.setPos(pos_b,0)()
-            lat_b = self.inf_b.getXPos()
-            if lat_b > 12:
-                pos_a = self.inf_a.getXPos()
-                self.inf_a.setPos(pos_a,0)
-                self.inf_b.setPos(12,0)
-            if lat_b < 0:
-                pos_a = self.inf_a.getXPos()
-                self.inf_a.setPos(pos_a,0)
-                self.inf_b.setPos(0,0)
+
+            # Encontrar los valores de amplitud más cercanos a las posiciones lat_a y lat_b
             amp_a = self.find_nearest(x, lat_a, y)
             amp_b = self.find_nearest(x, lat_b, y)
-            order_amp = np.sort(np.array([amp_a,amp_b]))
-            order_lat = np.sort(np.array([lat_a,lat_b]))
+
+            # Ordenar las amplitudes y latencias
+            order_amp = np.sort([amp_a, amp_b])
+            order_lat = np.sort([lat_a, lat_b])
+
+            # Calcular la diferencia de amplitud y latencia
             dif_amp = order_amp[1] - order_amp[0]
             dif_lat = order_lat[1] - order_lat[0]
-            response = {'curve':self.act_curve, 
-                        'data':{"side": self.side, "lat_A": lat_a, 
-                                "lat_B": lat_b, "amp_AB": dif_amp, 
-                                "lat_AB": dif_lat}}
-            self.data_info.emit(response)
+
+            # Preparar la respuesta
+            response = {
+                'curve': self.act_curve,
+                'data': {
+                    "side": self.side,
+                    "lat_A": lat_a,
+                    "lat_B": lat_b,
+                    "amp_AB": dif_amp,
+                    "lat_AB": dif_lat
+                }
+            }
+
+            # Emitir la información calculada
+            self.sig_data_info.emit(response)
+            # Actualizar la latencia actual
             self.current_lat = lat_a
 
     def create_marks(self, lbl_mark):
@@ -266,7 +285,7 @@ class AbrGraph(GraphicsLayoutWidgetMod):
             del self.marks[curve][mark]
             x = None
         result = {curve:{mark:x}}
-        self.change_value_mark.emit(result)
+        self.sig_change_value_mark.emit(result)
 
 
 
@@ -274,10 +293,24 @@ class AbrGraph(GraphicsLayoutWidgetMod):
     def set_windows(self, ms:int) -> None:
         self.pw.setXRange(ms)
 
-    def _scale(self, direction):
-        Yrange = self.pw.getViewBox().state["targetRange"][1][1]
-        new_range = Yrange * 2 if direction == 'plus' else Yrange / 2
-        self.pw.setYRange(-new_range,new_range)
+    def scale(self, direction):
+        current_scale = self.get_scale()
+        if direction == 'plus':
+            new_scale = min(current_scale * 2, 200)
+        elif direction == 'minus':
+            new_scale = max(current_scale / 2, 1)   
+        else:
+            new_scale = current_scale
+        if new_scale != current_scale:
+            self.pw.setYRange(-new_scale / 2, new_scale / 2, padding=0) 
+        return self.get_scale()
+       
+    def get_scale(self):
+        yAxis = self.pw.getAxis('left')
+        yRange = yAxis.range
+        yTicks = yAxis.tickValues(*yRange, size=1)
+        scale = abs(yRange[0] - yRange[1])
+        return scale
         
     def find_nearest(self, array_in, value, array_out):
         array = np.asarray(array_in)
@@ -288,53 +321,16 @@ class AbrGraph(GraphicsLayoutWidgetMod):
         array = np.asarray(array_in)
         return (np.abs(array - value)).argmin()
 
-
-
-
-
-#########################
-    def refresh_keys(self):
-        for k in self.data:
-            curve = k
-            if self.data[curve]['view']:
-                for i in range(2):
-                    for d , val in enumerate(self.marks[curve][i].data):
-                        if val is not None:
-                            self.create_marks(i,d,curveName=curve, useAct=False)
-
-
-
-    def remove_if_exist_mark(self, idx, subidx):
-        mark = self.marks[self.act_curve][idx].get_all()
-        mark = mark[subidx]
-        if mark is None:
-            return False
-        self.marks[self.act_curve][idx].set(subidx, None)
-        return True
-    
-    def update_data_marks(self):
-        def idx2number(list_idx):
-            input_list = list_idx.get_all()
-            data = [0,0,0,0,0]
-            for i, pos in enumerate(input_list):
-                data[i] = self.data[self.act_curve]['ipsi_xy'][0][pos] if pos is not None else 0
-            return data
+    def export_(self):
+        self.inf_a.hide()
+        self.inf_b.hide()
         
-        if self.act_curve is not None:
-            non_prima = idx2number(self.marks[self.act_curve][0])
-            prima = idx2number(self.marks[self.act_curve][1])
-            data_emit = {'action':'latency_flag_update', 
-                                'data': {'side':self.side, 'non_prima':non_prima,
-                                        'prima': prima, 'curve':self.act_curve}}
-            self.data_info.emit(data_emit)
-                    
-    def save_image(self):
-        exporter = pg.exporters.ImageExporter(self.pw)
-        exporter.parameters()['width'] = 800
-        file = context.get_resource(f'image_{self.side}.png')
-        exporter.export(file)
+        options = {'width':600, 'height':800, 'background': self.color_background}
+        export = generateSvg(self.pw, options=options)
+        self.inf_a.show()
+        self.inf_b.show()
+        
+        print(export)
 
 
-class LatencyIntencity():
-    def __init__(self) -> None:
-        pass
+

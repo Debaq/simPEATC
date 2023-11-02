@@ -118,3 +118,9 @@ class GraphicsLayoutWidgetMod(GraphicsLayoutWidget):
     def delete_mark(self):
         pass
     
+
+    def disable_wheel_event(ev):
+        pass
+
+    def wheelEvent(self, ev, axis=None):
+        pass

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'Ui_AbrDetails.ui'
+## Form generated from reading UI file 'AbrDetails.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.6.0
 ##
@@ -25,10 +25,10 @@ class Ui_AbrDetails(object):
             AbrDetails.setObjectName(u"AbrDetails")
         AbrDetails.resize(924, 197)
         AbrDetails.setMinimumSize(QSize(0, 110))
-        self.horizontalLayout = QHBoxLayout(AbrDetails)
-        self.horizontalLayout.setSpacing(0)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout = QVBoxLayout(AbrDetails)
+        self.verticalLayout.setSpacing(0)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.tabWidget = QTabWidget(AbrDetails)
         self.tabWidget.setObjectName(u"tabWidget")
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -160,9 +160,13 @@ class Ui_AbrDetails(object):
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")
+        self.layout_tab2 = QHBoxLayout(self.tab_2)
+        self.layout_tab2.setSpacing(3)
+        self.layout_tab2.setObjectName(u"layout_tab2")
+        self.layout_tab2.setContentsMargins(3, 3, 3, 3)
         self.tabWidget.addTab(self.tab_2, "")
 
-        self.horizontalLayout.addWidget(self.tabWidget)
+        self.verticalLayout.addWidget(self.tabWidget)
 
 
         self.retranslateUi(AbrDetails)

@@ -1,6 +1,8 @@
 from pyqtgraph import GraphicsLayoutWidget
 import pyqtgraph as pg
 import numpy as np
+from PySide6.QtCore import QTimer
+
 
 
 class EEG(GraphicsLayoutWidget):

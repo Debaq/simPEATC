@@ -1,12 +1,12 @@
 from PySide6.QtCore import QCoreApplication, Signal, Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QWidget, QTableWidgetItem
-from UI.Ui_AbrTable import Ui_TableData
+from UI.AbrTableInfo_ui import Ui_TableData
 
 tr = QCoreApplication.translate
 
 class AbrTable(QWidget, Ui_TableData):
-    measure_value = Signal(dict)
+    sig_measure_value = Signal(dict)
     def __init__(self, side) -> None:
         QWidget.__init__(self)
         self.setupUi(self)
@@ -63,7 +63,7 @@ class AbrTable(QWidget, Ui_TableData):
 
     def request_values(self, data:str) -> None:
         request = {f'{self.side}':{f'{data}':None}}
-        self.measure_value.emit(request)
+        self.sig_measure_value.emit(request)
 
     def set_data(self, data):
         command = list(data[str(self.side)].keys())[0]
@@ -82,12 +82,20 @@ class AbrTable(QWidget, Ui_TableData):
         ##I-III column 1, i:row 0 iii:row 2
         if self.data[0][0] and self.data[4][0]:
             self.cal_interpeak(0,4,0)
+        else:
+            self.erase_cell(0)
         if self.data[2][0] and self.data[4][0]:
             self.cal_interpeak(2,4,1)
+        else:
+            self.erase_cell(1)
         if self.data[0][0] and self.data[2][0]:
             self.cal_interpeak(0,2,2)
+        else:
+            self.erase_cell(2)
         if self.data[0][1] and self.data[4][1]:
             self.cal_rel_v_i()
+        else:
+            self.erase_cell(3)
 
     def reset_others(self)->None:
         if self.data[0][0] is None:
@@ -113,6 +121,10 @@ class AbrTable(QWidget, Ui_TableData):
         item = QTableWidgetItem(str(relation))
         self.tw_inter.setItem(3,0, item)
         
+    def erase_cell(self, cell) ->None:
+        item = QTableWidgetItem("")
+        self.tw_inter.setItem(cell,0, item)
+
     def cal_interpeak(self, pos_a:int, pos_b:int, cell:int) ->None:
         value_a = self.data[pos_a][0]
         value_b = self.data[pos_b][0]
@@ -136,6 +148,49 @@ class AbrTable(QWidget, Ui_TableData):
                     #self.data[coord[0]][1] = None
 
                 self.reset_others()
+
+    def update_latamp_table(self, latamp_dict):
+        # Mapeo de las ondas a las filas de la tabla
+        wave_mapping = {
+            'I': 0,
+            'II': 1,
+            'III': 2,
+            'IV': 3,
+            'V': 4
+        }
+
+        for wave, row_index in wave_mapping.items():
+            # Obtener los valores de latencia y amplitud
+            lat, amp = latamp_dict['LatAmp'][wave]
+            # Crear los QTableWidgetItems, manejar valores None
+            lat_item = QTableWidgetItem('' if lat is None else str(lat))
+            amp_item = QTableWidgetItem('' if amp is None else str(amp))
+
+            # Asignar los valores a la celda correspondiente en la fila y columna adecuada
+            self.tw_latamp.setItem(row_index, 0, lat_item)  # Columna para latencia
+            self.tw_latamp.setItem(row_index, 1, amp_item)  # Columna para amplitud
+            self.data[row_index][0]=lat
+            self.data[row_index][1]=amp
+
+        self.calcule_others()
+
+
+    def clear_all(self):
+        tables = [self.tw_latamp, self.tw_inter]
+        for table in tables:
+            for row in range(table.rowCount()):
+                for column in range(table.columnCount()):
+                    # Opción 1: Eliminar el ítem (lo que podría eliminar también widgets incrustados)
+                    #table.takeItem(row, column)
+                    
+                    # Opción 2: Establecer un ítem vacío
+                    table.setItem(row, column, QTableWidgetItem(""))
+        self.data =   [ ['', ''],
+                        ['', ''],
+                        ['', ''],
+                        ['', ''],
+                        ['', '']]
+        self.calcule_others()
 
 
 

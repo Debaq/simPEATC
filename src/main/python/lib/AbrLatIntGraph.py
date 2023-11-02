@@ -1,6 +1,6 @@
 
 import pyqtgraph as pg
-
+from pyqtgraph import mkBrush
 
 class GraphLatInt(pg.GraphicsLayoutWidget):
     def __init__(self, parent=None):
@@ -30,6 +30,8 @@ class GraphLatInt(pg.GraphicsLayoutWidget):
         self.pw.hideButtons()
         ay = self.pw.getAxis('left')
         ay.setStyle(showValues=False)
+        # Inicializar la leyenda
+        self.legend = self.pw.addLegend()
     
     def filled_area(self):
         # Valores para crear el área sombreada
@@ -47,14 +49,60 @@ class GraphLatInt(pg.GraphicsLayoutWidget):
         self.pw.addItem(fill_between)
         #self.pw.fillBetween(x_vals, y_bottom_vals, y_top_vals, brush=fill_color)
 
-    
-    def legend_(self):
-        legend = pg.LegendItem((80,60), offset=(70,20))
-        legend.setParentItem(self.pw.graphicsItem())
-        legend.addItem(bg1, 'bar')
-        legend.addItem(c1, 'curve1')
-        legend.addItem(c2, 'curve2')
-        legend.addItem(s1, 'scatter')
+
+    def plot_data(self, data_dict):
+        # Definición de símbolos y colores para los subsets
+        symbols = {
+            'I': 'o',
+            'II': 't',
+            'III': 't1',
+            'IV': 't2',
+            'V': 't3'
+        }
+        colors = {
+            'OD': 'r',  # Rojo
+            'OI': 'b'   # Azul
+        }
+
+        
+
+        # Conjunto para mantener el control de los puntos ya graficados
+        plotted_points = set()
+
+        for curve_key, curve_data in data_dict.items():
+            side = curve_data['side']
+            intensity = curve_data['int']
+            
+            # Verificar si ya se ha graficado un punto con esta intensidad y lado
+            if (side, intensity) in plotted_points:
+                continue  # Si es así, se salta este punto
+
+            for subset, lat_amp in curve_data['LatAmp'].items():
+                y_value = lat_amp[0]
+                if y_value is not None:
+                    # Agregar punto al conjunto de puntos graficados
+                    plotted_points.add((side, intensity))
+
+                    # Graficar los puntos con la leyenda y color correspondiente
+                    self.pw.plot(
+                        [intensity], [y_value], 
+                        symbol=symbols[subset],
+                        pen=None,  # Sin línea
+                        symbolBrush=(colors[side]),  # Color del símbolo
+                        name=f"{subset} ({side})"
+                    )
+    def clear_graph(self):
+        self.legend.clear()
+        self.remove_points()
+
+    def remove_points(self):
+        # Itera sobre los elementos del gráfico
+        for item in self.pw.items:
+            # Verifica si el elemento es una instancia de PlotDataItem
+            if isinstance(item, pg.PlotDataItem):
+                # Remueve solo los elementos que corresponden a los puntos
+                self.pw.removeItem(item)
+
 
 if __name__ == '__main__':
 

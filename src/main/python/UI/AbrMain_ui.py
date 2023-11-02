@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'main.ui'
+## Form generated from reading UI file 'AbrMain.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.6.0
 ##
@@ -16,8 +16,9 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QDockWidget, QHBoxLayout, QMainWindow,
-    QMenu, QMenuBar, QSizePolicy, QStatusBar,
+from PySide6.QtWidgets import (QApplication, QDockWidget, QFrame, QHBoxLayout,
+    QLabel, QMainWindow, QMenu, QMenuBar,
+    QPushButton, QSizePolicy, QSpacerItem, QStatusBar,
     QTabWidget, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
@@ -43,8 +44,79 @@ class Ui_MainWindow(object):
         self.tabWidget.setUsesScrollButtons(True)
         self.abr = QWidget()
         self.abr.setObjectName(u"abr")
-        self.layout_abr = QHBoxLayout(self.abr)
+        self.layout_abr_frame = QHBoxLayout(self.abr)
+        self.layout_abr_frame.setSpacing(0)
+        self.layout_abr_frame.setObjectName(u"layout_abr_frame")
+        self.layout_abr_frame.setContentsMargins(0, 0, 0, 0)
+        self.verticalFrame = QFrame(self.abr)
+        self.verticalFrame.setObjectName(u"verticalFrame")
+        self.verticalFrame.setMaximumSize(QSize(30, 16777215))
+        self.verticalLayout = QVBoxLayout(self.verticalFrame)
+        self.verticalLayout.setSpacing(0)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, 20, 0, 0)
+        self.btn_scale_plus = QPushButton(self.verticalFrame)
+        self.btn_scale_plus.setObjectName(u"btn_scale_plus")
+
+        self.verticalLayout.addWidget(self.btn_scale_plus)
+
+        self.lbl_scale = QLabel(self.verticalFrame)
+        self.lbl_scale.setObjectName(u"lbl_scale")
+        font = QFont()
+        font.setPointSize(8)
+        self.lbl_scale.setFont(font)
+        self.lbl_scale.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout.addWidget(self.lbl_scale)
+
+        self.btn_scale_minus = QPushButton(self.verticalFrame)
+        self.btn_scale_minus.setObjectName(u"btn_scale_minus")
+
+        self.verticalLayout.addWidget(self.btn_scale_minus)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout.addItem(self.verticalSpacer)
+
+
+        self.layout_abr_frame.addWidget(self.verticalFrame)
+
+        self.verticalLayout_2 = QVBoxLayout()
+        self.verticalLayout_2.setSpacing(0)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(-1, -1, -1, 0)
+        self.layout_abr = QHBoxLayout()
         self.layout_abr.setObjectName(u"layout_abr")
+
+        self.verticalLayout_2.addLayout(self.layout_abr)
+
+        self.horizontalWidget = QWidget(self.abr)
+        self.horizontalWidget.setObjectName(u"horizontalWidget")
+        self.horizontalWidget.setMaximumSize(QSize(16777215, 20))
+        self.horizontalLayout_2 = QHBoxLayout(self.horizontalWidget)
+        self.horizontalLayout_2.setSpacing(0)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.lbl_coord_r = QLabel(self.horizontalWidget)
+        self.lbl_coord_r.setObjectName(u"lbl_coord_r")
+        self.lbl_coord_r.setFont(font)
+        self.lbl_coord_r.setStyleSheet(u"color: rgb(198, 198, 198);")
+
+        self.horizontalLayout_2.addWidget(self.lbl_coord_r)
+
+        self.lbl_coord_l = QLabel(self.horizontalWidget)
+        self.lbl_coord_l.setObjectName(u"lbl_coord_l")
+        self.lbl_coord_l.setFont(font)
+        self.lbl_coord_l.setStyleSheet(u"color: rgb(198, 198, 198);")
+
+        self.horizontalLayout_2.addWidget(self.lbl_coord_l)
+
+
+        self.verticalLayout_2.addWidget(self.horizontalWidget)
+
+
+        self.layout_abr_frame.addLayout(self.verticalLayout_2)
+
         self.tabWidget.addTab(self.abr, "")
         self.lat = QWidget()
         self.lat.setObjectName(u"lat")
@@ -126,6 +198,11 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.actionSalir.setText(QCoreApplication.translate("MainWindow", u"Salir", None))
         self.actionP_rametros_Avanzados.setText(QCoreApplication.translate("MainWindow", u"P\u00e1rametros Avanzados", None))
+        self.btn_scale_plus.setText(QCoreApplication.translate("MainWindow", u"+", None))
+        self.lbl_scale.setText(QCoreApplication.translate("MainWindow", u"8\u00b5V", None))
+        self.btn_scale_minus.setText(QCoreApplication.translate("MainWindow", u"-", None))
+        self.lbl_coord_r.setText(QCoreApplication.translate("MainWindow", u"N/D", None))
+        self.lbl_coord_l.setText(QCoreApplication.translate("MainWindow", u"N/D", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.abr), QCoreApplication.translate("MainWindow", u"Gr\u00e1ficos", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.lat), QCoreApplication.translate("MainWindow", u"Latencia/Intencidad", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.conc), QCoreApplication.translate("MainWindow", u"Conclusiones", None))

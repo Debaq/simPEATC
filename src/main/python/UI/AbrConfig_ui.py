@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'Ui_AbrConfig.ui'
+## Form generated from reading UI file 'AbrConfig.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.6.0
 ##
