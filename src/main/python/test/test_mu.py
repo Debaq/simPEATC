@@ -1,36 +1,8 @@
+from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QApplication, QScrollBar
+from PySide6.QtGui import QPixmap, QImage, QPainter
+from PySide6.QtCore import Qt
 import sys
-from datetime import datetime
-
 import fitz
-from base import context
-from PySide6.QtCore import QCoreApplication, Signal
-from PySide6.QtGui import QColor, QImage, QPainter, QPixmap
-from PySide6.QtWidgets import QGraphicsScene, QGraphicsView, QWidget
-from UI.AbrReport_ui import Ui_AbrReport
-import lib.PdfCreator 
-
-tr = QCoreApplication.translate
-
-class AbrReport(QWidget, Ui_AbrReport):
-    measure = Signal(str)
-    def __init__(self) -> None:
-        QWidget.__init__(self)
-        self.setupUi(self)
-        self.lbl_date.setText(self.date_current())
-        self.pdf_view()
-
-
-    def date_current(self):
-        current_date = datetime.now().strftime("%d/%m/%Y")
-        return current_date
-
-
-
-    def pdf_view(self):
-        pdf = context.get_resource('temp/GFG.pdf')
-        self.pdf_widget = PDFViewer()
-        self.pdf_widget.load_pdf(pdf)
-        self.layout_pdf.addWidget(self.pdf_widget)
 
 
 class PDFViewer(QGraphicsView):
@@ -79,3 +51,12 @@ class PDFViewer(QGraphicsView):
             self.show_page(self.current_page + 1)
 
         #self.scale(self.scale_factor, self.scale_factor)
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    viewer = PDFViewer()
+    pdf_path = "uach.pdf"  # Reemplaza con la ruta a tu archivo PDF
+    viewer.load_pdf(pdf_path)
+    viewer.show()
+    sys.exit(app.exec())

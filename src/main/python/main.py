@@ -141,7 +141,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.dock_parameter.setVisible(False)
             self.detail.tabWidget.setCurrentIndex(1)
             self.dock_test.setFixedHeight(300)
-            self.graph_r.export_()
+            self.report_svg()
+
         else:
             self.dock_values.setVisible(True)
             self.dock_parameter.setVisible(True)
@@ -274,6 +275,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 
+################Report
+    def report_svg(self):
+
+        svg_r = self.graph_r.export_()
+        svg_l = self.graph_l.export_()
+
+
+   
 
 ################TEST
     def generar_puntos(self, num_puntos=12):

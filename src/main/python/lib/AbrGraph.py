@@ -3,10 +3,11 @@ import inspect
 
 import numpy as np
 import pyqtgraph as pg
-from pyqtgraph.exporters.SVGExporter import generateSvg
+from base import context
 from lib.helpers import Storage
 from lib.WidgetsMods import (GraphicsLayoutWidgetMod, InfiniteLineMod,
                              TextItemMod)
+from pyqtgraph.exporters.SVGExporter import generateSvg
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor, QFont, QLinearGradient
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QWidget
@@ -324,13 +325,14 @@ class AbrGraph(GraphicsLayoutWidgetMod):
     def export_(self):
         self.inf_a.hide()
         self.inf_b.hide()
-        
-        options = {'width':600, 'height':800, 'background': self.color_background}
-        export = generateSvg(self.pw, options=options)
+        width = self.pw.size().width()
+        height = self.pw.size().height()
+        options = {'width':width, 'height':height, 'background': self.color_background}
+        #export = generateSvg(self.pw, options=options)
+        export = pg.exporters.ImageExporter(self.pw)
+        export.export(context.get_resource(f'temp/{self.side}.png'))
+
         self.inf_a.show()
         self.inf_b.show()
-        
-        print(export)
-
-
+       
 
