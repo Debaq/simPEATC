@@ -1,6 +1,8 @@
 
 import pyqtgraph as pg
-from pyqtgraph import mkBrush
+from pyqtgraph import exporters
+from base import context
+
 
 class GraphLatInt(pg.GraphicsLayoutWidget):
     def __init__(self, parent=None):
@@ -38,17 +40,13 @@ class GraphLatInt(pg.GraphicsLayoutWidget):
         x_vals = [35, 45, 55, 75, 75, 55, 45, 35]
         y_bottom_vals = [6.5, 6.0, 6.0, 5.9, 8.9, 9.2, 9.5, 10.5]
         y_top_vals = [10.5, 9.5, 9.2, 8.9, 5.9, 6.0, 6.0, 6.5]
-
         curve_top = self.pw.plot(x_vals, y_top_vals)
         curve_bottom = self.pw.plot(x_vals, y_bottom_vals)
-
         fill_between = pg.FillBetweenItem()
         fill_between.setCurves(curve_top, curve_bottom)
         fill_between.setBrush(pg.mkColor(100, 100, 250, 80))
-
         self.pw.addItem(fill_between)
         #self.pw.fillBetween(x_vals, y_bottom_vals, y_top_vals, brush=fill_color)
-
 
     def plot_data(self, data_dict):
         # Definición de símbolos y colores para los subsets
@@ -63,8 +61,6 @@ class GraphLatInt(pg.GraphicsLayoutWidget):
             'OD': 'r',  # Rojo
             'OI': 'b'   # Azul
         }
-
-        
 
         # Conjunto para mantener el control de los puntos ya graficados
         plotted_points = set()
@@ -91,6 +87,7 @@ class GraphLatInt(pg.GraphicsLayoutWidget):
                         symbolBrush=(colors[side]),  # Color del símbolo
                         name=f"{subset} ({side})"
                     )
+
     def clear_graph(self):
         self.legend.clear()
         self.remove_points()
@@ -102,9 +99,13 @@ class GraphLatInt(pg.GraphicsLayoutWidget):
             if isinstance(item, pg.PlotDataItem):
                 # Remueve solo los elementos que corresponden a los puntos
                 self.pw.removeItem(item)
-
+    
+    def export_(self):
+        width = self.pw.size().width()
+        height = self.pw.size().height()
+        export = exporters.ImageExporter(self.pw)
+        export.export(context.get_resource(f'temp/LatInt.png'))
 
 if __name__ == '__main__':
-
     import pyqtgraph.examples
     pyqtgraph.examples.run()

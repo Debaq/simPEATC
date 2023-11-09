@@ -11,20 +11,19 @@ import sys
 
 import numpy as np
 from base import context
-from lib.AbrGraph import AbrGraph
-from lib.AbrLatIntGraph import GraphLatInt
 from lib.AbrControl import AbrControl
 from lib.AbrDetail import AbrDetail
-from lib.AbrTable import AbrTable
 from lib.AbrDetailAllCurves import AbrDetailAllCurves
+from lib.AbrGraph import AbrGraph
+from lib.AbrLatIntGraph import GraphLatInt
 from lib.AbrReport import AbrReport
-from UI.AbrAdvanceSettings_ui import Ui_AdvanceSettings
+from lib.AbrTable import AbrTable
 from lib.EEG import EEG
 from lib.FSP import FSP
-
-from PySide6.QtWidgets import QMainWindow, QDialog
-from PySide6.QtCore import QCoreApplication, QTimer, Slot, QSize
-from PySide6.QtWidgets import QSpacerItem, QSizePolicy
+from lib.PdfCreator import PDFCreator
+from PySide6.QtCore import QCoreApplication, QSize, QTimer, Slot
+from PySide6.QtWidgets import QDialog, QMainWindow, QSizePolicy, QSpacerItem
+from UI.AbrAdvanceSettings_ui import Ui_AdvanceSettings
 from UI.AbrMain_ui import Ui_MainWindow
 
 tr = QCoreApplication.translate
@@ -72,6 +71,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.graph_l.sig_curve_selected.connect(self.curve_selected)
         self.graph_r.sig_del_curve.connect(self.update_delete_curve)
         self.graph_l.sig_del_curve.connect(self.update_delete_curve)
+        self.report.sig_update_pdf.connect(self.report_svg)
 
         self.tabWidget.currentChanged.connect(self.tab_change)
         self.detail_all.sig_selected_curve.connect(self.selected_)
@@ -273,16 +273,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.memory[name_curve] = dict(sett, **model)
         self.detail_all.process_and_fill_data(self.memory)
 
-
-
 ################Report
     def report_svg(self):
+        self.graph_lat_int.export_()
+        self.graph_r.export_()
+        self.graph_l.export_()
+        text1 = self.report.text_edit_1.toHtml()
+        text2 = self.report.text_edit_2.toHtml()
+        image_r = context.get_resource('temp/0.png')
+        image_l = context.get_resource('temp/1.png')
+        image_lat = context.get_resource('temp/LatInt.png')
+        file_pdf = context.get_resource('temp/GFG.pdf')
+        PDFCreator("PEATC", text1, text2, [image_r,image_l], image_lat,self.memory, file_pdf)
 
-        svg_r = self.graph_r.export_()
-        svg_l = self.graph_l.export_()
-
-
-   
 
 ################TEST
     def generar_puntos(self, num_puntos=12):

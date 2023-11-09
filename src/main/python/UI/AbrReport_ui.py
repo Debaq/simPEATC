@@ -29,6 +29,7 @@ class Ui_AbrReport(object):
         self.gridLayout.setContentsMargins(-1, -1, -1, 0)
         self.tabWidget = QTabWidget(AbrReport)
         self.tabWidget.setObjectName(u"tabWidget")
+        self.tabWidget.setEnabled(True)
         self.tabWidget.setTabPosition(QTabWidget.South)
         self.tabWidget.setTabShape(QTabWidget.Triangular)
         self.tabWidget.setDocumentMode(True)
@@ -67,10 +68,25 @@ class Ui_AbrReport(object):
 
         self.verticalLayout.addWidget(self.label_2)
 
-        self.text_edit = QTextEdit(self.tab_1)
-        self.text_edit.setObjectName(u"text_edit")
+        self.label_3 = QLabel(self.tab_1)
+        self.label_3.setObjectName(u"label_3")
 
-        self.verticalLayout.addWidget(self.text_edit)
+        self.verticalLayout.addWidget(self.label_3)
+
+        self.text_edit_1 = QTextEdit(self.tab_1)
+        self.text_edit_1.setObjectName(u"text_edit_1")
+
+        self.verticalLayout.addWidget(self.text_edit_1)
+
+        self.label_4 = QLabel(self.tab_1)
+        self.label_4.setObjectName(u"label_4")
+
+        self.verticalLayout.addWidget(self.label_4)
+
+        self.text_edit_2 = QTextEdit(self.tab_1)
+        self.text_edit_2.setObjectName(u"text_edit_2")
+
+        self.verticalLayout.addWidget(self.text_edit_2)
 
         self.tabWidget.addTab(self.tab_1, "")
         self.tab_2 = QWidget()
@@ -90,19 +106,25 @@ class Ui_AbrReport(object):
         self.frame.setMaximumSize(QSize(16777215, 30))
         self.horizontalLayout_2 = QHBoxLayout(self.frame)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(-1, 0, 0, 0)
         self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer_2)
 
-        self.pushButton = QPushButton(self.frame)
-        self.pushButton.setObjectName(u"pushButton")
+        self.btn_update = QPushButton(self.frame)
+        self.btn_update.setObjectName(u"btn_update")
 
-        self.horizontalLayout_2.addWidget(self.pushButton)
+        self.horizontalLayout_2.addWidget(self.btn_update)
 
-        self.pushButton_2 = QPushButton(self.frame)
-        self.pushButton_2.setObjectName(u"pushButton_2")
+        self.btn_print = QPushButton(self.frame)
+        self.btn_print.setObjectName(u"btn_print")
 
-        self.horizontalLayout_2.addWidget(self.pushButton_2)
+        self.horizontalLayout_2.addWidget(self.btn_print)
+
+        self.btn_save = QPushButton(self.frame)
+        self.btn_save.setObjectName(u"btn_save")
+
+        self.horizontalLayout_2.addWidget(self.btn_save)
 
 
         self.verticalLayout_2.addWidget(self.frame)
@@ -125,10 +147,29 @@ class Ui_AbrReport(object):
         self.lbl_date.setText(QCoreApplication.translate("AbrReport", u"TextLabel", None))
         self.label.setText(QCoreApplication.translate("AbrReport", u"POTENCIALES EVOCADOS AUDITIVOS DE TRONCO CEREBRAL", None))
         self.label_2.setText(QCoreApplication.translate("AbrReport", u"PEATC", None))
+        self.label_3.setText(QCoreApplication.translate("AbrReport", u"Texto 1", None))
+        self.text_edit_1.setHtml(QCoreApplication.translate("AbrReport", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>", None))
+        self.label_4.setText(QCoreApplication.translate("AbrReport", u"Texto 2", None))
+        self.text_edit_2.setHtml(QCoreApplication.translate("AbrReport", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_1), QCoreApplication.translate("AbrReport", u"Conclusiones", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("AbrReport", u"Imagenes", None))
-        self.pushButton.setText(QCoreApplication.translate("AbrReport", u"Imprimir", None))
-        self.pushButton_2.setText(QCoreApplication.translate("AbrReport", u"Guardar", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("AbrReport", u"Esquema", None))
+        self.btn_update.setText(QCoreApplication.translate("AbrReport", u"Actualizar", None))
+        self.btn_print.setText(QCoreApplication.translate("AbrReport", u"Imprimir", None))
+        self.btn_save.setText(QCoreApplication.translate("AbrReport", u"Guardar", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("AbrReport", u"Previsualizaci\u00f3n", None))
     # retranslateUi
 
