@@ -25,13 +25,15 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1016, 600)
+        MainWindow.resize(1016, 826)
         MainWindow.setDocumentMode(True)
         MainWindow.setDockNestingEnabled(True)
         self.actionSalir = QAction(MainWindow)
         self.actionSalir.setObjectName(u"actionSalir")
         self.actionP_rametros_Avanzados = QAction(MainWindow)
         self.actionP_rametros_Avanzados.setObjectName(u"actionP_rametros_Avanzados")
+        self.actionCambiar_Caso = QAction(MainWindow)
+        self.actionCambiar_Caso.setObjectName(u"actionCambiar_Caso")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
@@ -183,6 +185,7 @@ class Ui_MainWindow(object):
 
         self.menubar.addAction(self.menuArchivo.menuAction())
         self.menuArchivo.addAction(self.actionP_rametros_Avanzados)
+        self.menuArchivo.addAction(self.actionCambiar_Caso)
         self.menuArchivo.addSeparator()
         self.menuArchivo.addAction(self.actionSalir)
 
@@ -198,6 +201,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.actionSalir.setText(QCoreApplication.translate("MainWindow", u"Salir", None))
         self.actionP_rametros_Avanzados.setText(QCoreApplication.translate("MainWindow", u"P\u00e1rametros Avanzados", None))
+        self.actionCambiar_Caso.setText(QCoreApplication.translate("MainWindow", u"Cambiar Caso", None))
         self.btn_scale_plus.setText(QCoreApplication.translate("MainWindow", u"+", None))
         self.lbl_scale.setText(QCoreApplication.translate("MainWindow", u"8\u00b5V", None))
         self.btn_scale_minus.setText(QCoreApplication.translate("MainWindow", u"-", None))

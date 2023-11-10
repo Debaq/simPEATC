@@ -16,8 +16,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QHBoxLayout,
-    QLabel, QPushButton, QSizePolicy, QSpacerItem,
-    QTabWidget, QTextEdit, QVBoxLayout, QWidget)
+    QLabel, QLineEdit, QPushButton, QSizePolicy,
+    QSpacerItem, QTabWidget, QTextEdit, QVBoxLayout,
+    QWidget)
 
 class Ui_AbrReport(object):
     def setupUi(self, AbrReport):
@@ -88,6 +89,11 @@ class Ui_AbrReport(object):
 
         self.verticalLayout.addWidget(self.text_edit_2)
 
+        self.le_eva = QLineEdit(self.tab_1)
+        self.le_eva.setObjectName(u"le_eva")
+
+        self.verticalLayout.addWidget(self.le_eva)
+
         self.tabWidget.addTab(self.tab_1, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")
@@ -147,7 +153,7 @@ class Ui_AbrReport(object):
         self.lbl_date.setText(QCoreApplication.translate("AbrReport", u"TextLabel", None))
         self.label.setText(QCoreApplication.translate("AbrReport", u"POTENCIALES EVOCADOS AUDITIVOS DE TRONCO CEREBRAL", None))
         self.label_2.setText(QCoreApplication.translate("AbrReport", u"PEATC", None))
-        self.label_3.setText(QCoreApplication.translate("AbrReport", u"Texto 1", None))
+        self.label_3.setText(QCoreApplication.translate("AbrReport", u"Descripci\u00f3n", None))
         self.text_edit_1.setHtml(QCoreApplication.translate("AbrReport", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
@@ -156,7 +162,7 @@ class Ui_AbrReport(object):
 "li.checked::marker { content: \"\\2612\"; }\n"
 "</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>", None))
-        self.label_4.setText(QCoreApplication.translate("AbrReport", u"Texto 2", None))
+        self.label_4.setText(QCoreApplication.translate("AbrReport", u"Conclusi\u00f3n", None))
         self.text_edit_2.setHtml(QCoreApplication.translate("AbrReport", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
@@ -165,6 +171,7 @@ class Ui_AbrReport(object):
 "li.checked::marker { content: \"\\2612\"; }\n"
 "</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>", None))
+        self.le_eva.setPlaceholderText(QCoreApplication.translate("AbrReport", u"Evaluador/a", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_1), QCoreApplication.translate("AbrReport", u"Conclusiones", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("AbrReport", u"Esquema", None))
         self.btn_update.setText(QCoreApplication.translate("AbrReport", u"Actualizar", None))

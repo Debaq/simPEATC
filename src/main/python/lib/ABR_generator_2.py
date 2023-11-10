@@ -3,6 +3,7 @@ import numpy as np
 import lib.bezier_prop as bz
 import scipy.signal as signal
 import math
+from scipy import interpolate
 
 def scale_value(value):
     # Para el intervalo [1, 800]
@@ -47,7 +48,7 @@ def scale_difference(value, max_value):
     # Reescala la diferencia al rango deseado [0, 0.6]
     scaled_difference = (0.6 / max_value) * difference
 
-    return scaled_difference
+    return max(scaled_difference, 0)
 
 
 
@@ -94,8 +95,8 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom):
         add_amp=[x - 0.2 for x in add_amp]
     
     ########################  
-    filter_down = control_setting["filter_down"]
-    filter_passhigh = control_setting["filter_passhigh"]
+    filter_down = float(control_setting["filter_down"])
+    filter_passhigh = float(control_setting["filter_passhigh"])
     
     threshold = preferences["th"]
     lat_I = preferences["lat"]
@@ -186,8 +187,12 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom):
     current_amp_V = max(amp[1] + desv_amp_V, 0)
     current_amp_VI = max(current_amp_V-.3, 0)
     current_amp_sn10 = min(VrefIII - current_amp_V, 0)
-   
-    adjusted_prom = cubic_adjustment(prom[0], prom[1])
+    
+
+    try:    
+        adjusted_prom = cubic_adjustment(prom[0], prom[1])
+    except ZeroDivisionError:
+        pass
    
     d_amp_I = current_amp_I/prom[1]
     d_amp_I_p = current_amp_Ip/prom[1]
@@ -297,17 +302,25 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom):
     
     Bezi = bz.Bezier()
     path = Bezi.evaluate_bezier(points, 20)
-
+    
+    nyquist = 2000 / 2
+    
     # extract x & y coordinates of points
     x, y = points[:,0], points[:,1]
     px, py = path[:,0], path[:,1]
+
+  
+
 
     filter_passhigh = (9 / int(filter_passhigh))+0.81
     filter_down = ((9 / int(filter_down))*100)-0.2
     if filter_down == 0.0:
         filter_down = 0.0001
         
+    
+    
     noise_value_prom = scale_difference(prom[0], prom[1])
+    noise_value_prom = max(noise_value_prom, 0)
     noise_prom = np.random.normal(0, noise_value_prom, py.shape)
     noise_value_prom_total= scale_value((prom[0]*100)/2)
     noise_prom_total = np.random.normal(0, noise_value_prom_total, py.shape)
@@ -323,6 +336,7 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom):
 
     # Diseñar un filtro de paso alto
     cutoff_high = filter_passhigh
+    cutoff_high = filter_passhigh / nyquist
     b_high, a_high = signal.butter(order, cutoff_high, btype='high')
     py_high_filtered = signal.filtfilt(b_high, a_high, py_noisy)
     

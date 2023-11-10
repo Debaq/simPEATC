@@ -3,10 +3,11 @@
 import numpy as np
 import pyqtgraph as pg
 from base import context
+from lib.smooth import smooth_curve_gaussian
 from lib.WidgetsMods import (GraphicsLayoutWidgetMod, InfiniteLineMod,
                              TextItemMod)
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import  QFont
+from PySide6.QtGui import QFont
 
 
 class AbrGraph(GraphicsLayoutWidgetMod):
@@ -25,6 +26,7 @@ class AbrGraph(GraphicsLayoutWidgetMod):
         self.act_curve = None
         self.marks = {}
         self.data = {}
+        self.curve_int = {}
         self.current_lat = 0
 
     def configure_pyqtgraph(self):
@@ -76,7 +78,7 @@ class AbrGraph(GraphicsLayoutWidgetMod):
         self.pw.addItem(self.inf_a)
         self.pw.addItem(self.inf_b)
 
-    def create_line(self, data):
+    def create_line(self, data, intencity):
         for name, values in data.items():
             if name in self.data: #si la curva ya existe solo se actualiza el grafico correspondiente
                 self.update_data(name, values)
@@ -86,9 +88,10 @@ class AbrGraph(GraphicsLayoutWidgetMod):
                 self.act_curve = name
                 self.data[name] = values
                 self.marks[name] = {}
+                self.curve_int[name] = intencity
                 y = values['ipsi_xy'][1] + values['gap']
                 self.pw.plot(x=values['ipsi_xy'][0],y=y, pen=self.active_color ,name=name)
-                label = self.create_label(name, name, 1.8)
+                label = self.create_label(name, intencity, 1.8)
                 self.pw.addItem(label)
     
     def update_graph(self, graph_name, data):
@@ -124,6 +127,15 @@ class AbrGraph(GraphicsLayoutWidgetMod):
                 </span>
                 </div>
                 """
+    def smooth(self, ev):
+        curve = self.act_curve
+        x = self.data[self.act_curve]['ipsi_xy'][0]
+        y = self.data[self.act_curve]['ipsi_xy'][1]
+        y = smooth_curve_gaussian(y, sigma=float(ev))
+        data = {'ipsi_xy': [x,y]}
+        self.update_graph(curve, data)
+        self.move_marks(curve)
+
 
     def create_label(self,key, text, h):
         fill = self.active_fill_color
@@ -166,12 +178,15 @@ class AbrGraph(GraphicsLayoutWidgetMod):
             if isinstance(item, TextItemMod): 
                 if item.name == self.act_curve:
                     fill = self.active_fill_color
-                    lbl = self.label_html(self.act_curve, fill)
+                    lbl_name = self.curve_int[self.act_curve]
+                    lbl = self.label_html(lbl_name, fill)
                     item.setHtml(lbl)
                 else:
                     if item.tipo == 'label':
                         fill = self.inactive_fill_color
-                        lbl = self.label_html(item.name, fill)
+                        lbl_name = self.curve_int[item.name]
+
+                        lbl = self.label_html(lbl_name, fill)
                         item.setHtml(lbl)
         self.sig_curve_selected.emit(self.act_curve)
         #se actualizan los datos de las marcas

@@ -2,7 +2,7 @@ from fpdf import FPDF
 import re
 
 class PDFCreator(FPDF):
-    def __init__(self, title, html1, html2, images=None, image_lat=None,data_dict=None, output= None):
+    def __init__(self, title, html1, html2, images=None, image_lat=None, evaluator = None, data_dict=None, output= None):
         super().__init__()
         self.title = title
         self.image_lat= image_lat
@@ -11,6 +11,7 @@ class PDFCreator(FPDF):
         self.images_ = images
         self.data_dict = data_dict
         self.output_ = output
+        self.evaluator = evaluator
         self.create_pdf()
 
     def remove_style_tag(self, text):
@@ -29,7 +30,8 @@ class PDFCreator(FPDF):
     def footer(self):
         self.set_y(-15)
         self.set_font('helvetica', 'I', 8)
-        self.cell(w=0, h=10, text='Página %s' % self.page_no(), border=0, align='C')
+        text = f'Página {self.page_no()} - {self.evaluator} '
+        self.cell(w=0, h=10, text=text, border=0, align='C')
 
     def add_html_content(self, html):
         self.write_html(html)
@@ -51,6 +53,7 @@ class PDFCreator(FPDF):
                 row = table.row()
                 for datum in data_row:
                     row.cell(datum)
+    
 
     def add_images(self):
         self.set_auto_page_break(auto=1, margin=1)  # 1 cm margin for auto page break

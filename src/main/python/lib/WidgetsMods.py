@@ -86,6 +86,8 @@ class GraphicsLayoutWidgetMod(GraphicsLayoutWidget):
         # Añade acciones al menú
         delete = contextMenu.addAction(QCoreApplication.translate("GraphicsLayoutWidgetMod", "Eliminar curva"))
         delete_mark = contextMenu.addMenu(QCoreApplication.translate("GraphicsLayoutWidgetMod", "Eliminar marcas"))
+        smooth = contextMenu.addMenu(QCoreApplication.translate("GraphicsLayoutWidgetMod", "Suavizar"))
+        view = contextMenu.addMenu(QCoreApplication.translate("GraphicsLayoutWidgetMod", "Mostrar"))
         
         # Añade submenús a 'delete_mark'
         mark_i = delete_mark.addAction(QCoreApplication.translate("GraphicsLayoutWidgetMod", "Curva I"))
@@ -95,12 +97,24 @@ class GraphicsLayoutWidgetMod(GraphicsLayoutWidget):
         mark_v = delete_mark.addAction(QCoreApplication.translate("GraphicsLayoutWidgetMod", "Curva V"))
         mark_all = delete_mark.addAction(QCoreApplication.translate("GraphicsLayoutWidgetMod", "Eliminar todas"))
 
+        x2 = smooth.addAction(QCoreApplication.translate("GraphicsLayoutWidgetMod", "x2"))
+        x3 = smooth.addAction(QCoreApplication.translate("GraphicsLayoutWidgetMod", "x3"))
+        x4 = smooth.addAction(QCoreApplication.translate("GraphicsLayoutWidgetMod", "x4"))
+
+        a_b = view.addAction(QCoreApplication.translate("GraphicsLayoutWidgetMod", "A-B"))
+        contra = view.addAction(QCoreApplication.translate("GraphicsLayoutWidgetMod", "contra"))
+       
+
         mark_i.triggered.connect(partial(self.delete_mark, 'Curva I'))
         mark_ii.triggered.connect(partial(self.delete_mark, 'Curva II'))
         mark_iii.triggered.connect(partial(self.delete_mark, 'Curva III'))
         mark_iv.triggered.connect(partial(self.delete_mark, 'Curva IV'))
         mark_v.triggered.connect(partial(self.delete_mark, 'Curva V'))
         mark_all.triggered.connect(self.delete_all_marks)
+
+        x2.triggered.connect(partial(self.smooth, '0.5'))
+        x3.triggered.connect(partial(self.smooth, '1'))
+        x4.triggered.connect(partial(self.smooth, '2'))
 
 
         # Muestra el menú en la posición del cursor
@@ -118,9 +132,11 @@ class GraphicsLayoutWidgetMod(GraphicsLayoutWidget):
     def delete_mark(self):
         pass
     
-
     def disable_wheel_event(ev):
         pass
 
     def wheelEvent(self, ev, axis=None):
+        pass
+
+    def smooth(self, ev):
         pass

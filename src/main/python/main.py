@@ -21,12 +21,46 @@ from lib.AbrTable import AbrTable
 from lib.EEG import EEG
 from lib.FSP import FSP
 from lib.PdfCreator import PDFCreator
-from PySide6.QtCore import QCoreApplication, QSize, QTimer, Slot
-from PySide6.QtWidgets import QDialog, QMainWindow, QSizePolicy, QSpacerItem
+from PySide6.QtCore import QCoreApplication, QTimer
+from PySide6.QtWidgets import QDialog, QMainWindow, QSizePolicy, QSpacerItem, QVBoxLayout, QComboBox, QPushButton
 from UI.AbrAdvanceSettings_ui import Ui_AdvanceSettings
 from UI.AbrMain_ui import Ui_MainWindow
+from lib.ABR_generator_2 import ABR_Curve
 
 tr = QCoreApplication.translate
+
+
+class PopupDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle('Ventana Modal')
+
+        # Hacer que la ventana sea modal
+        self.setModal(True)
+
+        # Crear el ComboBox y el botón dentro de la ventana de diálogo
+        layout = QVBoxLayout(self)
+
+        self.combo_box = QComboBox()
+        self.create_list()
+        layout.addWidget(self.combo_box)
+
+        self.accept_button = QPushButton("Aceptar")
+        self.accept_button.clicked.connect(self.on_accept_clicked)
+        layout.addWidget(self.accept_button)
+
+
+
+    def create_list(self):
+        for i in range(26):
+            self.combo_box.addItem(f'Caso {i+1}')
+
+    def on_accept_clicked(self):
+        chosen_option = self.combo_box.currentText()
+        print(f"Has seleccionado: {chosen_option}")
+        self.accept()  # Esto cerrará la ventana de diálogo
+        return self.combo_box.currentIndex()
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self) -> None:
@@ -61,6 +95,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         ########Conexiones de slots
         self.actionP_rametros_Avanzados.triggered.connect(self.active_advance_setting)
+        self.actionCambiar_Caso.triggered.connect(self.open_modal)
         self.table_r.sig_measure_value.connect(self.measure_action)
         self.table_l.sig_measure_value.connect(self.measure_action)
         self.graph_r.sig_data_info.connect(self.measure_data)
@@ -98,6 +133,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         #########TEMP TEST
         self.count_averages = 0
+
+        self.open_modal()
+
+    def open_modal(self):
+        # Esta función crea y abre la ventana de diálogo
+        dialog = PopupDialog(self)
+        dialog.exec()
+        self.case = dialog.combo_box.currentIndex()
+        self.report.case = self.case
 
     def update_delete_curve(self, curve):
         if curve in self.memory:
@@ -201,11 +245,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.count_averages = 0
             self.control.stop_capture()
             return
-        i_xy, c_xy, a, b = self.generar_puntos(48)
+        i_xy, c_xy, a, b = self.test_test(side)
         data_line = {self.current_capture_curve:{"ipsi_xy":i_xy,"contra_xy":c_xy, "a":a, "b":b, "gap":1.8}}
         side_letter = 'r' if side == 'OD' else 'l'
         graph = f'graph_{side_letter}'
-        getattr(self, graph).create_line(data_line)
+        intencity = self.current_setting['int']
+        getattr(self, graph).create_line(data_line, intencity)
 
     def fake_averages(self, averages, fake = True, express = False):
         if isinstance(averages , str):
@@ -284,10 +329,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         image_l = context.get_resource('temp/1.png')
         image_lat = context.get_resource('temp/LatInt.png')
         file_pdf = context.get_resource('temp/GFG.pdf')
-        PDFCreator("PEATC", text1, text2, [image_r,image_l], image_lat,self.memory, file_pdf)
+        evaluator = self.report.le_eva.text()
+        PDFCreator(title="PEATC", html1=text1, html2=text2, images=[image_r,image_l], image_lat=image_lat,data_dict=self.memory, output=file_pdf, evaluator=evaluator)
 
 
+
+    def test_test(self, side):
+
+        n_1 = {"lat": 1.53, "ink":[3.58, 5.37], "amp":[.5, 1], "repro": True, "morfo": [True, True, True], "th":20}
+        n_2 = {"lat": 1.7, "ink":[3.5, 5.5], "amp":[.4, .5], "repro": False, "morfo": [True, True, True], "th":50}
+        n_3 = {"lat": 1.6, "ink":[4, 6], "amp":[.4, .4], "repro": True, "morfo": [True, False, True], "th":40}
+        c_1 = {"lat": 2.6, "ink":[2.2, 4], "amp":[.7, 1], "repro": True, "morfo": [False, True, True], "th":60}
+        c_2 = {"lat": 3.6, "ink":[2.4, 3.8], "amp":[.7, 1], "repro": True, "morfo": [False, True, True], "th":70}
+        c_3 = {"lat": 2.1, "ink":[1.9, 4.1], "amp":[.7, 1], "repro": True, "morfo": [False, True, True], "th":40}
+        t_1 = {"lat": 2.0, "ink":[2, 4], "amp":[.5, .5], "repro": True, "morfo": [True, True, True], "th":60}
+        t_2 = {"lat": 3.1, "ink":[2.2, 3.8], "amp":[.4, .5], "repro": True, "morfo": [True, True, True], "th":70}
+        m_1 = {"lat": 1.5, "ink":[2, 3.8], "amp":[.7, .9], "repro": True, "morfo": [True, True, True], "th":20}
+        m_2 = {"lat": 1.7, "ink":[2.1, 4], "amp":[.3, .8], "repro": True, "morfo": [True, True, True], "th":30}
+        m_3 = {"lat": 1.6, "ink":[1.8, 3.6], "amp":[.5, .9], "repro": True, "morfo": [True, True, True], "th":10}
+
+        cases = [[n_1,n_2],[n_1,m_2],[n_3,m_3],[c_1,m_1],[m_2,c_2],[c_3,m_3],[m_1,t_1],
+                 [t_2,m_2],[n_1,c_1],[c_2,n_2],[n_3,c_3],[n_1,t_1],[t_2,n_2],[c_1,t_1],
+                 [t_2,c_2],[m_1,n_3],[c_1,m_2],[m_3,n_1],[t_2,n_1],[c_2,n_3],[m_3,c_2],
+                 [c_3,n_2],[n_2,m_1],[m_1,t_2],[n_1,m_2],[m_2,n_3]]
+
+        case = cases[self.case][0] if side == "OD" else cases[self.case][1]
+        x,y, dx, dy, repro = ABR_Curve(self.current_setting["int"], self.current_setting, case, 0, [(self.count_averages*self.total_averages)*2.5, self.current_setting['average']])
+        return(x,y),(dx,dy),(0,0),(0,0)
+    
 ################TEST
+
+
+
     def generar_puntos(self, num_puntos=12):
         """
         Genera puntos aleatorios en el rango:

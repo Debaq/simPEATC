@@ -11,6 +11,7 @@ class AbrTable(QWidget, Ui_TableData):
         QWidget.__init__(self)
         self.setupUi(self)
         self.side = side
+        self.side_text = 'OD' if side == 0 else 'OI'
         self.set_table()
         self.data =   [ ['', ''],
                         ['', ''],
@@ -26,7 +27,7 @@ class AbrTable(QWidget, Ui_TableData):
             i.cellClicked.connect(self.on_cell_clicked)
             i.setStyleSheet(s)
 
-        self.label.setText("")
+        self.label.setText(self.side_text)
 
     def get_color_table(self) -> QColor:
         if self.side == 0:

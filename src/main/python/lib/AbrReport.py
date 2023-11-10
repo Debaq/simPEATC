@@ -1,14 +1,15 @@
+import shutil
 import sys
 from datetime import datetime
 
 import fitz
 from base import context
-from PySide6.QtCore import QCoreApplication, Signal
+from PySide6.QtCore import QCoreApplication, Qt, Signal
 from PySide6.QtGui import QColor, QImage, QPainter, QPixmap
-from PySide6.QtWidgets import QGraphicsScene, QGraphicsView, QWidget
-from PySide6.QtWidgets import QGraphicsDropShadowEffect, QGraphicsRectItem
-from PySide6.QtPrintSupport import QPrinter, QPrintDialog
-from PySide6.QtCore import Qt
+from PySide6.QtPrintSupport import QPrintDialog, QPrinter
+from PySide6.QtWidgets import (QFileDialog, QGraphicsDropShadowEffect,
+                               QGraphicsRectItem, QGraphicsScene,
+                               QGraphicsView, QWidget)
 from UI.AbrReport_ui import Ui_AbrReport
 
 tr = QCoreApplication.translate
@@ -24,6 +25,8 @@ class AbrReport(QWidget, Ui_AbrReport):
         self.tabWidget.currentChanged.connect(self.change_tab)
         self.btn_update.clicked.connect(self.update_pdf)
         self.btn_print.clicked.connect(self.print_pdf)
+        self.btn_save.clicked.connect(self.open_save_as_dialog)
+        self.case = ""
 
     def change_tab(self, tab):
         self.sig_update_pdf.emit(True)
@@ -49,6 +52,30 @@ class AbrReport(QWidget, Ui_AbrReport):
         if print_dialog.exec() == QPrintDialog.Accepted:
             # Aquí asumimos que el PDF que deseas imprimir es el actualmente cargado en pdf_widget
             self.perform_print(printer)
+
+    def open_save_as_dialog(self):
+        # Esta función abre el diálogo 'Guardar Como'
+        options = QFileDialog.Options()
+        # Establecer el nombre de archivo predeterminado y la extensión de archivo
+        defaultFileName = f"caso_{self.case+1}_{self.le_eva.text()}.pdf"
+        fileName, _ = QFileDialog.getSaveFileName(self,
+                                                  "Guardar Como",
+                                                  defaultFileName,
+                                                  "PDF Files (*.pdf)",
+                                                  options=options)
+        if fileName:
+            #print(f"El archivo se guardará como: {fileName}")
+            self.save_file(fileName)
+            # Aquí podrías agregar la lógica para guardar el archivo PDF
+
+    def save_file(self, new_path):
+        try:
+            shutil.copy(self.file_pdf, new_path)
+            #print(f"Archivo copiado con éxito de {origen} a {destino}")
+        except IOError as e:
+            print(f"No se pudo copiar el archivo. {e}")
+        except Exception as e:
+            print(f"Error: {e}")
 
     def perform_print(self, printer):
         try:
