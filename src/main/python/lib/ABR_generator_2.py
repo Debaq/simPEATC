@@ -52,7 +52,7 @@ def scale_difference(value, max_value):
 
 
 
-def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom):
+def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom, done):
 #def ABR_Curve(none = False, nHL = 80, p_I=1.6, p_III=3.7, p_V=5.6, a_V = 0.8, VrelI = True, zeros = False):
     #n: normal
     #c: coclear
@@ -68,20 +68,25 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom):
     #print(f"control_setting: {control_setting}")
     
     
-    
+    prom[0] = prom[1] if prom[0] == 0.0 else prom[0]
     add_amp = [0,0,0,0,0]
     add_lat = [0,0,0,0,0]
     #control_setting: {'stim': 'Click', 'pol': 'Alternada', 'int': 80, 'mkg': 0, 'rate': 10.1, 'filter_down': '1000', 'filter_passhigh': '50', 'prom': 1000, 'side': 'OD'}
-    if control_setting["pol"] == "Rarefac.":
+    if control_setting["pol"] == "Rarefacción":
         add_amp = [x + 0.2 for x in add_amp]
         add_lat[:2] = [x - 0.15 for x in add_lat[:2]]
         cm_pol = -0.5
-    elif control_setting["pol"] == "Conden.":
+    elif control_setting["pol"] == "coclear":
         add_lat = [x + 0.15 for x in add_lat]
         add_amp[-1]+=0.2
         cm_pol=0.5
     else:
         cm_pol = 0
+    #########
+    if  preferences["type"] == "coclear":
+        #add_amp = [x + 0.2 for x in add_amp]
+        #add_lat[:2] = [x - 0.15 for x in add_lat[:2]]
+        cm_pol = -0.5
     ########################## RATE
     rate = control_setting["rate"]
     if rate > 30 and rate < 65:
@@ -99,9 +104,9 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom):
     filter_passhigh = float(control_setting["filter_passhigh"])
     
     threshold = preferences["th"]
-    lat_I = preferences["lat"]
-    lat_III = preferences["ink"][0]
-    lat_V =  preferences["ink"][1]
+    lat_I = preferences["lat"][0]
+    lat_III = preferences["lat"][1]
+    lat_V =  preferences["lat"][2]
     amp = preferences["amp"]
     morfo = preferences["morfo"]
     repro = preferences["repro"]
@@ -146,11 +151,15 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom):
     #Latencias
     
     lat_peak_I   =  lat_I + desv_lat + add_lat[0]
-    lat_peak_II  =  lat_peak_I + 1 #le agre 1 ms desde la onda I
     lat_peak_III =  lat_III + desv_lat + add_lat[2]
+    dist_III_I = (lat_peak_III - lat_peak_I)/2
+    lat_peak_II  =  lat_peak_I + dist_III_I #le agre 1 ms desde la onda I
+
     lat_peak_V   =  lat_V + desv_lat + add_lat[4]
     lat_peak_IV  =  lat_peak_V-.5
     lat_sn10     = lat_peak_V + 1
+
+    #print(f"lat_I: {lat_peak_I}, lat_II: {lat_peak_II},lat_III: {lat_peak_III},lat_IV: {lat_peak_IV},lat_V: {lat_peak_V},lat_sn10: {lat_sn10}")
 
     #ultimo dato que aparece en la curva se iguala al tamaño de la ventana + la desviación de la latencia
     end = [window + desv_lat, 0]
@@ -218,6 +227,8 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom):
     current_amp_VI = d_amp_VI * adjusted_prom
     current_amp_sn10 = d_amp_sn10 * adjusted_prom
 
+
+
     #print(f"amplitud onda V: {current_amp_V}")
 
 
@@ -262,7 +273,8 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom):
     curve_IVp = (lat_peak_IV+.05, current_amp_IVp)
     #ONDA V
     curve_V = (lat_peak_V,VrefIII)
-    #print(f"curva V {curve_V}")
+    if done:
+        print(f"curva V {curve_V}")
     sn10 = (lat_sn10,current_amp_sn10)
     #ONDA VI
     curve_VI = (lat_sn10+1.5, current_amp_VI)
@@ -341,8 +353,9 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom):
     py_high_filtered = signal.filtfilt(b_high, a_high, py_noisy)
     
     noise = py_low_filtered + py_high_filtered
-    
-    y_new = py + noise + noise_prom + noise_prom_total
+
+
+    y_new = py + (noise/10) + noise_prom + noise_prom_total
 
 
     if zeros:

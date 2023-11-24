@@ -23,7 +23,7 @@ class Ui_Abr_Config(object):
     def setupUi(self, Abr_Config):
         if not Abr_Config.objectName():
             Abr_Config.setObjectName(u"Abr_Config")
-        Abr_Config.resize(198, 418)
+        Abr_Config.resize(369, 564)
         self.gridLayout = QGridLayout(Abr_Config)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setHorizontalSpacing(0)
@@ -210,6 +210,17 @@ class Ui_Abr_Config(object):
 
         self.gridLayout.addWidget(self.cb_pol, 1, 1, 1, 1)
 
+        QWidget.setTabOrder(self.cb_stim, self.cb_pol)
+        QWidget.setTabOrder(self.cb_pol, self.sb_intencity)
+        QWidget.setTabOrder(self.sb_intencity, self.sb_mskg)
+        QWidget.setTabOrder(self.sb_mskg, self.ch_atten)
+        QWidget.setTabOrder(self.ch_atten, self.sb_rate)
+        QWidget.setTabOrder(self.sb_rate, self.cb_filter_down)
+        QWidget.setTabOrder(self.cb_filter_down, self.cb_filter_up)
+        QWidget.setTabOrder(self.cb_filter_up, self.sb_prom)
+        QWidget.setTabOrder(self.sb_prom, self.cb_side)
+        QWidget.setTabOrder(self.cb_side, self.btn_start)
+        QWidget.setTabOrder(self.btn_start, self.btn_stop)
 
         self.retranslateUi(Abr_Config)
 

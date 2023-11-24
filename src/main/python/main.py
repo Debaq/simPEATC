@@ -33,7 +33,7 @@ tr = QCoreApplication.translate
 class PopupDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle('Ventana Modal')
+        self.setWindowTitle('Selección de casos')
 
         # Hacer que la ventana sea modal
         self.setModal(True)
@@ -130,6 +130,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.total_averages = 20
         self.current_measuring = [None, None]
         self.memory = {}
+        self.donde = False
 
         #########TEMP TEST
         self.count_averages = 0
@@ -236,20 +237,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return curve
 
     def graph(self, side):
+        self.done = False
         if self.count_averages == 0:
             self.new_curve(side)
             self.count_averages = 1
         elif self.count_averages < self.total_averages:
             self.count_averages +=1
         else:
+            self.done = True
             self.count_averages = 0
             self.control.stop_capture()
-            return
-        i_xy, c_xy, a, b = self.test_test(side)
-        data_line = {self.current_capture_curve:{"ipsi_xy":i_xy,"contra_xy":c_xy, "a":a, "b":b, "gap":1.8}}
+        i_xy, c_xy, a, b, repro = self.test_test(side)
+        intencity = self.current_setting['int']
+
+        data_line = {self.current_capture_curve:{"ipsi_xy":i_xy,"contra_xy":c_xy, "a":a, "b":b, "gap":1.8, 
+                                                 "repro" : repro, "intencity":intencity, "done" : self.done}}
         side_letter = 'r' if side == 'OD' else 'l'
         graph = f'graph_{side_letter}'
-        intencity = self.current_setting['int']
         getattr(self, graph).create_line(data_line, intencity)
 
     def fake_averages(self, averages, fake = True, express = False):
@@ -336,26 +340,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def test_test(self, side):
 
-        n_1 = {"lat": 1.53, "ink":[3.58, 5.37], "amp":[.5, 1], "repro": True, "morfo": [True, True, True], "th":20}
-        n_2 = {"lat": 1.7, "ink":[3.5, 5.5], "amp":[.4, .5], "repro": False, "morfo": [True, True, True], "th":50}
-        n_3 = {"lat": 1.6, "ink":[4, 6], "amp":[.4, .4], "repro": True, "morfo": [True, False, True], "th":40}
-        c_1 = {"lat": 2.6, "ink":[2.2, 4], "amp":[.7, 1], "repro": True, "morfo": [False, True, True], "th":60}
-        c_2 = {"lat": 3.6, "ink":[2.4, 3.8], "amp":[.7, 1], "repro": True, "morfo": [False, True, True], "th":70}
-        c_3 = {"lat": 2.1, "ink":[1.9, 4.1], "amp":[.7, 1], "repro": True, "morfo": [False, True, True], "th":40}
-        t_1 = {"lat": 2.0, "ink":[2, 4], "amp":[.5, .5], "repro": True, "morfo": [True, True, True], "th":60}
-        t_2 = {"lat": 3.1, "ink":[2.2, 3.8], "amp":[.4, .5], "repro": True, "morfo": [True, True, True], "th":70}
-        m_1 = {"lat": 1.5, "ink":[2, 3.8], "amp":[.7, .9], "repro": True, "morfo": [True, True, True], "th":20}
-        m_2 = {"lat": 1.7, "ink":[2.1, 4], "amp":[.3, .8], "repro": True, "morfo": [True, True, True], "th":30}
-        m_3 = {"lat": 1.6, "ink":[1.8, 3.6], "amp":[.5, .9], "repro": True, "morfo": [True, True, True], "th":10}
+        n_1 = {"lat": [1.6, 3.7, 5.6], "amp":[.5, 1], "repro": True, "morfo": [True, True, True], "th":20, "type" : "normal"}
+        n_2 = {"lat": [1.7,3.8, 5.7], "amp":[.4, .5], "repro": True, "morfo": [True, True, True], "th":30, "type" : "normal"}
+        n_3 = {"lat": [1.6, 3.5, 5.5], "amp":[.4, .4], "repro": True, "morfo": [True, True, True], "th":10, "type" : "normal"}
+        c_1 = {"lat": [1.78, 3.79, 5.95], "amp":[.1, 1], "repro": True, "morfo": [False, True, True], "th":60, "type" : "coclear"}
+        c_2 = {"lat": [1.78, 3.79, 5.95], "amp":[.2, 1], "repro": True, "morfo": [False, True, True], "th":70, "type" : "coclear"}
+        c_3 = {"lat": [1.78, 3.79, 5.85], "amp":[1, 1], "repro": True, "morfo": [False, True, True], "th":40, "type" : "coclear"}
+        t_1 = {"lat": [2.0, 4.4, 6.5], "amp":[.5, .5], "repro": True, "morfo": [True, True, True], "th":60, "type" : "transmission"}
+        t_2 = {"lat": [3.1, 5.1, 6.9], "amp":[.4, .5], "repro": True, "morfo": [True, True, True], "th":70, "type" : "transmission"}
+        m_1 = {"lat": [1.8, 3.5, 7.2], "amp":[.7, .9], "repro": True, "morfo": [True, True, True], "th":70, "type" : "neural"}
+        m_2 = {"lat": [1.7, 4, 6], "amp":[.3, .8], "repro": False, "morfo": [True, False, True], "th":60, "type" : "neural"}
+        m_3 = {"lat": [1.6, 4.4, 6.8], "amp":[.5, .9], "repro": False, "morfo": [False, True, True], "th":70, "type" : "neural"}
 
-        cases = [[n_1,n_2],[n_1,m_2],[n_3,m_3],[c_1,m_1],[m_2,c_2],[c_3,m_3],[m_1,t_1],
-                 [t_2,m_2],[n_1,c_1],[c_2,n_2],[n_3,c_3],[n_1,t_1],[t_2,n_2],[c_1,t_1],
-                 [t_2,c_2],[m_1,n_3],[c_1,m_2],[m_3,n_1],[t_2,n_1],[c_2,n_3],[m_3,c_2],
-                 [c_3,n_2],[n_2,m_1],[m_1,t_2],[n_1,m_2],[m_2,n_3]]
+        cases = [[n_1,n_2],[n_1,m_2],[n_3,m_3],[c_1,m_1],[m_2,c_2],[c_3,m_3],[n_1,t_1],
+                 [t_2,t_1],[n_1,c_1],[c_2,n_2],[n_3,c_3],[n_1,t_2],[t_2,n_2],[c_1,n_1],
+                 [t_1,t_2],[m_1,n_3],[c_1,m_2],[m_3,n_1],[t_2,n_1],[c_2,n_3],[m_3,c_2],
+                 [c_3,n_2],[n_2,m_1],[m_1,n_2],[n_1,m_2],[m_2,n_3]]
 
+        #8, 10, 26
+        
         case = cases[self.case][0] if side == "OD" else cases[self.case][1]
-        x,y, dx, dy, repro = ABR_Curve(self.current_setting["int"], self.current_setting, case, 0, [(self.count_averages*self.total_averages)*2.5, self.current_setting['average']])
-        return(x,y),(dx,dy),(0,0),(0,0)
+        if case["repro"] == False:
+            side_letter = 'r' if side == 0 else 'l'
+            graph = f"graph_{side_letter}"
+            repro_prev = getattr(self, graph).get_data(self.current_setting["int"])
+            if repro_prev == None:
+                repro_prev = 0
+        else:
+            repro_prev = 0
+
+
+        x,y, dx, dy, repro = ABR_Curve(self.current_setting["int"], self.current_setting, case, repro_prev, [(self.count_averages*self.total_averages)*2.5, self.current_setting['average']], done = self.done)
+        return(x,y),(dx,dy),(0,0),(0,0), repro
     
 ################TEST
 

@@ -332,6 +332,19 @@ class AbrGraph(GraphicsLayoutWidgetMod):
     def find_idx(self, array_in, value):
         array = np.asarray(array_in)
         return (np.abs(array - value)).argmin()
+    
+    def get_data(self, intencity):
+        #
+        #if name in self.data:
+        #    return self.data[name]
+        #else:
+        print(self.data)
+        value = None
+        for i in self.data:
+            if self.data[i]["done"] == True:
+                if self.data[i]["intencity"] == intencity:
+                    value = self.data[i]["repro"]
+        return value
 
     def export_(self):
         self.inf_a.hide()

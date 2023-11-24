@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>198</width>
-    <height>418</height>
+    <width>369</width>
+    <height>564</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -457,6 +457,20 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cb_stim</tabstop>
+  <tabstop>cb_pol</tabstop>
+  <tabstop>sb_intencity</tabstop>
+  <tabstop>sb_mskg</tabstop>
+  <tabstop>ch_atten</tabstop>
+  <tabstop>sb_rate</tabstop>
+  <tabstop>cb_filter_down</tabstop>
+  <tabstop>cb_filter_up</tabstop>
+  <tabstop>sb_prom</tabstop>
+  <tabstop>cb_side</tabstop>
+  <tabstop>btn_start</tabstop>
+  <tabstop>btn_stop</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

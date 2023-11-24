@@ -200,8 +200,8 @@ class Curva:
 
 # Ejemplo de uso:
 c = Curva(12)
-c.modificar_latencias_tardias(1)  # Cambiar latencia de curva III. Las otras curvas también se ajustarán según los interpeaks.
-c.modificar_amplitud()
+c.modificar_latencias_tardias(3)  # Cambiar latencia de curva III. Las otras curvas también se ajustarán según los interpeaks.
+
 print(c.obtener_curva_completa())
 
 
