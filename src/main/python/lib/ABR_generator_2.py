@@ -271,9 +271,11 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom, 
     #ONDA IV
     curve_IV = (lat_peak_IV, current_amp_IV)
     curve_IVp = (lat_peak_IV+.05, current_amp_IVp)
+    
     #ONDA V
     curve_V = (lat_peak_V,VrefIII)
     if done:
+        
         print(f"curva V {curve_V}")
     sn10 = (lat_sn10,current_amp_sn10)
     #ONDA VI
@@ -285,32 +287,17 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom, 
     if curve_VII[0] > end[0]:
         end = curve_VII
 
-    points = np.array([
-            [0,0],
 
-            [curve_cm[0]-0.05,0],
-            [curve_cmp[0],curve_cmp[1]],
-            [descanso_cm[0],descanso_cm[1]],
-            [curve_I[0],curve_I[1]],
-            [curve_Ip[0],curve_Ip[1]],
-
-            [curve_II[0],curve_II[1]],
-            [curve_IIp[0],curve_IIp[1]],
-
-            [curve_III[0],curve_III[1]],
-            [curve_IIIp[0],curve_IIIp[1]],
-
-            [curve_IV[0], curve_IV[1]],
-            [curve_IVp[0], curve_IVp[1]],
-
-            [curve_V[0],curve_V[1]],
-            [sn10[0],sn10[1]],
-
-            [curve_VI[0],curve_VI[1]],
-            [curve_VIp[0],curve_VIp[1]],
-            [curve_VII[0],curve_VII[1]],
-            [end[0],end[1]]        
-    ])
+    data_points = {"cm" : curve_cm, "cmp" : curve_cmp, "cmd":descanso_cm,
+                   "i" : curve_I, "ip": curve_Ip,
+                   "ii": curve_II, "iip": curve_IIp,
+                   "iii": curve_III, "iiip": curve_IIIp,
+                   "iv": curve_IV, "ivp": curve_IVp,
+                   "v":curve_V, "sn10":sn10,
+                   "vi": curve_VI, "vip": curve_VIp,
+                   "vii": curve_VII, "end": end}
+    
+    points = points_create(data_points, actual_intencity,preferences["morfo"],preferences["th"])
     
     Bezi = bz.Bezier()
     path = Bezi.evaluate_bezier(points, 20)
@@ -364,3 +351,87 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom, 
     return  px, y_new, x, y, var_repro
 
 #px, y_new = ABR_Curve()
+
+def points_create(data, intencity, morpho, th):
+
+    curve_cm = data["cm"]
+    curve_cmp = data["cmp"]
+    descanso_cm = data["cmd"]
+    curve_I = data["i"]
+    curve_Ip = data["ip"]
+    curve_II = data["ii"]
+    curve_IIp = data["iip"]
+    curve_III = data["iii"]
+    curve_IIIp = data["iiip"]
+    curve_IV = data["iv"]
+    curve_IVp = data["ivp"]
+    curve_V = data["v"]
+    sn10 = data["sn10"]
+    curve_VI = data["vi"]
+    curve_VIp = data["vip"]
+    curve_VII = data["vii"]
+    end = data["end"]
+
+
+    
+
+    cm = [[curve_cm[0]-0.05,0],
+         [curve_cmp[0],curve_cmp[1]],
+         [descanso_cm[0],descanso_cm[1]]]
+        
+    _i = [[curve_I[0],curve_I[1]],
+         [curve_Ip[0],curve_Ip[1]]]
+
+    _ii = [[curve_II[0],curve_II[1]],
+          [curve_IIp[0],curve_IIp[1]]]
+
+    _iii = [[curve_III[0],curve_III[1]],
+            [curve_IIIp[0],curve_IIIp[1]]]
+
+    _iv = [[curve_IV[0], curve_IV[1]],
+           [curve_IVp[0], curve_IVp[1]]]
+
+    _v = [[curve_V[0],curve_V[1]],
+          [sn10[0],sn10[1]]]
+
+    _vi = [[curve_VI[0],curve_VI[1]],
+           [curve_VIp[0],curve_VIp[1]]]
+
+    _vii = [[curve_VII[0],curve_VII[1]],
+            [end[0],end[1]]]
+    
+    zero = [[0,0]]
+
+    _morpho = [_i, _iii, _v]
+    curve = []
+    curve.append(zero)
+    tail = [_vi, _vii]
+    for i, value in enumerate(morpho):
+        curve.append(_morpho[i])
+
+
+
+    curve.append(tail[0])
+    curve.append(tail[1])
+
+    yes_iv = True
+    if intencity < th:
+        points = np.concatenate((cm, _vi, _vii))
+    else:
+       
+        for i, value in enumerate(curve):
+            if isinstance(value, bool):
+                yes_iv = False
+        if yes_iv:
+            curve.insert(2, _ii)
+            curve.insert(4, _iv) 
+        for i, value in enumerate(curve):
+            if isinstance(value, bool):
+                curve.pop(i)
+            
+        curve = [elemento for sublista in curve for elemento in sublista]
+        points = np.array(curve) 
+            
+
+
+    return points

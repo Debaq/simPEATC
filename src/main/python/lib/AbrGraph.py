@@ -338,7 +338,7 @@ class AbrGraph(GraphicsLayoutWidgetMod):
         #if name in self.data:
         #    return self.data[name]
         #else:
-        print(self.data)
+        #print(self.data)
         value = None
         for i in self.data:
             if self.data[i]["done"] == True:
