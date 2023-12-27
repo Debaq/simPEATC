@@ -37,9 +37,9 @@ class GraphLatInt(pg.GraphicsLayoutWidget):
     
     def filled_area(self):
         # Valores para crear el área sombreada
-        x_vals = [35, 45, 55, 75, 75, 55, 45, 35]
-        y_bottom_vals = [6.5, 6.0, 6.0, 5.9, 8.9, 9.2, 9.5, 10.5]
-        y_top_vals = [10.5, 9.5, 9.2, 8.9, 5.9, 6.0, 6.0, 6.5]
+        x_vals = [0,10,20,30,40,50,60,70,80]
+        y_bottom_vals = [8.6,8.1,7.7,7.3,6.8,6.3,6.0,5.7,5.4]
+        y_top_vals = [9.4,8.9,8.2,7.9,7.2,6.7,6.4,6.1,5.8]
         curve_top = self.pw.plot(x_vals, y_top_vals)
         curve_bottom = self.pw.plot(x_vals, y_bottom_vals)
         fill_between = pg.FillBetweenItem()

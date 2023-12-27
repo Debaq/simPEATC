@@ -36,10 +36,39 @@ class Ui_MainWindow(object):
         self.actionCambiar_Caso.setObjectName(u"actionCambiar_Caso")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.horizontalLayout = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout.setSpacing(0)
+        self.verticalLayout_3 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_3.setSpacing(0)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setContentsMargins(2, 0, 2, 0)
+        self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setContentsMargins(2, 0, 2, 0)
+        self.horizontalLayout.setContentsMargins(-1, 0, -1, -1)
+        self.lbl_info = QLabel(self.centralwidget)
+        self.lbl_info.setObjectName(u"lbl_info")
+
+        self.horizontalLayout.addWidget(self.lbl_info)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
+        self.lbl_time = QLabel(self.centralwidget)
+        self.lbl_time.setObjectName(u"lbl_time")
+
+        self.horizontalLayout.addWidget(self.lbl_time)
+
+        self.btn_next_case = QPushButton(self.centralwidget)
+        self.btn_next_case.setObjectName(u"btn_next_case")
+
+        self.horizontalLayout.addWidget(self.btn_next_case)
+
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer_2)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout)
+
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
         self.tabWidget.setMinimumSize(QSize(500, 0))
@@ -133,7 +162,7 @@ class Ui_MainWindow(object):
         self.layout_report.setContentsMargins(-1, -1, -1, 0)
         self.tabWidget.addTab(self.conc, "")
 
-        self.horizontalLayout.addWidget(self.tabWidget)
+        self.verticalLayout_3.addWidget(self.tabWidget)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -202,6 +231,9 @@ class Ui_MainWindow(object):
         self.actionSalir.setText(QCoreApplication.translate("MainWindow", u"Salir", None))
         self.actionP_rametros_Avanzados.setText(QCoreApplication.translate("MainWindow", u"P\u00e1rametros Avanzados", None))
         self.actionCambiar_Caso.setText(QCoreApplication.translate("MainWindow", u"Cambiar Caso", None))
+        self.lbl_info.setText("")
+        self.lbl_time.setText("")
+        self.btn_next_case.setText(QCoreApplication.translate("MainWindow", u"Caso siguiente", None))
         self.btn_scale_plus.setText(QCoreApplication.translate("MainWindow", u"+", None))
         self.lbl_scale.setText(QCoreApplication.translate("MainWindow", u"8\u00b5V", None))
         self.btn_scale_minus.setText(QCoreApplication.translate("MainWindow", u"-", None))

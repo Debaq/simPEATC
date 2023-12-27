@@ -89,7 +89,7 @@ class PDFCreator(FPDF):
         # Añadir los datos de LatAmp
         for i in ['I', 'II', 'III', 'IV', 'V']:
             lat_amp = curve_data['LatAmp'].get(i, [None, None])
-            values.append(f"{round(lat_amp[0],2)}({round(lat_amp[1],2)})" if lat_amp[0] is not None and lat_amp[1] is not None else "")
+            values.append(f"{lat_amp[0]}({lat_amp[1]})" if lat_amp[0] is not None else "")
 
         i_iii = round(curve_data['LatAmp']['III'][0] - curve_data['LatAmp']['I'][0],2) if curve_data['LatAmp']['III'][0] is not None and curve_data['LatAmp']['I'][0] is not None else ""
         iii_v = round(curve_data['LatAmp']['V'][0] - curve_data['LatAmp']['III'][0],2) if curve_data['LatAmp']['V'][0] is not None and curve_data['LatAmp']['III'][0] is not None else ""

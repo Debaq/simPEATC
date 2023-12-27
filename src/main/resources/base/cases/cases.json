@@ -1,0 +1,90 @@
+{
+  "n_1": {
+    "lat": [1.6, 3.7, 5.6],
+    "amp": [0.5, 1],
+    "repro": true,
+    "morfo": [true, true, true],
+    "th": 20,
+    "type": "normal"
+  },
+  "n_2": {
+    "lat": [1.7, 3.8, 5.7],
+    "amp": [0.4, 0.5],
+    "repro": true,
+    "morfo": [true, true, true],
+    "th": 30,
+    "type": "normal"
+  },
+  "n_3": {
+    "lat": [1.6, 3.5, 5.5],
+    "amp": [0.4, 0.4],
+    "repro": true,
+    "morfo": [true, true, true],
+    "th": 10,
+    "type": "normal"
+  },
+  "c_1": {
+    "lat": [1.78, 3.79, 5.95],
+    "amp": [0.1, 1],
+    "repro": true,
+    "morfo": [false, true, true],
+    "th": 60,
+    "type": "coclear"
+  },
+  "c_2": {
+    "lat": [1.78, 3.79, 5.95],
+    "amp": [0.2, 1],
+    "repro": true,
+    "morfo": [false, true, true],
+    "th": 70,
+    "type": "coclear"
+  },
+  "c_3": {
+    "lat": [1.78, 3.79, 5.85],
+    "amp": [1, 1],
+    "repro": true,
+    "morfo": [false, true, true],
+    "th": 40,
+    "type": "coclear"
+  },
+  "t_1": {
+    "lat": [2.0, 4.4, 6.5],
+    "amp": [0.5, 0.5],
+    "repro": true,
+    "morfo": [true, true, true],
+    "th": 60,
+    "type": "transmission"
+  },
+  "t_2": {
+    "lat": [3.1, 5.1, 6.9],
+    "amp": [0.4, 0.5],
+    "repro": true,
+    "morfo": [true, true, true],
+    "th": 70,
+    "type": "transmission"
+  },
+  "m_1": {
+    "lat": [1.8, 3.5, 7.2],
+    "amp": [0.7, 0.9],
+    "repro": true,
+    "morfo": [true, true, true],
+    "th": 70,
+    "type": "neural"
+  },
+  "m_2": {
+    "lat": [1.7, 4, 6],
+    "amp": [0.3, 0.8],
+    "repro": false,
+    "morfo": [true, false, true],
+    "th": 60,
+    "type": "neural"
+  },
+  "m_3": {
+    "lat": [1.6, 4.4, 6.8],
+    "amp": [0.5, 0.9],
+    "repro": false,
+    "morfo": [false, true, true],
+    "th": 70,
+    "type": "neural"
+  }
+}

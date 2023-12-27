@@ -67,26 +67,31 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom, 
 
     #print(f"control_setting: {control_setting}")
     
-    
     prom[0] = prom[1] if prom[0] == 0.0 else prom[0]
     add_amp = [0,0,0,0,0]
     add_lat = [0,0,0,0,0]
     #control_setting: {'stim': 'Click', 'pol': 'Alternada', 'int': 80, 'mkg': 0, 'rate': 10.1, 'filter_down': '1000', 'filter_passhigh': '50', 'prom': 1000, 'side': 'OD'}
     if control_setting["pol"] == "Rarefacción":
+        #hacia abajo
         add_amp = [x + 0.2 for x in add_amp]
         add_lat[:2] = [x - 0.15 for x in add_lat[:2]]
-        cm_pol = -0.5
-    elif control_setting["pol"] == "coclear":
+        cm_pol = -0.2
+    elif control_setting["pol"] == "Condensación":
         add_lat = [x + 0.15 for x in add_lat]
         add_amp[-1]+=0.2
-        cm_pol=0.5
+        cm_pol=0.2
     else:
         cm_pol = 0
     #########
-    if  preferences["type"] == "coclear":
+    if  preferences["type"] == "coclear" and control_setting["pol"] == "Condensación":
         #add_amp = [x + 0.2 for x in add_amp]
         #add_lat[:2] = [x - 0.15 for x in add_lat[:2]]
-        cm_pol = -0.5
+        cm_pol = 0.0
+    if  preferences["type"] == "coclear" and control_setting["pol"] == "Alternada":
+        #add_amp = [x + 0.2 for x in add_amp]
+        #add_lat[:2] = [x - 0.15 for x in add_lat[:2]]
+        cm_pol = -.1    
+
     ########################## RATE
     rate = control_setting["rate"]
     if rate > 30 and rate < 65:
@@ -99,6 +104,13 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom, 
         add_lat[:2] = [x + 0.3 for x in add_lat[:2]]
         add_amp=[x - 0.2 for x in add_amp]
     
+    if rate > 10 and rate < 30 and preferences["type"] == "neural":
+        preferences["morfo"] = [False,False,False]
+    elif rate < 10 and preferences["type"] == "neural":
+        preferences["morfo"] = [True,True,True]
+
+
+
     ########################  
     filter_down = float(control_setting["filter_down"])
     filter_passhigh = float(control_setting["filter_passhigh"])
@@ -108,7 +120,6 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom, 
     lat_III = preferences["lat"][1]
     lat_V =  preferences["lat"][2]
     amp = preferences["amp"]
-    morfo = preferences["morfo"]
     repro = preferences["repro"]
     window = 12
     VrelI = True
@@ -133,6 +144,12 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom, 
     else:
         var_lat = .5
         var_amp = .08
+
+    if  preferences["type"] == "coclear" and actual_intencity <=60:
+        var_lat = 1
+
+
+
     step_for_80_to_th = (80 - threshold)/5
     amp_v_in_step_80_to_th = amp[1] / step_for_80_to_th
     amp_I_in_step_80_to_th = amp[0]*2 / step_for_80_to_th
@@ -150,6 +167,8 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom, 
     #Se comienza con el calculo de cada peak
     #Latencias
     
+    
+
     lat_peak_I   =  lat_I + desv_lat + add_lat[0]
     lat_peak_III =  lat_III + desv_lat + add_lat[2]
     dist_III_I = (lat_peak_III - lat_peak_I)/2
@@ -157,7 +176,7 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom, 
 
     lat_peak_V   =  lat_V + desv_lat + add_lat[4]
     lat_peak_IV  =  lat_peak_V-.5
-    lat_sn10     = lat_peak_V + 1
+    lat_sn10     =  lat_peak_V + 1
 
     #print(f"lat_I: {lat_peak_I}, lat_II: {lat_peak_II},lat_III: {lat_peak_III},lat_IV: {lat_peak_IV},lat_V: {lat_peak_V},lat_sn10: {lat_sn10}")
 
@@ -232,39 +251,21 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom, 
     #print(f"amplitud onda V: {current_amp_V}")
 
 
-    #MORFOLOGIA
-    if not morfo[0]:
-        current_amp_I = 0
-        current_amp_Ip = 0
-    
-    if current_amp_Ip == 0:
-        current_amp_II = 0
-        current_amp_IIp=0
-        
-    if not morfo[1]:
-        current_amp_III = 0
-        current_amp_IIIp = 0
 
-    if not morfo[2]:
-        current_amp_V = current_amp_IIIp        
-        current_amp_sn10 = current_amp_IIIp
-        VrefIII = current_amp_IIIp
-        current_amp_IV = current_amp_IIIp
-        current_amp_IVp = current_amp_IIIp
         
     
     #se crean las curvas con su (latencia, amplitud)
     #MC    
-    curve_cm = (lat_peak_I-0.7, 1)
-    curve_cmp = (curve_cm[0]+0.1, cm_pol)
-    descanso_cm = (curve_cmp[0]+0.2,0)
+    curve_cm = (lat_peak_I/3, cm_pol)
+    curve_cmp = (curve_cm[0]+lat_peak_I/3, 0)
+    descanso_cm = (curve_cmp[0]+lat_peak_I/6,0)
     #print(curve_cm)
     #ONDA I
     curve_I = (lat_peak_I,current_amp_I)
-    curve_Ip = (curve_I[0]+.5,current_amp_Ip)
+    curve_Ip = (curve_I[0]+((lat_peak_II-lat_peak_I)/3),current_amp_Ip)
     #ONDA II
     curve_II = (lat_peak_II, current_amp_II)
-    curve_IIp = (curve_II[0]+.3,curve_II[1]-.02)
+    curve_IIp = (curve_II[0]+((lat_peak_III-lat_peak_II)/2),0)
     #ONDA III
     curve_III = (lat_peak_III,current_amp_III)
     curve_IIIp = (curve_III[0]+.9,current_amp_IIIp)
@@ -274,9 +275,21 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom, 
     
     #ONDA V
     curve_V = (lat_peak_V,VrefIII)
-    if done:
-        
-        print(f"curva V {curve_V}")
+    """if done:
+        print(f"curva cm {curve_cm}")
+        print(f"curva cmp {curve_cmp}")
+
+        print(f"curva I {curve_I}")
+        print(f"curva Ip {curve_Ip}")
+
+        print(f"curva II {curve_II}")
+        print(f"curva IIp {curve_IIp}")
+
+        print(f"curva III {curve_III}")
+        print(f"curva IIIp {curve_IIIp}")
+
+        print(f"curva V {curve_V}")"""
+
     sn10 = (lat_sn10,current_amp_sn10)
     #ONDA VI
     curve_VI = (lat_sn10+1.5, current_amp_VI)
@@ -372,12 +385,8 @@ def points_create(data, intencity, morpho, th):
     curve_VII = data["vii"]
     end = data["end"]
 
-
-    
-
-    cm = [[curve_cm[0]-0.05,0],
-         [curve_cmp[0],curve_cmp[1]],
-         [descanso_cm[0],descanso_cm[1]]]
+    _cm = [[curve_cm[0],curve_cm[1]],
+         [curve_cmp[0],curve_cmp[1]]]
         
     _i = [[curve_I[0],curve_I[1]],
          [curve_Ip[0],curve_Ip[1]]]
@@ -405,10 +414,16 @@ def points_create(data, intencity, morpho, th):
     _morpho = [_i, _iii, _v]
     curve = []
     curve.append(zero)
+    curve.append(_cm)
     tail = [_vi, _vii]
     for i, value in enumerate(morpho):
-        curve.append(_morpho[i])
+        if value:
+            curve.append(_morpho[i])
+        else:
+            _morpho[i][0][1] = 0
+            _morpho[i][1][1] = 0
 
+            curve.append(_morpho[i])
 
 
     curve.append(tail[0])
@@ -416,21 +431,21 @@ def points_create(data, intencity, morpho, th):
 
     yes_iv = True
     if intencity < th:
-        points = np.concatenate((cm, _vi, _vii))
+        points = np.concatenate((zero, _vi, _vii))
     else:
        
         for i, value in enumerate(curve):
             if isinstance(value, bool):
                 yes_iv = False
         if yes_iv:
-            curve.insert(2, _ii)
-            curve.insert(4, _iv) 
+            curve.insert(3, _ii)
+            #curve.insert(4, _iv)
         for i, value in enumerate(curve):
             if isinstance(value, bool):
                 curve.pop(i)
             
         curve = [elemento for sublista in curve for elemento in sublista]
-        points = np.array(curve) 
+        points = np.array(curve)
             
 
 

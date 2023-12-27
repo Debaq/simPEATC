@@ -1,5 +1,5 @@
 import shutil
-import sys
+import os
 from datetime import datetime
 
 import fitz
@@ -53,6 +53,10 @@ class AbrReport(QWidget, Ui_AbrReport):
             # Aquí asumimos que el PDF que deseas imprimir es el actualmente cargado en pdf_widget
             self.perform_print(printer)
 
+    def set_le_eva(self, text):
+        self.le_eva.setDisabled(True)
+        self.le_eva.setText(text)
+
     def open_save_as_dialog(self):
         # Esta función abre el diálogo 'Guardar Como'
         options = QFileDialog.Options()
@@ -64,9 +68,14 @@ class AbrReport(QWidget, Ui_AbrReport):
                                                   "PDF Files (*.pdf)",
                                                   options=options)
         if fileName:
-            #print(f"El archivo se guardará como: {fileName}")
+            print(f"El archivo se guardará como: {fileName}")
             self.save_file(fileName)
             # Aquí podrías agregar la lógica para guardar el archivo PDF
+
+    def save_file_auto(self):
+        defaultFileName = f"~/Escritorio/EvPracticaElectro/caso_{self.case+1}_{self.le_eva.text()}.pdf"
+        expandedPath = os.path.expanduser(defaultFileName)
+        self.save_file(expandedPath)
 
     def save_file(self, new_path):
         try:

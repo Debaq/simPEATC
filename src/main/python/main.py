@@ -7,10 +7,12 @@
 #                                                               #
 #################################################################
 
+import json
+import random
 import sys
 
-import numpy as np
 from base import context
+from lib.ABR_generator_2 import ABR_Curve
 from lib.AbrControl import AbrControl
 from lib.AbrDetail import AbrDetail
 from lib.AbrDetailAllCurves import AbrDetailAllCurves
@@ -21,16 +23,63 @@ from lib.AbrTable import AbrTable
 from lib.EEG import EEG
 from lib.FSP import FSP
 from lib.PdfCreator import PDFCreator
-from PySide6.QtCore import QCoreApplication, QTimer
-from PySide6.QtWidgets import QDialog, QMainWindow, QSizePolicy, QSpacerItem, QVBoxLayout, QComboBox, QPushButton
+from PySide6.QtCore import QCoreApplication, Qt, QTimer
+from PySide6.QtGui import QGuiApplication
+from PySide6.QtWidgets import (QComboBox, QDialog, QFrame, QLabel, QLineEdit,
+                               QMainWindow, QPushButton, QSizePolicy,
+                               QSpacerItem, QTextEdit, QVBoxLayout,
+                               QMessageBox)
 from UI.AbrAdvanceSettings_ui import Ui_AdvanceSettings
 from UI.AbrMain_ui import Ui_MainWindow
-from lib.ABR_generator_2 import ABR_Curve
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
+from lib.convinaciones import elegir_combinacion_especifica, casos, namecasos
 
 tr = QCoreApplication.translate
 
+STATE_INIT = "exam"
 
-class PopupDialog(QDialog):
+
+class JSONFileHandler(FileSystemEventHandler):
+    def __init__(self, json_file_path, callback):
+        super().__init__()
+        self.json_file_path = json_file_path
+        self.callback = callback
+
+    def on_modified(self, event):
+        if event.src_path == self.json_file_path:
+            print(f"El archivo JSON ha sido modificado: {event.src_path}")
+            self.callback()
+
+
+
+class IsOver(QDialog):
+    def __init__(self, parent=None):
+        super(IsOver, self).__init__(parent)
+
+        # Configuraciones de la ventana modal
+        self.setWindowTitle("Tiempo Acabado")
+        self.setModal(True)  # Hace la ventana modal
+        self.setFixedSize(300, 100)  # Tamaño fijo de la ventana
+
+        # Inicialización de Widgets
+        layout = QVBoxLayout(self)
+        label = QLabel("El tiempo se ha acabado, verifique con el docente su caso", self)
+        next_case_button = QPushButton("Siguiente caso", self)
+        next_case_button.clicked.connect(self.on_next_case)
+
+        # Agregar Widgets al layout
+        layout.addWidget(label)
+        layout.addWidget(next_case_button)
+
+    def on_next_case(self):
+        # Acción cuando se hace clic en 'Siguiente caso'
+        #print("Preparando el siguiente caso...")
+        self.accept()  # Cierra la ventana modal
+
+
+
+class ModeP(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle('Selección de casos')
@@ -48,8 +97,19 @@ class PopupDialog(QDialog):
         self.accept_button = QPushButton("Aceptar")
         self.accept_button.clicked.connect(self.on_accept_clicked)
         layout.addWidget(self.accept_button)
+        self.center_on_screen()
 
 
+    def center_on_screen(self):
+        # Obtener la resolución de la pantalla
+        screen_resolution = QGuiApplication.primaryScreen().geometry()
+
+        # Calcular la posición central para el diálogo
+        x = (screen_resolution.width() - self.width()) / 2
+        y = (screen_resolution.height() - self.height()) / 2
+
+        # Establecer la posición del diálogo en el centro de la pantalla
+        self.move(x, y)
 
     def create_list(self):
         for i in range(26):
@@ -62,11 +122,116 @@ class PopupDialog(QDialog):
         return self.combo_box.currentIndex()
 
 
+class ModeEva(QDialog):
+    def __init__(self, parent=None, x_numero = None):
+        super().__init__(parent)
+        self.setWindowTitle('Comenzar Evaluación')
+
+        # Hacer que la ventana sea modal
+        self.setModal(True)
+
+        # Crear el ComboBox y el botón dentro de la ventana de diálogo
+        layout = QVBoxLayout(self)
+        text = QTextEdit("""<p style="text-align: center;"><strong>Incio de evaluaci&oacute;n </strong></p>
+<p style="text-align: justify;">A continuaci&oacute;n posee 35 minutos para la realizaci&oacute;n de un caso cl&iacute;nico aleatorio.</p>
+<p style="text-align: justify;">Favor ponga su nombre a continuaci&oacute;n:</p>
+<p style="text-align: justify;">&nbsp;</p>
+<p style="text-align: justify;">*el numero debajo es el caso seleccionado automaticamente para esta prueba, si este fuese el mismo favor solicitar el cambio al docente</p>
+                         """)
+        text.setReadOnly(True)
+        text.setFrameShape(QFrame.NoFrame)
+        text.setReadOnly(True)
+        text.setTextInteractionFlags(Qt.NoTextInteraction)
+        layout.addWidget(text)
+        self.name = QLineEdit()
+        self.name.setPlaceholderText("Nombre Completo")
+        layout.addWidget(self.name)
+        
+        #self.case = self.generar_numero_aleatorio(x_numeros=x_numero)
+        self.case = elegir_combinacion_especifica()
+        case = self.actualizar_label()
+        layout.addWidget(case)
+
+        self.accept_button = QPushButton("Iniciar")
+        self.accept_button.clicked.connect(self.on_accept_clicked)
+        layout.addWidget(self.accept_button)
+        self.center_on_screen()
+
+    def actualizar_label(self):
+        # Convertir todos los elementos a string y sumar 1 a cada uno
+        casos_formato = [str(caso + 1) for caso in self.case]
+
+        if len(casos_formato) > 1:
+            # Si hay más de un elemento, inserta 'y' antes del último elemento
+            casos_texto = ", ".join(casos_formato[:-1]) + " y " + casos_formato[-1]
+        else:
+            # Si solo hay un elemento, solo usa ese elemento
+            casos_texto = casos_formato[0]
+
+        return QLabel(f"Casos: {casos_texto}")
+
+
+    def center_on_screen(self):
+        # Obtener la resolución de la pantalla
+        screen_resolution = QGuiApplication.primaryScreen().geometry()
+
+        # Calcular la posición central para el diálogo
+        x = (screen_resolution.width() - self.width()) / 2
+        y = (screen_resolution.height() - self.height()) / 2
+
+        # Establecer la posición del diálogo en el centro de la pantalla
+        self.move(x, y)
+
+
+    def generar_numero_aleatorio(self, minimo=0, maximo=1,  x_numeros=2):
+        if minimo > maximo:
+            minimo, maximo = maximo, minimo  # Intercambiar los valores si minimo es mayor que maximo
+
+        if x_numeros > (maximo - minimo + 1):
+            raise ValueError("No es posible generar la cantidad solicitada de números únicos en el rango dado")
+
+        numeros_generados = set()
+
+        while len(numeros_generados) < x_numeros:
+            numero = random.randint(minimo, maximo)
+            numeros_generados.add(numero)
+
+        return list(numeros_generados)
+
+    def create_list(self):
+        for i in range(26):
+            self.combo_box.addItem(f'Caso {i+1}')
+
+    def on_accept_clicked(self):
+        if not self.name.text().strip():
+            # Si el campo 'name' está vacío, mostrar un mensaje de error
+            QMessageBox.warning(self, "Error", "Por favor, ingrese su nombre.")
+        else:
+            # Si 'name' tiene un valor, cerrar la ventana
+            self.accept()  # Esto cerrará la ventana de diálogo
+            return self.case
+    
+    def reject(self):
+        # Se llama cuando se presiona Escape. Evita que la ventana se cierre.
+        # Puedes dejarlo vacío o mostrar un mensaje, según tus necesidades.
+        pass
+
+    def closeEvent(self, event):
+        # Se llama cuando se intenta cerrar la ventana (p. ej., con Alt+F4).
+        if not self.name.text().strip():
+            # Si el campo 'name' está vacío, rechazar el evento de cierre
+            QMessageBox.warning(self, "Error", "Por favor, ingrese su nombre antes de cerrar.")
+            event.ignore()  # Ignora el evento de cierre
+        else:
+            event.accept()  # Acepta el evento de cierre
+
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self) -> None:
         QMainWindow.__init__(self)
         self.setupUi(self)
         self.setWindowTitle("simPeatc")
+        self.showFullScreen()
 
         self.control = AbrControl()
         self.detail = AbrDetail()
@@ -113,11 +278,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_scale_minus.clicked.connect(self.scale_graph)
         self.btn_scale_plus.clicked.connect(self.scale_graph)
 
+        self.btn_next_case.hide()
+        self.btn_next_case.clicked.connect(self.force_next)
+
         ######Variables de Estado
         self.control.capture.connect(self.capture_state)
         self.state_capture = "stopped"
         self.capture_timer = QTimer(self)
         self.capture_timer.timeout.connect(self.capture)
+        self.timer = QTimer()
+        self.time_eva = 35*60
+        self.segundos_restantes = self.time_eva
+        self.timer.timeout.connect(self.actualizar_tiempo)
+        self.n_cases = 2
+        self.current_case = 0
 
         ######Variables de almacenamiento
         self.setting_current = {}
@@ -132,17 +306,103 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.memory = {}
         self.donde = False
 
+        ##########Data Base
+        self.json_file_path = 'cases.json'
+        self.data = self.cargar_json(self.json_file_path)
+
         #########TEMP TEST
         self.count_averages = 0
 
         self.open_modal()
+        self.inicializar_observador()
+
+    def force_next(self):
+        self.segundos_restantes = 1
+
+    def actualizar_tiempo(self):
+        minutos = self.segundos_restantes // 60
+        segundos = self.segundos_restantes % 60
+        tiempo_formateado = f"{minutos:02}:{segundos:02}"
+
+        if self.segundos_restantes <= 300:  # Menos de 5 minutos (300 segundos)
+            self.lbl_time.setStyleSheet("color: red;")
+        else:
+            self.lbl_time.setStyleSheet("")  # Restablecer el estilo por defecto
+
+        if self.segundos_restantes <= 1200:
+            self.btn_next_case.show()
+
+        self.lbl_time.setText(tiempo_formateado)
+
+        if self.segundos_restantes == 0:
+            self.timer.stop()
+            next = IsOver(self)
+            self.autosave()
+            next.exec()
+            self.reset()
+            self.reset_and_reload()
+            self.case = self.cases[1]
+            self.report.case = self.cases[1]
+
+        else:
+            self.segundos_restantes -= 1
+
+    def autosave(self):
+        self.report_svg()
+        self.report.save_file_auto()
+
+    def reset(self):
+        for i in self.curves_R:
+            self.update_delete_curve(i)
+            letter = 'r' if i[0] == 'R' else 'l'
+            graph = f'graph_{letter}'
+            getattr(self, graph).active_curve(i)
+            getattr(self, graph).delete_curve()
+        for i in self.curves_L:
+            self.update_delete_curve(i)
+            letter = 'r' if i[0] == 'R' else 'l'
+            graph = f'graph_{letter}'
+            getattr(self, graph).active_curve(i)
+            getattr(self, graph).delete_curve()
+
+
+    def reset_and_reload(self):
+        self.current_case += 1 
+        if self.current_case < len(self.cases): 
+            self.lbl_info.setText(f"Estamos evaluando el caso {self.cases[self.current_case]+1}")
+            self.segundos_restantes = self.time_eva
+            self.btn_next_case.hide()
+            self.timer.start()
+
+
+        else:
+            self.lbl_info.setText(f"Se acabaron los casos, fin de la partida")
+            
 
     def open_modal(self):
         # Esta función crea y abre la ventana de diálogo
-        dialog = PopupDialog(self)
+        if STATE_INIT == "exam":
+            dialog = ModeEva(self, x_numero=self.n_cases)
+            exam = True
+        else:
+            dialog = ModeP(self)
+            exam = False
+
         dialog.exec()
-        self.case = dialog.combo_box.currentIndex()
-        self.report.case = self.case
+
+        if exam:
+            self.cases = dialog.case
+            name_user = dialog.name.text()
+            self.report.set_le_eva(name_user)
+        
+        else:
+            self.case = dialog.combo_box.currentIndex()
+        
+        self.report.case = self.cases[0]
+        self.case = self.cases[0]
+        self.lbl_info.setText(f"Estamos evaluando el caso {self.cases[self.current_case]+1}")
+        self.timer.start(1000)
+
 
     def update_delete_curve(self, curve):
         if curve in self.memory:
@@ -201,7 +461,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.state_capture = state
             self.current_setting = self.control.get_data()
             self.total_averages = self.fake_averages(self.current_setting["average"])
-            self.capture_timer.start(500)
+            self.capture_timer.start(200)
         elif state == 'stopped':
             self.state_capture = state
             self.capture_timer.stop()
@@ -340,26 +600,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def test_test(self, side):
 
-        n_1 = {"lat": [1.6, 3.7, 5.6], "amp":[.5, 1], "repro": True, "morfo": [True, True, True], "th":20, "type" : "normal"}
-        n_2 = {"lat": [1.7,3.8, 5.7], "amp":[.4, .5], "repro": True, "morfo": [True, True, True], "th":30, "type" : "normal"}
-        n_3 = {"lat": [1.6, 3.5, 5.5], "amp":[.4, .4], "repro": True, "morfo": [True, True, True], "th":10, "type" : "normal"}
-        c_1 = {"lat": [1.78, 3.79, 5.95], "amp":[.1, 1], "repro": True, "morfo": [False, True, True], "th":60, "type" : "coclear"}
-        c_2 = {"lat": [1.78, 3.79, 5.95], "amp":[.2, 1], "repro": True, "morfo": [False, True, True], "th":70, "type" : "coclear"}
-        c_3 = {"lat": [1.78, 3.79, 5.85], "amp":[1, 1], "repro": True, "morfo": [False, True, True], "th":40, "type" : "coclear"}
-        t_1 = {"lat": [2.0, 4.4, 6.5], "amp":[.5, .5], "repro": True, "morfo": [True, True, True], "th":60, "type" : "transmission"}
-        t_2 = {"lat": [3.1, 5.1, 6.9], "amp":[.4, .5], "repro": True, "morfo": [True, True, True], "th":70, "type" : "transmission"}
-        m_1 = {"lat": [1.8, 3.5, 7.2], "amp":[.7, .9], "repro": True, "morfo": [True, True, True], "th":70, "type" : "neural"}
-        m_2 = {"lat": [1.7, 4, 6], "amp":[.3, .8], "repro": False, "morfo": [True, False, True], "th":60, "type" : "neural"}
-        m_3 = {"lat": [1.6, 4.4, 6.8], "amp":[.5, .9], "repro": False, "morfo": [False, True, True], "th":70, "type" : "neural"}
+        """
+        morfología : presencia de ondas I,III,V
+        replicabilidad : +- 0.1 ms
+        Latencias Absolutas a 75: +-0.2ms
+            - I : 1.6 ms
+            -III: 3.7 ms
+            -V: 5.6 ms
+        Interonda +-0.4 ms
+            -I-III : 2.0ms
+            -III-V : 1.8ms
+            -I-V : 3.8 ms
 
-        cases = [[n_1,n_2],[n_1,m_2],[n_3,m_3],[c_1,m_1],[m_2,c_2],[c_3,m_3],[n_1,t_1],
-                 [t_2,t_1],[n_1,c_1],[c_2,n_2],[n_3,c_3],[n_1,t_2],[t_2,n_2],[c_1,n_1],
-                 [t_1,t_2],[m_1,n_3],[c_1,m_2],[m_3,n_1],[t_2,n_1],[c_2,n_3],[m_3,c_2],
-                 [c_3,n_2],[n_2,m_1],[m_1,n_2],[n_1,m_2],[m_2,n_3]]
+        desviación de latencias sobre los 50dB: 0.3ms / 10dB
+        desviación de latencia onda V en cambio de tasa: desde los 0.6 a 0.8
+        Ratio V/I  : mayor a 1
+        interaural diferencia : menor que 0.4
+
+        """
+
 
         #8, 10, 26
-        
-        case = cases[self.case][0] if side == "OD" else cases[self.case][1]
+        side = 0 if side == "OD" else 1
+
+        case = casos(self.case, side)
+        #case = casos(27, side)
+        #print(namecasos(26))
+
         if case["repro"] == False:
             side_letter = 'r' if side == 0 else 'l'
             graph = f"graph_{side_letter}"
@@ -373,51 +640,44 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         x,y, dx, dy, repro = ABR_Curve(self.current_setting["int"], self.current_setting, case, repro_prev, [(self.count_averages*self.total_averages)*2.5, self.current_setting['average']], done = self.done)
         return(x,y),(dx,dy),(0,0),(0,0), repro
     
-################TEST
+################data
+
+    def cargar_json(self, json_file_path):
+        data = context.get_resource(f'cases/{json_file_path}')
+        with open(data, 'r', encoding='utf-8') as archivo:
+            return json.load(archivo)
 
 
+    def inicializar_observador(self):
+        # Inicializar el observador de cambios
+        self.observer = Observer()
+        data = context.get_resource(f'cases/{self.json_file_path}')
 
-    def generar_puntos(self, num_puntos=12):
-        """
-        Genera puntos aleatorios en el rango:
-        x: [1, 12]
-        y: [-2, 2]
-        
-        Args:
-            num_puntos (int): Número de puntos a generar.
-
-        Returns:
-            tuple: Arrays de x e y con los puntos generados.
-        """
-
-        step = 12/num_puntos
-        lista = np.arange(0, 12, step)
-        a_x = lista
-        b_x = lista
-        
-        a = np.random.uniform(-2, 2, num_puntos)
-        b = np.random.uniform(-2, 2, num_puntos)
-        a = a.tolist()
-        b = b.tolist()
-
-        x = lista
-        x_contra = lista
-        y = np.random.uniform(-1, 1, num_puntos)
-        y_contra = np.random.uniform(-2, 2, num_puntos)
-        y_contra = y_contra.tolist()
-        
-        return (x,y),(x_contra, y_contra),(a_x,a), (b_x,b)
+        handler = JSONFileHandler(data, self.actualizar_datos)
+        self.observer.schedule(handler, path='.', recursive=False)
+        self.observer.start()
     
+    def actualizar_datos(self):
+        self.data = self.cargar_json(self.json_file_path)
+        if self.data:
+            print("se actualizo")
+
+    #########EVENTS
+    def closeEvent(self, event):
+        # Detener el observador de cambios cuando se cierre la ventana
+        self.observer.stop()
+        self.observer.join()
+        event.accept()
 
 
 
 if __name__ == '__main__':
     window = MainWindow()
     style_file = context.get_resource('qss/style_base.qss')
-    line = ""
-    with open(style_file, 'r') as f:
+
+    with open(style_file, 'r', encoding='utf-8') as f:
         style = f.read()
-            
+           
     window.setStyleSheet(style)
     window.show()
     

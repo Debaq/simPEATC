@@ -162,6 +162,8 @@ class AbrGraph(GraphicsLayoutWidgetMod):
             self.sig_del_curve.emit(self.act_curve)
             self.act_curve = None
 
+        
+
     def get_active(self):
         return self.act_curve
 
