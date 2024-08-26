@@ -42,8 +42,8 @@ class GraphLatInt(pg.GraphicsLayoutWidget):
         y_top_vals = [9.4,8.9,8.2,7.9,7.2,6.7,6.4,6.1,5.8]
         curve_top = self.pw.plot(x_vals, y_top_vals)
         curve_bottom = self.pw.plot(x_vals, y_bottom_vals)
-        fill_between = pg.FillBetweenItem()
-        fill_between.setCurves(curve_top, curve_bottom)
+        fill_between = pg.FillBetweenItem(curve_top, curve_bottom)
+        #fill_between.setCurves(curve_top, curve_bottom)
         fill_between.setBrush(pg.mkColor(100, 100, 250, 80))
         self.pw.addItem(fill_between)
         #self.pw.fillBetween(x_vals, y_bottom_vals, y_top_vals, brush=fill_color)

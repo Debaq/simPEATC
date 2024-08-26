@@ -163,7 +163,6 @@ class AbrGraph(GraphicsLayoutWidgetMod):
             self.act_curve = None
 
         
-
     def get_active(self):
         return self.act_curve
 
@@ -249,7 +248,7 @@ class AbrGraph(GraphicsLayoutWidgetMod):
         if lbl not in self.marks[name_curve]:
             self.marks[name_curve][lbl] = [x,y]
             y = y + self.data[name_curve]['gap']
-            curve_mark = f"<h3>&darr;<sup>{lbl}</sup></h3>"
+            curve_mark = f"<span style='color: #000; font-size: 7pt;'><h3>&darr;<sup>{lbl}</sup></h3></span>"
             text = TextItemMod(name = name, tipo='mark', curve_parent=name_curve, html = curve_mark,  anchor=(0.34,0.6), color=(0,0,0,255))
             font = QFont()
             font.setPixelSize(13)

@@ -33,7 +33,7 @@ from UI.AbrAdvanceSettings_ui import Ui_AdvanceSettings
 from UI.AbrMain_ui import Ui_MainWindow
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
-from lib.convinaciones import elegir_combinacion_especifica, casos, namecasos
+from lib.conbinaciones import elegir_combinacion_especifica, casos, namecasos
 
 tr = QCoreApplication.translate
 
@@ -393,14 +393,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if exam:
             self.cases = dialog.case
             name_user = dialog.name.text()
-            self.report.set_le_eva(name_user)
-        
+            self.report.set_le_eva(name_user)        
+            self.report.case = self.cases[0]
+            self.case = self.cases[0]
+            self.lbl_info.setText(f"Estamos evaluando el caso {self.cases[self.current_case]+1}")
+
         else:
             self.case = dialog.combo_box.currentIndex()
         
-        self.report.case = self.cases[0]
-        self.case = self.cases[0]
-        self.lbl_info.setText(f"Estamos evaluando el caso {self.cases[self.current_case]+1}")
         self.timer.start(1000)
 
 
