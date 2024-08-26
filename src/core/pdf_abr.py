@@ -5,7 +5,7 @@ from base import context
 
 
 def dataset(data):
-    data_c = [("Curva", "Estimulo", "Polaridad", "Intencidad", "Masking","Tasa", "Filtros","Promediaciones", "I", "III", "V", "I-III", "III-V", "I-V")]
+    data_c = [("Curva", "Estimulo", "Polaridad", "intensidad", "Masking","Tasa", "Filtros","Promediaciones", "I", "III", "V", "I-III", "III-V", "I-V")]
     for i in data:
         view = data[i]["view"]
         if view:

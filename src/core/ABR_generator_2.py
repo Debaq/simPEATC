@@ -155,8 +155,8 @@ def ABR_Curve(actual_intencity, control_setting, preferences, repro_prev, prom, 
     amp_I_in_step_80_to_th = amp[0]*2 / step_for_80_to_th
 
     #calcula los valores standares que se le agregarán finalmente al las latencias y amplitudes
-    var_int_V = step_80_to_actual_int * amp_v_in_step_80_to_th #variación de intencidad onda V
-    var_int_I = step_80_to_actual_int * amp_I_in_step_80_to_th #variación de intencidad onda I
+    var_int_V = step_80_to_actual_int * amp_v_in_step_80_to_th #variación de intensidad onda V
+    var_int_I = step_80_to_actual_int * amp_I_in_step_80_to_th #variación de intensidad onda I
 
     desv_lat = (var_lat * var_int_V) * direcc_lat
     desv_amp_V = (var_int_V + var_amp) * direc_amp

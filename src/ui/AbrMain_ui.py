@@ -240,7 +240,7 @@ class Ui_MainWindow(object):
         self.lbl_coord_r.setText(QCoreApplication.translate("MainWindow", u"N/D", None))
         self.lbl_coord_l.setText(QCoreApplication.translate("MainWindow", u"N/D", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.abr), QCoreApplication.translate("MainWindow", u"Gr\u00e1ficos", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.lat), QCoreApplication.translate("MainWindow", u"Latencia/Intencidad", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.lat), QCoreApplication.translate("MainWindow", u"Latencia/intensidad", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.conc), QCoreApplication.translate("MainWindow", u"Conclusiones", None))
         self.menuArchivo.setTitle(QCoreApplication.translate("MainWindow", u"Archivo", None))
 #if QT_CONFIG(statustip)

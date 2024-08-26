@@ -6120,7 +6120,7 @@
         "kind": 2,
         "importPath": "src.main.python.lib.pdf_abr",
         "description": "src.main.python.lib.pdf_abr",
-        "peekOfCode": "def dataset(data):\n    data_c = [(\"Curva\", \"Estimulo\", \"Polaridad\", \"Intencidad\", \"Masking\",\"Tasa\", \"Filtros\",\"Promediaciones\", \"I\", \"III\", \"V\", \"I-III\", \"III-V\", \"I-V\")]\n    for i in data:\n        view = data[i][\"view\"]\n        if view:\n            stim = data[i][\"stim\"]\n            pol = data[i][\"pol\"]\n            intencity = f\"{data[i]['intencity']} dBnHl\"\n            mkg = f\"{data[i]['mkg']} dBnHl\"\n            rate =f\"{data[i]['rate']} est./seg.\"",
+        "peekOfCode": "def dataset(data):\n    data_c = [(\"Curva\", \"Estimulo\", \"Polaridad\", \"intensidad\", \"Masking\",\"Tasa\", \"Filtros\",\"Promediaciones\", \"I\", \"III\", \"V\", \"I-III\", \"III-V\", \"I-V\")]\n    for i in data:\n        view = data[i][\"view\"]\n        if view:\n            stim = data[i][\"stim\"]\n            pol = data[i][\"pol\"]\n            intencity = f\"{data[i]['intencity']} dBnHl\"\n            mkg = f\"{data[i]['mkg']} dBnHl\"\n            rate =f\"{data[i]['rate']} est./seg.\"",
         "detail": "src.main.python.lib.pdf_abr",
         "documentation": {}
     },

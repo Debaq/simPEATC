@@ -267,7 +267,7 @@
       </widget>
       <widget class="QWidget" name="lat">
        <attribute name="title">
-        <string>Latencia/Intencidad</string>
+        <string>Latencia/intensidad</string>
        </attribute>
        <layout class="QHBoxLayout" name="layout_lat_int"/>
       </widget>
