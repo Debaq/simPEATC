@@ -7,36 +7,54 @@
 #                                                               #
 #################################################################
 
-import json
-import random
-import sys
 
-from base import context
-from lib.ABR_generator_2 import ABR_Curve
-from lib.AbrControl import AbrControl
-from lib.AbrDetail import AbrDetail
-from lib.AbrDetailAllCurves import AbrDetailAllCurves
-from lib.AbrGraph import AbrGraph
-from lib.AbrLatIntGraph import GraphLatInt
-from lib.AbrReport import AbrReport
-from lib.AbrTable import AbrTable
-from lib.EEG import EEG
-from lib.FSP import FSP
-from lib.PdfCreator import PDFCreator
+import sys
+import os
+from pathlib import Path
+
+# Obtener la ruta absoluta del directorio padre de 'src'
+project_root = Path(__file__).resolve().parent.parent
+
+# Añadir la ruta del proyecto al sys.path
+sys.path.insert(0, str(project_root))
+
+# Para depuración, imprime sys.path
+print("sys.path:")
+for path in sys.path:
+    print(path)
+
+# Importaciones de PySide6
 from PySide6.QtCore import QCoreApplication, Qt, QTimer
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import (QComboBox, QDialog, QFrame, QLabel, QLineEdit,
-                               QMainWindow, QPushButton, QSizePolicy,
-                               QSpacerItem, QTextEdit, QVBoxLayout,
-                               QMessageBox)
-from UI.AbrAdvanceSettings_ui import Ui_AdvanceSettings
-from UI.AbrMain_ui import Ui_MainWindow
+from PySide6.QtWidgets import (
+    QComboBox, QDialog, QFrame, QLabel, QLineEdit,
+    QMainWindow, QPushButton, QSizePolicy,
+    QSpacerItem, QTextEdit, QVBoxLayout,
+    QMessageBox
+)
+
+# Importaciones de watchdog
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
-from lib.conbinaciones import elegir_combinacion_especifica, casos, namecasos
 
+# Importaciones de módulos locales
+from src.ui.abr_generator import ABR_Curve
+from src.ui.abr_control import AbrControl
+from src.ui.abr_detail import AbrDetail
+from src.ui.abr_detail_all_curves import AbrDetailAllCurves
+from src.ui.abr_graph import AbrGraph
+from src.ui.abr_lat_int_graph import GraphLatInt
+from src.ui.abr_report import AbrReport
+from src.ui.abr_table import AbrTable
+from src.core.eeg import EEG
+from src.core.fsp import FSP
+from src.utils.pdf_creator import PDFCreator
+from src.ui.abr_advance_settings_ui import Ui_AdvanceSettings
+from src.ui.abr_main_ui import Ui_MainWindow
+from src.utils.combinaciones import elegir_combinacion_especifica, casos, namecasos
+
+# Constantes
 tr = QCoreApplication.translate
-
 STATE_INIT = "exam"
 
 
