@@ -125,18 +125,18 @@ class ModeP(QDialog):
 class ModeEva(QDialog):
     def __init__(self, parent=None, x_numero = None):
         super().__init__(parent)
-        self.setWindowTitle('Comenzar Evaluación')
+        self.setWindowTitle('Comenzar PEATC')
 
         # Hacer que la ventana sea modal
         self.setModal(True)
 
         # Crear el ComboBox y el botón dentro de la ventana de diálogo
         layout = QVBoxLayout(self)
-        text = QTextEdit("""<p style="text-align: center;"><strong>Incio de evaluaci&oacute;n </strong></p>
-<p style="text-align: justify;">A continuaci&oacute;n posee 35 minutos para la realizaci&oacute;n de un caso cl&iacute;nico aleatorio.</p>
+        text = QTextEdit("""<p style="text-align: center;"><strong>Inicio de PEATC</strong></p>
+<p style="text-align: justify;">A continuaci&oacute;n posee 30 minutos para la realizaci&oacute;n de cada caso de un total de 2</p>
 <p style="text-align: justify;">Favor ponga su nombre a continuaci&oacute;n:</p>
 <p style="text-align: justify;">&nbsp;</p>
-<p style="text-align: justify;">*el numero debajo es el caso seleccionado automaticamente para esta prueba, si este fuese el mismo favor solicitar el cambio al docente</p>
+<p style="text-align: justify;">*estos casos no son aleatorios son los correspondientes al práctico</p>
                          """)
         text.setReadOnly(True)
         text.setFrameShape(QFrame.NoFrame)
@@ -287,7 +287,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.capture_timer = QTimer(self)
         self.capture_timer.timeout.connect(self.capture)
         self.timer = QTimer()
-        self.time_eva = 35*60
+        self.time_eva = 30*60
         self.segundos_restantes = self.time_eva
         self.timer.timeout.connect(self.actualizar_tiempo)
         self.n_cases = 2
