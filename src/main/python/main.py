@@ -37,7 +37,9 @@ from lib.conbinaciones import elegir_combinacion_especifica, casos, namecasos
 
 tr = QCoreApplication.translate
 
-STATE_INIT = "exam"
+STATE_INIT = "test"
+TIEMPO_TEST = 7
+TIEMPO_ENTR_PROM = 0.5
 
 
 class JSONFileHandler(FileSystemEventHandler):
@@ -132,8 +134,8 @@ class ModeEva(QDialog):
 
         # Crear el ComboBox y el botón dentro de la ventana de diálogo
         layout = QVBoxLayout(self)
-        text = QTextEdit("""<p style="text-align: center;"><strong>Inicio de PEATC</strong></p>
-<p style="text-align: justify;">A continuaci&oacute;n posee 30 minutos para la realizaci&oacute;n de cada caso de un total de 2</p>
+        text = QTextEdit(f"""<p style="text-align: center;"><strong>Inicio de PEATC</strong></p>
+<p style="text-align: justify;">A continuaci&oacute;n posee {TIEMPO_TEST} minutos para la realizaci&oacute;n de cada caso de un total de 2</p>
 <p style="text-align: justify;">Favor ponga su nombre a continuaci&oacute;n:</p>
 <p style="text-align: justify;">&nbsp;</p>
 <p style="text-align: justify;">*estos casos no son aleatorios son los correspondientes al práctico</p>
@@ -287,7 +289,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.capture_timer = QTimer(self)
         self.capture_timer.timeout.connect(self.capture)
         self.timer = QTimer()
-        self.time_eva = 30*60
+        self.time_eva = TIEMPO_TEST*60
         self.segundos_restantes = self.time_eva
         self.timer.timeout.connect(self.actualizar_tiempo)
         self.n_cases = 2
@@ -335,14 +337,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lbl_time.setText(tiempo_formateado)
 
         if self.segundos_restantes == 0:
-            self.timer.stop()
-            next = IsOver(self)
-            self.autosave()
-            next.exec()
-            self.reset()
-            self.reset_and_reload()
-            self.case = self.cases[1]
-            self.report.case = self.cases[1]
+            print("hola")
+            #self.timer.stop()
+            #next = IsOver(self)
+            #self.autosave()
+            #next.exec()
+            #self.reset()
+            #self.reset_and_reload()
+            #self.case = self.cases[1]
+            #self.report.case = self.cases[1]
 
         else:
             self.segundos_restantes -= 1
@@ -368,15 +371,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def reset_and_reload(self):
         self.current_case += 1 
-        if self.current_case < len(self.cases): 
-            self.lbl_info.setText(f"Estamos evaluando el caso {self.cases[self.current_case]+1}")
-            self.segundos_restantes = self.time_eva
-            self.btn_next_case.hide()
-            self.timer.start()
+        #if self.current_case < len(self.cases): 
+        #    self.lbl_info.setText(f"Estamos evaluando el caso {self.cases[self.current_case]+1}")
+        #    self.segundos_restantes = self.time_eva
+        #    self.btn_next_case.hide()
+        #    self.timer.start()
 
 
-        else:
-            self.lbl_info.setText(f"Se acabaron los casos, fin de la partida")
+        #else:
+        #    self.lbl_info.setText(f"Se acabaron los casos, fin de la partida")
             
 
     def open_modal(self):
@@ -461,7 +464,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.state_capture = state
             self.current_setting = self.control.get_data()
             self.total_averages = self.fake_averages(self.current_setting["average"])
-            self.capture_timer.start(200)
+            self.capture_timer.start(TIEMPO_ENTR_PROM)
         elif state == 'stopped':
             self.state_capture = state
             self.capture_timer.stop()

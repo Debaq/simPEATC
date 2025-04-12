@@ -73,7 +73,10 @@ class AbrReport(QWidget, Ui_AbrReport):
             # Aquí podrías agregar la lógica para guardar el archivo PDF
 
     def save_file_auto(self):
-        defaultFileName = f"~/Escritorio/EvPracticaElectro/caso_{self.case+1}_{self.le_eva.text()}.pdf"
+        print(self.case)
+        #defaultFileName = f"~/Escritorio/EvPracticaElectro/caso_{self.case+1}_{self.le_eva.text()}.pdf"
+        defaultFileName = f"~/Escritorio/EvPracticaElectro/caso_{self.case}_{self.le_eva.text()}.pdf"
+        
         expandedPath = os.path.expanduser(defaultFileName)
         self.save_file(expandedPath)
 
