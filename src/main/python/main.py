@@ -39,7 +39,7 @@ tr = QCoreApplication.translate
 
 STATE_INIT = "test"
 TIEMPO_TEST = 40
-TIEMPO_ENTR_PROM = 15
+TIEMPO_ENTR_PROM = 300
 N_CASES = 2
 
 class JSONFileHandler(FileSystemEventHandler):
