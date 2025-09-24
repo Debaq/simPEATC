@@ -27,6 +27,7 @@ class AbrReport(QWidget, Ui_AbrReport):
         self.btn_print.clicked.connect(self.print_pdf)
         self.btn_save.clicked.connect(self.open_save_as_dialog)
         self.case = ""
+        self.type_use = "exam"
 
     def change_tab(self, tab):
         self.sig_update_pdf.emit(True)
@@ -61,7 +62,11 @@ class AbrReport(QWidget, Ui_AbrReport):
         # Esta función abre el diálogo 'Guardar Como'
         options = QFileDialog.Options()
         # Establecer el nombre de archivo predeterminado y la extensión de archivo
-        defaultFileName = f"caso_{self.case+1}_{self.le_eva.text()}.pdf"
+        if self.type_use == "exam": 
+            defaultFileName = f"caso_{self.case+1}_{self.le_eva.text()}.pdf"
+        else: 
+            defaultFileName = "tu nombre"
+
         fileName, _ = QFileDialog.getSaveFileName(self,
                                                   "Guardar Como",
                                                   defaultFileName,

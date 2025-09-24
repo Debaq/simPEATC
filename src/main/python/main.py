@@ -23,7 +23,7 @@ from lib.AbrTable import AbrTable
 from lib.EEG import EEG
 from lib.FSP import FSP
 from lib.PdfCreator import PDFCreator
-from PySide6.QtCore import QCoreApplication, Qt, QTimer
+from PySide6.QtCore import QCoreApplication, Qt, QTimer, Signal
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (QComboBox, QDialog, QFrame, QLabel, QLineEdit,
                                QMainWindow, QPushButton, QSizePolicy,
@@ -38,9 +38,9 @@ from lib.conbinaciones import elegir_combinacion_especifica, casos, namecasos
 tr = QCoreApplication.translate
 
 STATE_INIT = "test"
-TIEMPO_TEST = 7
-TIEMPO_ENTR_PROM = 0.5
-
+TIEMPO_TEST = 40
+TIEMPO_ENTR_PROM = 15
+N_CASES = 2
 
 class JSONFileHandler(FileSystemEventHandler):
     def __init__(self, json_file_path, callback):
@@ -76,12 +76,13 @@ class IsOver(QDialog):
 
     def on_next_case(self):
         # Acción cuando se hace clic en 'Siguiente caso'
-        #print("Preparando el siguiente caso...")
+        print("Preparando el siguiente caso...")
         self.accept()  # Cierra la ventana modal
 
 
 
-class ModeP(QDialog):
+class CuadroDialogoTest(QDialog):
+    cambio_case = Signal(int)
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle('Selección de casos')
@@ -93,7 +94,7 @@ class ModeP(QDialog):
         layout = QVBoxLayout(self)
 
         self.combo_box = QComboBox()
-        self.create_list()
+        self.create_list(N_CASES)
         layout.addWidget(self.combo_box)
 
         self.accept_button = QPushButton("Aceptar")
@@ -113,18 +114,19 @@ class ModeP(QDialog):
         # Establecer la posición del diálogo en el centro de la pantalla
         self.move(x, y)
 
-    def create_list(self):
-        for i in range(26):
+    def create_list(self, n):
+        for i in range(n):
             self.combo_box.addItem(f'Caso {i+1}')
 
     def on_accept_clicked(self):
         chosen_option = self.combo_box.currentText()
         print(f"Has seleccionado: {chosen_option}")
         self.accept()  # Esto cerrará la ventana de diálogo
+        self.cambio_case.emit(self.combo_box.currentIndex())
         return self.combo_box.currentIndex()
 
 
-class ModeEva(QDialog):
+class CuadroDialogoExamen(QDialog):
     def __init__(self, parent=None, x_numero = None):
         super().__init__(parent)
         self.setWindowTitle('Comenzar PEATC')
@@ -247,6 +249,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.graph_l = AbrGraph(1)
         self.graph_lat_int = GraphLatInt()
 
+        self.report.type_use = STATE_INIT
+
         self.layout_abr.addWidget(self.graph_r)
         self.layout_abr.addWidget(self.graph_l)
         self.layout_lat_int.addWidget(self.graph_lat_int)
@@ -337,15 +341,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lbl_time.setText(tiempo_formateado)
 
         if self.segundos_restantes == 0:
-            print("hola")
-            #self.timer.stop()
-            #next = IsOver(self)
-            #self.autosave()
-            #next.exec()
-            #self.reset()
-            #self.reset_and_reload()
-            #self.case = self.cases[1]
-            #self.report.case = self.cases[1]
+            #print("hola")
+            self.timer.stop()
+            next = IsOver(self)
+            self.autosave()
+            next.exec()
+            self.reset()
+            self.reset_and_reload()
+            self.case = self.cases[1]
+            self.report.case = self.cases[1]
 
         else:
             self.segundos_restantes -= 1
@@ -370,25 +374,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def reset_and_reload(self):
-        self.current_case += 1 
-        #if self.current_case < len(self.cases): 
-        #    self.lbl_info.setText(f"Estamos evaluando el caso {self.cases[self.current_case]+1}")
-        #    self.segundos_restantes = self.time_eva
-        #    self.btn_next_case.hide()
-        #    self.timer.start()
+
+        if STATE_INIT == "exam":
+            self.current_case += 1 
+            if self.current_case < len(self.cases): 
+                self.lbl_info.setText(f"Estamos evaluando el caso {self.cases[self.current_case]+1}")
+                self.segundos_restantes = self.time_eva
+                self.btn_next_case.hide()
+                self.timer.start()
 
 
-        #else:
-        #    self.lbl_info.setText(f"Se acabaron los casos, fin de la partida")
+            else:
+                self.lbl_info.setText(f"Se acabaron los casos, fin de la partida")
+
+        else:
+            self.btn_next_case.setText(f"Estamos evaluando el caso {self.cases+1}")
+            self.btn_next_case.setDisabled(True)
+            self.reset()
             
+
+                
 
     def open_modal(self):
         # Esta función crea y abre la ventana de diálogo
         if STATE_INIT == "exam":
-            dialog = ModeEva(self, x_numero=self.n_cases)
+            dialog = CuadroDialogoExamen(self, x_numero=self.n_cases)
             exam = True
         else:
-            dialog = ModeP(self)
+            dialog = CuadroDialogoTest(self)
+            dialog.cambio_case.connect(self.cambiodecaso)
             exam = False
 
         dialog.exec()
@@ -406,6 +420,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         
         self.timer.start(1000)
 
+
+
+    def cambiodecaso(self, data):
+        self.cases= data
+        self.reset_and_reload()
 
     def update_delete_curve(self, curve):
         if curve in self.memory:
