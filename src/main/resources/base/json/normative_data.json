@@ -1,0 +1,533 @@
+{
+  "comments": "Normative ABR data for different populations, stimuli and pathways. All latencies in ms, amplitudes in µV at 80dBnHL baseline",
+  
+  "populations": {
+    "adult_male": {
+      "age_range": [18, 50],
+      "sex": "M",
+      "description": "Adult males 18-50 years",
+      
+      "air_conduction": {
+        "click": {
+          "MC":  {"lat": 0.50, "amp": 0.15},
+          "I":   {"lat": 1.65, "amp": 0.30},
+          "II":  {"lat": 2.80, "amp": 0.20},
+          "III": {"lat": 3.85, "amp": 0.35},
+          "IV":  {"lat": 4.95, "amp": 0.25},
+          "V":   {"lat": 5.70, "amp": 0.50},
+          "VI":  {"lat": 7.30, "amp": 0.35},
+          "VII": {"lat": 8.50, "amp": 0.30},
+          "interpeak": {
+            "I-III": 2.20,
+            "III-V": 1.85,
+            "I-V": 4.05
+          }
+        },
+        
+        "ce_chirp": {
+          "MC":  {"lat": 0.48, "amp": 0.18},
+          "I":   {"lat": 1.60, "amp": 0.42},
+          "II":  {"lat": 2.75, "amp": 0.28},
+          "III": {"lat": 3.75, "amp": 0.49},
+          "IV":  {"lat": 4.85, "amp": 0.35},
+          "V":   {"lat": 5.60, "amp": 0.70},
+          "VI":  {"lat": 7.20, "amp": 0.45},
+          "VII": {"lat": 8.40, "amp": 0.38},
+          "interpeak": {
+            "I-III": 2.15,
+            "III-V": 1.85,
+            "I-V": 4.00
+          }
+        },
+        
+        "ls_chirp": {
+          "MC":  {"lat": 0.49, "amp": 0.16},
+          "I":   {"lat": 1.62, "amp": 0.36},
+          "II":  {"lat": 2.77, "amp": 0.24},
+          "III": {"lat": 3.80, "amp": 0.42},
+          "IV":  {"lat": 4.90, "amp": 0.30},
+          "V":   {"lat": 5.65, "amp": 0.60},
+          "VI":  {"lat": 7.25, "amp": 0.40},
+          "VII": {"lat": 8.45, "amp": 0.34},
+          "interpeak": {
+            "I-III": 2.18,
+            "III-V": 1.85,
+            "I-V": 4.03
+          }
+        },
+        
+        "tone_burst": {
+          "500Hz": {
+            "I":   {"lat": 2.50, "amp": 0.20},
+            "III": {"lat": 5.50, "amp": 0.25},
+            "V":   {"lat": 8.20, "amp": 0.35},
+            "interpeak": {
+              "I-III": 3.00,
+              "III-V": 2.70,
+              "I-V": 5.70
+            }
+          },
+          "1000Hz": {
+            "I":   {"lat": 2.10, "amp": 0.25},
+            "III": {"lat": 4.80, "amp": 0.30},
+            "V":   {"lat": 7.00, "amp": 0.40},
+            "interpeak": {
+              "I-III": 2.70,
+              "III-V": 2.20,
+              "I-V": 4.90
+            }
+          },
+          "2000Hz": {
+            "I":   {"lat": 1.85, "amp": 0.28},
+            "III": {"lat": 4.20, "amp": 0.33},
+            "V":   {"lat": 6.20, "amp": 0.45},
+            "interpeak": {
+              "I-III": 2.35,
+              "III-V": 2.00,
+              "I-V": 4.35
+            }
+          },
+          "4000Hz": {
+            "I":   {"lat": 1.70, "amp": 0.30},
+            "III": {"lat": 3.95, "amp": 0.35},
+            "V":   {"lat": 5.85, "amp": 0.48},
+            "interpeak": {
+              "I-III": 2.25,
+              "III-V": 1.90,
+              "I-V": 4.15
+            }
+          }
+        }
+      },
+      
+      "bone_conduction": {
+        "click": {
+          "I":   {"lat": 1.85, "amp": 0.25},
+          "II":  {"lat": 3.00, "amp": 0.18},
+          "III": {"lat": 4.05, "amp": 0.30},
+          "IV":  {"lat": 5.15, "amp": 0.22},
+          "V":   {"lat": 5.90, "amp": 0.45},
+          "VI":  {"lat": 7.50, "amp": 0.30},
+          "VII": {"lat": 8.70, "amp": 0.25},
+          "interpeak": {
+            "I-III": 2.20,
+            "III-V": 1.85,
+            "I-V": 4.05
+          }
+        },
+        "tone_burst": {
+          "500Hz": {
+            "I":   {"lat": 2.70, "amp": 0.18},
+            "III": {"lat": 5.70, "amp": 0.22},
+            "V":   {"lat": 8.40, "amp": 0.32}
+          },
+          "1000Hz": {
+            "I":   {"lat": 2.30, "amp": 0.22},
+            "III": {"lat": 5.00, "amp": 0.27},
+            "V":   {"lat": 7.20, "amp": 0.37}
+          },
+          "2000Hz": {
+            "I":   {"lat": 2.05, "amp": 0.25},
+            "III": {"lat": 4.40, "amp": 0.30},
+            "V":   {"lat": 6.40, "amp": 0.42}
+          },
+          "4000Hz": {
+            "I":   {"lat": 1.90, "amp": 0.27},
+            "III": {"lat": 4.15, "amp": 0.32},
+            "V":   {"lat": 6.05, "amp": 0.45}
+          }
+        }
+      }
+    },
+    
+    "adult_female": {
+      "age_range": [18, 50],
+      "sex": "F",
+      "description": "Adult females 18-50 years",
+      
+      "air_conduction": {
+        "click": {
+          "MC":  {"lat": 0.48, "amp": 0.16},
+          "I":   {"lat": 1.50, "amp": 0.32},
+          "II":  {"lat": 2.65, "amp": 0.22},
+          "III": {"lat": 3.70, "amp": 0.37},
+          "IV":  {"lat": 4.80, "amp": 0.27},
+          "V":   {"lat": 5.50, "amp": 0.52},
+          "VI":  {"lat": 7.10, "amp": 0.37},
+          "VII": {"lat": 8.30, "amp": 0.32},
+          "interpeak": {
+            "I-III": 2.20,
+            "III-V": 1.80,
+            "I-V": 4.00
+          }
+        },
+        
+        "ce_chirp": {
+          "MC":  {"lat": 0.46, "amp": 0.19},
+          "I":   {"lat": 1.45, "amp": 0.45},
+          "II":  {"lat": 2.60, "amp": 0.30},
+          "III": {"lat": 3.60, "amp": 0.52},
+          "IV":  {"lat": 4.70, "amp": 0.37},
+          "V":   {"lat": 5.40, "amp": 0.73},
+          "VI":  {"lat": 7.00, "amp": 0.47},
+          "VII": {"lat": 8.20, "amp": 0.40},
+          "interpeak": {
+            "I-III": 2.15,
+            "III-V": 1.80,
+            "I-V": 3.95
+          }
+        },
+        
+        "ls_chirp": {
+          "MC":  {"lat": 0.47, "amp": 0.17},
+          "I":   {"lat": 1.47, "amp": 0.38},
+          "II":  {"lat": 2.62, "amp": 0.26},
+          "III": {"lat": 3.65, "amp": 0.44},
+          "IV":  {"lat": 4.75, "amp": 0.32},
+          "V":   {"lat": 5.45, "amp": 0.62},
+          "VI":  {"lat": 7.05, "amp": 0.42},
+          "VII": {"lat": 8.25, "amp": 0.36},
+          "interpeak": {
+            "I-III": 2.18,
+            "III-V": 1.80,
+            "I-V": 3.98
+          }
+        },
+        
+        "tone_burst": {
+          "500Hz": {
+            "I":   {"lat": 2.35, "amp": 0.22},
+            "III": {"lat": 5.35, "amp": 0.27},
+            "V":   {"lat": 8.00, "amp": 0.38},
+            "interpeak": {
+              "I-III": 3.00,
+              "III-V": 2.65,
+              "I-V": 5.65
+            }
+          },
+          "1000Hz": {
+            "I":   {"lat": 1.95, "amp": 0.27},
+            "III": {"lat": 4.65, "amp": 0.32},
+            "V":   {"lat": 6.80, "amp": 0.43},
+            "interpeak": {
+              "I-III": 2.70,
+              "III-V": 2.15,
+              "I-V": 4.85
+            }
+          },
+          "2000Hz": {
+            "I":   {"lat": 1.70, "amp": 0.30},
+            "III": {"lat": 4.05, "amp": 0.35},
+            "V":   {"lat": 6.00, "amp": 0.47},
+            "interpeak": {
+              "I-III": 2.35,
+              "III-V": 1.95,
+              "I-V": 4.30
+            }
+          },
+          "4000Hz": {
+            "I":   {"lat": 1.55, "amp": 0.32},
+            "III": {"lat": 3.80, "amp": 0.37},
+            "V":   {"lat": 5.65, "amp": 0.50},
+            "interpeak": {
+              "I-III": 2.25,
+              "III-V": 1.85,
+              "I-V": 4.10
+            }
+          }
+        }
+      },
+      
+      "bone_conduction": {
+        "click": {
+          "I":   {"lat": 1.70, "amp": 0.27},
+          "II":  {"lat": 2.85, "amp": 0.20},
+          "III": {"lat": 3.90, "amp": 0.32},
+          "IV":  {"lat": 5.00, "amp": 0.24},
+          "V":   {"lat": 5.70, "amp": 0.47},
+          "VI":  {"lat": 7.30, "amp": 0.32},
+          "VII": {"lat": 8.50, "amp": 0.27},
+          "interpeak": {
+            "I-III": 2.20,
+            "III-V": 1.80,
+            "I-V": 4.00
+          }
+        },
+        "tone_burst": {
+          "500Hz": {
+            "I":   {"lat": 2.55, "amp": 0.20},
+            "III": {"lat": 5.55, "amp": 0.24},
+            "V":   {"lat": 8.20, "amp": 0.35}
+          },
+          "1000Hz": {
+            "I":   {"lat": 2.15, "amp": 0.24},
+            "III": {"lat": 4.85, "amp": 0.29},
+            "V":   {"lat": 7.00, "amp": 0.40}
+          },
+          "2000Hz": {
+            "I":   {"lat": 1.90, "amp": 0.27},
+            "III": {"lat": 4.25, "amp": 0.32},
+            "V":   {"lat": 6.20, "amp": 0.44}
+          },
+          "4000Hz": {
+            "I":   {"lat": 1.75, "amp": 0.29},
+            "III": {"lat": 4.00, "amp": 0.34},
+            "V":   {"lat": 5.85, "amp": 0.47}
+          }
+        }
+      }
+    },
+    
+    "child": {
+      "age_range": [2, 12],
+      "sex": "both",
+      "description": "Children 2-12 years, values normalize toward adult by age 2",
+      
+      "air_conduction": {
+        "click": {
+          "MC":  {"lat": 0.49, "amp": 0.14},
+          "I":   {"lat": 1.58, "amp": 0.28},
+          "II":  {"lat": 2.73, "amp": 0.19},
+          "III": {"lat": 3.78, "amp": 0.33},
+          "IV":  {"lat": 4.88, "amp": 0.23},
+          "V":   {"lat": 5.60, "amp": 0.48},
+          "VI":  {"lat": 7.20, "amp": 0.33},
+          "VII": {"lat": 8.40, "amp": 0.28},
+          "interpeak": {
+            "I-III": 2.20,
+            "III-V": 1.82,
+            "I-V": 4.02
+          }
+        },
+        "ce_chirp": {
+          "MC":  {"lat": 0.47, "amp": 0.17},
+          "I":   {"lat": 1.53, "amp": 0.39},
+          "II":  {"lat": 2.68, "amp": 0.26},
+          "III": {"lat": 3.68, "amp": 0.46},
+          "IV":  {"lat": 4.78, "amp": 0.32},
+          "V":   {"lat": 5.50, "amp": 0.67},
+          "VI":  {"lat": 7.10, "amp": 0.42},
+          "VII": {"lat": 8.30, "amp": 0.36}
+        }
+      },
+      
+      "bone_conduction": {
+        "click": {
+          "I":   {"lat": 1.78, "amp": 0.24},
+          "III": {"lat": 3.98, "amp": 0.28},
+          "V":   {"lat": 5.80, "amp": 0.43}
+        }
+      }
+    },
+    
+    "neonate": {
+      "age_range": [0, 0.25],
+      "sex": "both",
+      "description": "Neonates 0-3 months, immature auditory pathway",
+      
+      "air_conduction": {
+        "click": {
+          "I":   {"lat": 2.10, "amp": 0.20},
+          "II":  {"lat": 3.30, "amp": 0.14},
+          "III": {"lat": 4.70, "amp": 0.24},
+          "IV":  {"lat": 5.80, "amp": 0.18},
+          "V":   {"lat": 6.80, "amp": 0.35},
+          "VI":  {"lat": 8.50, "amp": 0.24},
+          "VII": {"lat": 9.80, "amp": 0.20},
+          "interpeak": {
+            "I-III": 2.60,
+            "III-V": 2.10,
+            "I-V": 4.70
+          }
+        },
+        "ce_chirp": {
+          "I":   {"lat": 2.05, "amp": 0.28},
+          "III": {"lat": 4.60, "amp": 0.33},
+          "V":   {"lat": 6.70, "amp": 0.49}
+        }
+      }
+    },
+    
+    "elderly": {
+      "age_range": [60, 85],
+      "sex": "both",
+      "description": "Elderly 60-85 years, age-related changes",
+      
+      "modifiers": {
+        "latency_increase_per_decade": 0.15,
+        "amplitude_decrease_factor": 0.95,
+        "interpeak_increase": 0.05
+      },
+      
+      "air_conduction": {
+        "click": {
+          "MC":  {"lat": 0.52, "amp": 0.14},
+          "I":   {"lat": 1.75, "amp": 0.27},
+          "II":  {"lat": 2.95, "amp": 0.18},
+          "III": {"lat": 4.00, "amp": 0.32},
+          "IV":  {"lat": 5.10, "amp": 0.22},
+          "V":   {"lat": 5.90, "amp": 0.45},
+          "VI":  {"lat": 7.50, "amp": 0.31},
+          "VII": {"lat": 8.70, "amp": 0.26},
+          "interpeak": {
+            "I-III": 2.25,
+            "III-V": 1.90,
+            "I-V": 4.15
+          }
+        }
+      }
+    }
+  },
+  
+  "pathology_modifiers": {
+    "normal": {
+      "description": "Normal hearing, all waves present",
+      "threshold_range": [0, 20],
+      "wave_presence": {"I": true, "II": true, "III": true, "IV": true, "V": true},
+      "amplitude_v_i_ratio": [1.5, 3.0],
+      "reproducibility": "excellent"
+    },
+    
+    "cochlear": {
+      "description": "Sensorineural hearing loss, cochlear origin",
+      "threshold_range": [30, 90],
+      "wave_I_reduction": 0.3,
+      "wave_V_preservation": 1.0,
+      "amplitude_v_i_ratio": [2.5, 5.0],
+      "recruitment": true,
+      "rate_effect": "minimal",
+      "chirp_benefit": "high"
+    },
+    
+    "conductive": {
+      "description": "Conductive hearing loss, middle ear pathology",
+      "threshold_range": [20, 60],
+      "latency_increase_uniform": 0.2,
+      "amplitude_reduction_uniform": 0.7,
+      "wave_presence": {"I": true, "II": true, "III": true, "IV": true, "V": true},
+      "interpeak_normal": true,
+      "bone_conduction_normal": true
+    },
+    
+    "neural": {
+      "description": "Retrocochlear pathology, auditory nerve or brainstem",
+      "threshold_range": [0, 60],
+      "wave_I_III_absence": "frequent",
+      "interpeak_prolongation": 0.4,
+      "amplitude_v_i_ratio": [0.5, 1.5],
+      "reproducibility": "poor",
+      "rate_effect": "severe",
+      "morphology_distortion": true
+    }
+  },
+  
+  "technical_factors": {
+    "electrode_impedance": {
+      "optimal": {"range": [0, 3], "noise_level": 0.02},
+      "acceptable": {"range": [3, 5], "noise_level": 0.04},
+      "poor": {"range": [5, 10], "noise_level": 0.08}
+    },
+    
+    "electrode_montage": {
+      "vertex_mastoid": {"amplitude_factor": 1.0, "description": "Standard Cz-A1/A2"},
+      "forehead_mastoid": {"amplitude_factor": 0.7, "description": "Fz-A1/A2"},
+      "vertex_earlobe": {"amplitude_factor": 0.9, "description": "Cz-lobe"}
+    },
+    
+    "transducer_artifact": {
+      "insert_earphone": {"artifact_duration": 0.8, "artifact_amplitude": 0.05},
+      "TDH39_headphone": {"artifact_duration": 1.2, "artifact_amplitude": 0.12},
+      "bone_vibrator": {"artifact_duration": 1.5, "artifact_amplitude": 0.20}
+    }
+  },
+  
+  "stimulus_modifiers": {
+    "intensity": {
+      "latency_shift_per_10dB": 0.30,
+      "amplitude_decay_rates": {
+        "I": 0.12,
+        "II": 0.10,
+        "III": 0.08,
+        "IV": 0.07,
+        "V": 0.05
+      }
+    },
+    
+    "polarity": {
+      "rarefaction": {
+        "CM_present": true,
+        "CM_polarity": -1,
+        "latency_adjustment": -0.1,
+        "amplitude_factor": 1.05
+      },
+      "condensation": {
+        "CM_present": true,
+        "CM_polarity": 1,
+        "latency_adjustment": 0.1,
+        "amplitude_factor": 1.0
+      },
+      "alternating": {
+        "CM_present": false,
+        "CM_polarity": 0,
+        "latency_adjustment": 0,
+        "amplitude_factor": 1.0
+      }
+    },
+    
+    "rate": {
+      "low": {
+        "range": [0, 20],
+        "latency_adjustment": -0.1,
+        "amplitude_factor": 1.1,
+        "wave_definition": "excellent"
+      },
+      "medium": {
+        "range": [20, 40],
+        "latency_adjustment": 0,
+        "amplitude_factor": 1.0,
+        "wave_definition": "good"
+      },
+      "high": {
+        "range": [40, 100],
+        "latency_adjustment": 0.3,
+        "amplitude_factor": 0.8,
+        "wave_I_III_affected": true
+      }
+    }
+  },
+  
+  "physiological_modifiers": {
+    "temperature": {
+      "hypothermia": {
+        "per_degree_below_36": {
+          "latency_increase": 0.20,
+          "amplitude_decrease": 0.05
+        }
+      },
+      "hyperthermia": {
+        "per_degree_above_38": {
+          "latency_decrease": 0.05,
+          "amplitude_change": 0
+        }
+      }
+    },
+    
+    "medications": {
+      "barbiturates": {
+        "latency_increase": 0.30,
+        "amplitude_decrease": 0.20,
+        "waves_affected": ["IV", "V", "VI", "VII"]
+      },
+      "benzodiazepines": {
+        "latency_increase": 0.20,
+        "amplitude_decrease": 0.15,
+        "waves_affected": ["V", "VI", "VII"]
+      },
+      "general_anesthesia": {
+        "latency_increase": 0.40,
+        "amplitude_decrease": 0.30,
+        "waves_affected": ["III", "IV", "V", "VI", "VII"]
+      }
+    }
+  }
+}

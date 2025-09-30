@@ -12,7 +12,7 @@ import random
 import sys
 
 from base import context
-from lib.ABR_generator import ABR_Curve
+from lib.ABR_generator_v2 import ABR_Curve
 from lib.AbrControl import AbrControl
 from lib.AbrDetail import AbrDetail
 from lib.AbrDetailAllCurves import AbrDetailAllCurves
