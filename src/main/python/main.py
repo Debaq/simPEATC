@@ -12,7 +12,7 @@ import random
 import sys
 
 from base import context
-from lib.ABR_generator_2 import ABR_Curve
+from lib.ABR_generator import ABR_Curve
 from lib.AbrControl import AbrControl
 from lib.AbrDetail import AbrDetail
 from lib.AbrDetailAllCurves import AbrDetailAllCurves
@@ -660,6 +660,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
         x,y, dx, dy, repro = ABR_Curve(self.current_setting["int"], self.current_setting, case, repro_prev, [(self.count_averages*self.total_averages)*2.5, self.current_setting['average']], done = self.done)
+        
         return(x,y),(dx,dy),(0,0),(0,0), repro
     
 ################data
