@@ -342,90 +342,191 @@ class ABRGenerator:
                 values['IV']['amp'] *= 0.3
         
         return values
-    
+        
     def create_wave_points(self, latencies, amplitudes, waves_visible, CM_value=None, gap=0):
         """
         Crea puntos de control para Bézier con morfología realista de ABR
         
-        MODIFICADO:
-        - SIEMPRE usa la amplitud calculada (nunca fuerza a 0.01)
-        - Usa el factor 'width' para ensanchar ondas
+        PRINCIPIOS ELECTROFISIOLÓGICOS:
+        - Lo importante es PICO → VALLE (la amplitud se mide pico-a-valle)
+        - Ascensos no importan (directos y rápidos)
+        - Las ondas pueden estar a cualquier altura (no importa relación con gap/0)
+        - Descensos SÍ importan (morfología electrofisiológica)
         """
-        points = [[0, 0]]
+        points = [[0, gap]]
+        
+        # Altura base flotante para cada onda (pueden estar a diferentes niveles)
+        base_height = gap + 0.05
         
         # Microfónico coclear
         if CM_value is not None and CM_value != 0:
             cm_lat = latencies.get('I', {'lat': 1.6})['lat'] / 3
-            points.append([cm_lat, CM_value])
-            points.append([cm_lat * 2, 0])
-            points.append([cm_lat * 2.5, 0])
+            points.append([cm_lat, CM_value + gap])
+            points.append([cm_lat * 2, base_height])
         
-        # Ondas I a V con morfología mejorada
-        for wave in ['I', 'II', 'III', 'IV', 'V']:
-            if wave not in latencies:
-                continue
+        # ========== ONDA I: PICO REDONDEADO → VALLE SUAVE ==========
+        if 'I' in latencies:
+            lat_I = latencies['I']['lat']
+            amp_I = amplitudes['I']['amp']
+            width_I = amplitudes['I'].get('width', 1.0)
             
-            lat = latencies[wave]['lat']
-            amp = amplitudes[wave]['amp'] + gap
-            width = amplitudes[wave].get('width', 1.0)  # Factor de ensanchamiento
+            # Ascenso directo (no importante)
+            points.append([lat_I - 0.20 * width_I, base_height])
             
-            # SIEMPRE usar amplitud calculada (nunca forzar a 0.01)
+            # Pico redondeado
+            peak_I = base_height + amp_I
+            points.append([lat_I - 0.05 * width_I, peak_I])
+            points.append([lat_I + 0.08 * width_I, peak_I])
             
-            # Ajustar anchos según el factor width
-            ascent_width = 0.15 * width
+            # DESCENSO IMPORTANTE: suave y gradual
+            points.append([lat_I + 0.20 * width_I, peak_I - amp_I * 0.5])
+            points.append([lat_I + 0.35 * width_I, peak_I - amp_I * 0.8])
             
-            # INICIO DE ASCENSO (ajustado por width)
-            points.append([lat - ascent_width, gap])
+            # Valle de I
+            valle_I_lat = lat_I + 0.45 * width_I
+            valle_I = peak_I - amp_I * 1.25  # Valle un poco bajo el pico
+            points.append([valle_I_lat, valle_I])
             
-            # PEAK POSITIVO CON MESETA (ajustado por width)
-            if wave in ['III', 'V']:
-                meseta_width = (0.15 if wave == 'III' else 0.25) * width
-                points.append([lat, amp])
-                points.append([lat + meseta_width, amp])
-            elif wave == 'I':
-                points.append([lat, amp])
-                points.append([lat + 0.05 * width, amp])
-            else:
-                points.append([lat, amp])
-                points.append([lat + 0.1 * width, amp])
-            
-            # DESCENSO Y VALLE NEGATIVO (ajustado por width)
-            if wave == 'V':
-                valle_lat = lat + 0.6 * width
-                valle_amp = -amp * 0.5 + gap
-                points.append([valle_lat, valle_amp])
-            elif wave == 'I':
-                valle_lat = lat + 0.35 * width
-                valle_amp = -amp * 0.3 + gap
-                points.append([valle_lat, valle_amp])
-            elif wave == 'III':
-                valle_lat = lat + 0.45 * width
-                valle_amp = -amp * 0.45 + gap
-                points.append([valle_lat, valle_amp])
-            else:
-                valle_lat = lat + 0.35 * width
-                valle_amp = -amp * 0.35 + gap
-                points.append([valle_lat, valle_amp])
-            
-            # RETORNO AL BASELINE (ajustado por width)
-            points.append([valle_lat + 0.2 * width, gap * 0.5])
+            # Retorno a nueva base
+            base_height = valle_I + 0.03
+            points.append([valle_I_lat + 0.10 * width_I, base_height])
         
-        # Ondas tardías (después de V)
+        # ========== ONDA II: PICO PICUDO → VALLE ==========
+        if 'II' in latencies:
+            lat_II = latencies['II']['lat']
+            amp_II = amplitudes['II']['amp']
+            width_II = amplitudes['II'].get('width', 1.0)
+            
+            # Ascenso directo
+            points.append([lat_II - 0.10 * width_II, base_height])
+            
+            # Pico picudo
+            peak_II = base_height + amp_II
+            points.append([lat_II, peak_II])
+            
+            # DESCENSO IMPORTANTE: rápido
+            valle_II_lat = lat_II + 0.20 * width_II
+            valle_II = peak_II - amp_II * 1.30
+            points.append([valle_II_lat, valle_II])
+            
+            base_height = valle_II + 0.02
+            points.append([valle_II_lat + 0.08 * width_II, base_height])
+        
+        # ========== ONDA III: PICO DEFINIDO → VALLE ==========
+        if 'III' in latencies:
+            lat_III = latencies['III']['lat']
+            amp_III = amplitudes['III']['amp']
+            width_III = amplitudes['III'].get('width', 1.0)
+            
+            # Ascenso directo
+            points.append([lat_III - 0.12 * width_III, base_height])
+            
+            # Pico
+            peak_III = base_height + amp_III
+            points.append([lat_III, peak_III])
+            points.append([lat_III + 0.08 * width_III, peak_III * 0.98])
+            
+            # DESCENSO IMPORTANTE
+            points.append([lat_III + 0.20 * width_III, peak_III - amp_III * 0.6])
+            
+            valle_III_lat = lat_III + 0.35 * width_III
+            valle_III = peak_III - amp_III * 1.40
+            points.append([valle_III_lat, valle_III])
+            
+            base_height = valle_III + 0.03
+            points.append([valle_III_lat + 0.10 * width_III, base_height])
+        
+        # ========== COMPLEJO IV-V: VALLE COMPARTIDO ==========
+        if 'IV' in latencies and 'V' in latencies:
+            lat_IV = latencies['IV']['lat']
+            lat_V = latencies['V']['lat']
+            amp_V = amplitudes['V']['amp']
+            width_V = amplitudes['V'].get('width', 1.0)
+            
+            amp_IV = amp_V * 0.25  # IV más pequeña (~25% de V)
+            
+            # Ascenso directo a IV
+            points.append([lat_IV - 0.08, base_height])
+            
+            # Pico IV pequeño y bajo
+            peak_IV = base_height + amp_IV
+            points.append([lat_IV, peak_IV])
+            
+            # VALLE COMPARTIDO: estrecho y pronunciado tipo "V"
+            # Punto medio entre IV y V
+            valle_compartido_lat = (lat_IV + lat_V) / 2
+            valle_compartido = peak_IV - amp_IV * 1.2  # Valle estrecho
+            points.append([valle_compartido_lat, valle_compartido])
+            
+            # ASCENSO A V: directo y rápido desde el valle
+            peak_V = valle_compartido + amp_V
+            points.append([lat_V, peak_V])
+            points.append([lat_V + 0.15 * width_V, peak_V])
+            
+            # DESCENSO DE V: profundo
+            points.append([lat_V + 0.30 * width_V, peak_V - amp_V * 0.5])
+            points.append([lat_V + 0.45 * width_V, peak_V - amp_V * 0.8])
+            
+            valle_V_lat = lat_V + 0.60 * width_V
+            valle_V = peak_V - amp_V * 1.60  # Valle profundo
+            points.append([valle_V_lat, valle_V])
+            
+            base_height = valle_V + 0.05
+            points.append([valle_V_lat + 0.15 * width_V, base_height])
+        
+        # Si solo existe V
+        elif 'V' in latencies:
+            lat_V = latencies['V']['lat']
+            amp_V = amplitudes['V']['amp']
+            width_V = amplitudes['V'].get('width', 1.0)
+            
+            points.append([lat_V - 0.12 * width_V, base_height])
+            
+            peak_V = base_height + amp_V
+            points.append([lat_V, peak_V])
+            points.append([lat_V + 0.15 * width_V, peak_V])
+            
+            points.append([lat_V + 0.35 * width_V, peak_V - amp_V * 0.6])
+            
+            valle_V_lat = lat_V + 0.55 * width_V
+            valle_V = peak_V - amp_V * 1.60
+            points.append([valle_V_lat, valle_V])
+            
+            base_height = valle_V + 0.05
+            points.append([valle_V_lat + 0.15 * width_V, base_height])
+        
+        # Si solo existe IV
+        elif 'IV' in latencies:
+            lat_IV = latencies['IV']['lat']
+            amp_IV = amplitudes['IV']['amp']
+            width_IV = amplitudes['IV'].get('width', 1.0)
+            
+            points.append([lat_IV - 0.10 * width_IV, base_height])
+            
+            peak_IV = base_height + amp_IV
+            points.append([lat_IV, peak_IV])
+            
+            valle_IV_lat = lat_IV + 0.25 * width_IV
+            valle_IV = peak_IV - amp_IV * 1.30
+            points.append([valle_IV_lat, valle_IV])
+            
+            base_height = valle_IV + 0.03
+            points.append([valle_IV_lat + 0.10 * width_IV, base_height])
+        
+        # Ondas tardías suaves
         if 'V' in latencies:
             v_lat = latencies['V']['lat']
             v_amp = amplitudes['V']['amp']
             v_width = amplitudes['V'].get('width', 1.0)
             
-            # SN10 y ondas lentas (también se ensanchan)
-            points.append([v_lat + 1.6 * v_width, v_amp * 0.5 + gap])
-            points.append([v_lat + 2.2 * v_width, v_amp * 0.3 + gap])
-            points.append([v_lat + 2.8 * v_width, v_amp * 0.4 + gap])
-            points.append([v_lat + 3.2 * v_width, v_amp * 0.2 + gap])
+            points.append([v_lat + 1.5 * v_width, base_height + v_amp * 0.30])
+            points.append([v_lat + 2.0 * v_width, base_height + v_amp * 0.15])
+            points.append([v_lat + 2.8 * v_width, base_height + v_amp * 0.20])
         
-        points.append([12, gap])
+        points.append([12, base_height])
         
         return np.array(points)
-    
+
     def generate_bezier_curve(self, control_points, n_samples=20):
         """Genera curva Bézier suave"""
         from lib.bezier_prop import Bezier
