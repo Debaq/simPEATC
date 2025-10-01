@@ -121,5 +121,6 @@ dmypy.json
 .pyre/
 /.vscode
 /.vscode
+.vscode/
 .vscode/PythonImportHelper-v2-Completion.json
 .vscode/PythonImportHelper-v2-Completion.json
