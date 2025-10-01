@@ -361,8 +361,11 @@ class ABRGenerator:
         # Microfónico coclear
         if CM_value is not None and CM_value != 0:
             cm_lat = latencies.get('I', {'lat': 1.6})['lat'] / 3
-            points.append([cm_lat, CM_value + gap])
-            points.append([cm_lat * 2, base_height])
+            
+            # Solo 3 puntos: subida rápida, pico, bajada rápida
+            points.append([cm_lat - 0.15, base_height])
+            points.append([cm_lat, base_height + CM_value])  # Pico único
+            points.append([cm_lat + 0.15, base_height])
         
         # ========== ONDA I: PICO REDONDEADO → VALLE SUAVE ==========
         if 'I' in latencies:
