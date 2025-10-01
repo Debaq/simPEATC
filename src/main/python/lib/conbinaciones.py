@@ -79,7 +79,7 @@ def casos(n, side):
             
             # Puntos de FSP para interpolación
             "fsp_puntos": {
-                "800": 2.3,      # FSP esperado a 800 promediaciones
+                "800": 0.8,      # FSP esperado a 800 promediaciones
                 "2000": 2.8,     # FSP esperado a 2000 promediaciones
                 "objetivo": 3.0  # FSP objetivo (criterio de parada)
             },

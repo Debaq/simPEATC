@@ -54,30 +54,32 @@ class ABRGenerator:
         else:
             # Mantener FSP@2000 (no mejora más allá)
             return fsp_2000
-    
-    def generar_caos_inicial(self, x):
+        
+
+    def generar_caos_inicial(self, x, fsp_actual=1.0):
         """
-        Genera ondas aleatorias caóticas para el estado inicial
-        AJUSTADO: Menos agresivo para mejor transición
+        Genera ruido realista con ondas gaussianas + ruido base
+        El ruido base escala según FSP
         
         Args:
             x: array de tiempo
+            fsp_actual: FSP calculado (controla nivel de ruido)
             
         Returns:
-            y: señal caótica
+            y: señal de ruido
         """
         y = np.zeros_like(x)
         
-        # Generar 4-6 ondas aleatorias (reducido de 5-8)
-        n_ondas = random.randint(4, 6)
+        # Ondas gaussianas (movimiento/animación) - más constantes
+        n_ondas = random.randint(2, 4)
         
         for _ in range(n_ondas):
-            # Posición aleatoria entre 0 y 10 ms
-            lat_random = random.uniform(1.0, 10.0)
-            # Amplitud aleatoria moderada (reducido de 0.3-0.8 a 0.15-0.4)
-            amp_random = random.uniform(0.15, 0.4)
-            # Ancho aleatorio
-            ancho = random.uniform(0.3, 0.8)
+            # Posición aleatoria en toda la ventana
+            lat_random = random.uniform(0.0, 12.0)
+            # Amplitud aleatoria moderada
+            amp_random = random.uniform(0.10, 0.25)
+            # Ancho aleatorio (más ancho = más redondeado)
+            ancho = random.uniform(0.5, 1.2)
             
             # Crear onda gaussiana
             onda = amp_random * np.exp(-((x - lat_random) ** 2) / (2 * ancho ** 2))
@@ -88,19 +90,38 @@ class ABRGenerator:
             
             y += onda
         
-        # Añadir ruido de fondo moderado (reducido de 0.4 a 0.15)
-        ruido_base = np.random.normal(0, 0.15, x.shape)
+        # Ruido base escalado por FSP (textura picuda)
+        if fsp_actual < 1.0:
+            noise_level = 0.15
+        elif fsp_actual < 1.5:
+            noise_level = 0.12
+        elif fsp_actual < 2.0:
+            noise_level = 0.09
+        elif fsp_actual < 2.5:
+            noise_level = 0.06
+        elif fsp_actual < 3.0:
+            noise_level = 0.04
+        else:
+            noise_level = 0.02
+        
+        ruido_base = np.random.normal(0, noise_level, x.shape)
         y += ruido_base
         
+        # Suavizar con filtro pasa-bajos
+        b, a = signal.butter(3, 0.3, btype='low')
+        y = signal.filtfilt(b, a, y)
+        
         return y
+
     
+
     def interpolar_curva(self, y_caos, y_objetivo, prom_actual, fsp_800, fsp_2000, target_avg):
         """
         Interpola entre caos inicial y curva objetivo
-        AJUSTADO: Transición más agresiva y natural
+        MODIFICADO: Llama a generar_caos_inicial con FSP
         
         Args:
-            y_caos: señal caótica inicial
+            y_caos: señal caótica inicial (ya no se usa, se regenera)
             y_objetivo: señal objetivo final
             prom_actual: promediaciones actuales
             fsp_800, fsp_2000: puntos FSP del caso
@@ -113,30 +134,28 @@ class ABRGenerator:
         fsp_actual = self.calcular_fsp(prom_actual, fsp_800, fsp_2000)
         
         # Factor de transición basado en promediaciones
-        # Va de 0 (todo caos) a 1 (todo objetivo)
         if target_avg > 0:
             factor_prom = min(prom_actual / target_avg, 1.0)
         else:
             factor_prom = 0.0
         
-        # Ajustar factor según FSP - MUCHO MÁS AGRESIVO
-        # Queremos que la señal emerja rápidamente
+        # Ajustar factor según FSP - transición agresiva
         if fsp_actual < 1.0:
-            factor_transicion = factor_prom * 0.4  # Era 0.3
+            factor_transicion = factor_prom * 0.4
         elif fsp_actual < 1.5:
-            factor_transicion = factor_prom * 0.6  # Era 0.5
+            factor_transicion = factor_prom * 0.6
         elif fsp_actual < 2.0:
-            factor_transicion = factor_prom * 0.8  # Era 0.7
+            factor_transicion = factor_prom * 0.8
         elif fsp_actual < 2.5:
-            factor_transicion = factor_prom * 0.95  # Era 0.85
+            factor_transicion = factor_prom * 0.95
         else:
-            # FSP bueno (>2.5): transición completa
             factor_transicion = factor_prom
         
         # Mezcla progresiva
         y_mezclada = (1 - factor_transicion) * y_caos + factor_transicion * y_objetivo
         
         return y_mezclada
+
     
     def escalar_amplitud_progresiva(self, y, prom_actual, target_avg):
         """
@@ -182,33 +201,29 @@ class ABRGenerator:
     def calculate_wave_parameters(self, baseline, intensity, threshold, pathology, desviaciones=None):
         """
         Calcula latencias y amplitudes según intensidad
-        ARREGLADO: Amplitudes disminuyen correctamente, ondas desaparecen
+        MODIFICADO: Las ondas NUNCA desaparecen, solo se hacen imperceptibles
+        - Amplitud decae exponencialmente
+        - Las ondas se ensanchan a baja intensidad
         """
         modified = {}
-        waves_visible = {}
-        
-        # Si está bajo umbral: nada visible
-        if intensity < threshold:
-            waves_visible = {w: False for w in ['I', 'II', 'III', 'IV', 'V']}
-            return modified, waves_visible
         
         # Desplazamiento desde 80dB
         steps_from_80 = (80 - intensity) / 10
         
         # Latencia: bajo 60dB se desplaza 0.3ms por cada 10dB
         if intensity >= 60:
-            lat_shift = steps_from_80 * 0.08  # Muy poco desplazamiento entre 90-60
+            lat_shift = steps_from_80 * 0.08
         else:
             lat_shift_60 = (80 - 60) / 10 * 0.08
             lat_shift_below_60 = (60 - intensity) / 10 * 0.3
             lat_shift = lat_shift_60 + lat_shift_below_60
         
-        # Calcular para cada onda - SIEMPRE calcular, no omitir
+        # Calcular para cada onda - SIEMPRE
         for wave in ['I', 'II', 'III', 'IV', 'V']:
             if wave not in baseline:
                 continue
             
-            # Calcular latencia
+            # ========== LATENCIA ==========
             base_lat = baseline[wave]['lat']
             calculated_lat = base_lat + lat_shift
             
@@ -222,12 +237,37 @@ class ABRGenerator:
                 if onda_key in desviaciones:
                     calculated_lat += desviaciones[onda_key]['lat']
             
-            # Calcular amplitud - SIEMPRE, incluso si es muy pequeña
+            # ========== AMPLITUD ==========
             base_amp = baseline[wave]['amp']
             
-            # Decaimiento exponencial desde 80dB
-            decay_rate = {'I': 0.09, 'II': 0.09, 'III': 0.07, 'IV': 0.07, 'V': 0.045}[wave]
-            amp_factor = np.exp(-decay_rate * (80 - intensity) / 10)
+            # Decaimiento LINEAL entre 80dB y umbral
+            if wave == 'V':
+                # Onda V: de 80dB (100%) a umbral (5%) linealmente
+                if intensity >= threshold:
+                    db_range = 80 - threshold
+                    db_from_threshold = intensity - threshold
+                    amp_factor = 0.05 + 0.95 * (db_from_threshold / db_range)
+                else:
+                    # Bajo umbral: sigue bajando linealmente a 0
+                    db_range = 10  # 10dB bajo umbral = 0%
+                    db_below = threshold - intensity
+                    amp_factor = max(0.05 * (1 - db_below / db_range), 0.001)
+            else:
+                # Ondas I, II, III, IV desaparecen antes del umbral
+                disappear_offset = {'I': 70, 'II': 70, 'III': threshold + 10, 'IV': threshold + 8}
+                disappear_at = disappear_offset.get(wave, threshold + 10)
+                
+                if intensity >= disappear_at:
+                    # De 80dB a punto de desaparición (5%) linealmente
+                    db_range = 80 - disappear_at
+                    db_from_disappear = intensity - disappear_at
+                    amp_factor = 0.05 + 0.95 * (db_from_disappear / db_range)
+                else:
+                    # Bajo punto de desaparición: sigue a 0 linealmente
+                    db_range = 10
+                    db_below = disappear_at - intensity
+                    amp_factor = max(0.05 * (1 - db_below / db_range), 0.001)
+            
             calculated_amp = base_amp * amp_factor
             
             # Aplicar desviación del caso
@@ -236,27 +276,28 @@ class ABRGenerator:
                 if onda_key in desviaciones:
                     calculated_amp += desviaciones[onda_key]['amp']
             
-            # Asegurar valores positivos mínimos
-            calculated_amp = max(calculated_amp, 0.01)
+            # Asegurar valores positivos mínimos (pero NUNCA cero)
+            calculated_amp = max(calculated_amp, 0.001)
             
-            # Determinar visibilidad: onda visible si amplitud > umbral mínimo
-            min_visible_amp = 0.05
-            if wave == 'I' or wave == 'II':
-                # I y II desaparecen a 70dB
-                waves_visible[wave] = intensity >= 70 and calculated_amp >= min_visible_amp
-            elif wave == 'III':
-                # III desaparece ~10dB antes del umbral
-                waves_visible[wave] = intensity >= (threshold + 10) and calculated_amp >= min_visible_amp
-            elif wave == 'IV':
-                waves_visible[wave] = intensity >= (threshold + 8) and calculated_amp >= min_visible_amp
-            else:  # V
-                # V persiste hasta el umbral
-                waves_visible[wave] = intensity >= threshold and calculated_amp >= min_visible_amp
+            # ========== ANCHO DE ONDA (nuevo) ==========
+            # A menor intensidad, las ondas se ensanchan (menos picudas)
+            if intensity >= 70:
+                width_factor = 1.0  # Ancho normal
+            elif intensity >= 50:
+                # Entre 70 y 50: ensancha progresivamente
+                width_factor = 1.0 + (70 - intensity) * 0.03
+            else:
+                # Bajo 50dB: muy anchas
+                width_factor = 1.6 + (50 - intensity) * 0.05
             
             modified[wave] = {
                 'lat': calculated_lat,
-                'amp': calculated_amp
+                'amp': calculated_amp,
+                'width': width_factor  # ← NUEVO campo
             }
+        
+        # waves_visible ya no determina si se dibuja, solo es informativo
+        waves_visible = {w: True for w in ['I', 'II', 'III', 'IV', 'V']}
         
         return modified, waves_visible
     
@@ -306,11 +347,9 @@ class ABRGenerator:
         """
         Crea puntos de control para Bézier con morfología realista de ABR
         
-        MEJORAS:
-        - Peaks con meseta (principalmente III y V)
-        - Onda V con meseta amplia (complejo IV-V)
-        - Medición desde peak positivo al negativo siguiente
-        - Valles asimétricos realistas
+        MODIFICADO:
+        - SIEMPRE usa la amplitud calculada (nunca fuerza a 0.01)
+        - Usa el factor 'width' para ensanchar ondas
         """
         points = [[0, 0]]
         
@@ -328,64 +367,60 @@ class ABRGenerator:
             
             lat = latencies[wave]['lat']
             amp = amplitudes[wave]['amp'] + gap
+            width = amplitudes[wave].get('width', 1.0)  # Factor de ensanchamiento
             
-            # Si la onda no es visible, usar amplitud MUY pequeña pero no cero
-            if not waves_visible.get(wave, False):
-                amp = gap + 0.01  # Casi en el baseline pero mantiene la forma
+            # SIEMPRE usar amplitud calculada (nunca forzar a 0.01)
             
-            # INICIO DE ASCENSO (más suave)
-            points.append([lat - 0.15, gap])
+            # Ajustar anchos según el factor width
+            ascent_width = 0.15 * width
             
-            # PEAK POSITIVO CON MESETA
+            # INICIO DE ASCENSO (ajustado por width)
+            points.append([lat - ascent_width, gap])
+            
+            # PEAK POSITIVO CON MESETA (ajustado por width)
             if wave in ['III', 'V']:
-                # Ondas III y V tienen meseta pronunciada
-                meseta_width = 0.15 if wave == 'III' else 0.25  # V más amplia (IV-V)
+                meseta_width = (0.15 if wave == 'III' else 0.25) * width
                 points.append([lat, amp])
-                points.append([lat + meseta_width, amp])  # Meseta
+                points.append([lat + meseta_width, amp])
             elif wave == 'I':
-                # Onda I: peak más agudo, meseta muy pequeña
                 points.append([lat, amp])
-                points.append([lat + 0.05, amp])
+                points.append([lat + 0.05 * width, amp])
             else:
-                # Ondas II y IV: meseta moderada
                 points.append([lat, amp])
-                points.append([lat + 0.1, amp])
+                points.append([lat + 0.1 * width, amp])
             
-            # DESCENSO Y VALLE NEGATIVO (asimétrico)
+            # DESCENSO Y VALLE NEGATIVO (ajustado por width)
             if wave == 'V':
-                # Onda V: valle más profundo y amplio
-                valle_lat = lat + 0.6
+                valle_lat = lat + 0.6 * width
                 valle_amp = -amp * 0.5 + gap
                 points.append([valle_lat, valle_amp])
             elif wave == 'I':
-                # Onda I: valle muy pequeño
-                valle_lat = lat + 0.35
+                valle_lat = lat + 0.35 * width
                 valle_amp = -amp * 0.3 + gap
                 points.append([valle_lat, valle_amp])
             elif wave == 'III':
-                # Onda III: valle pronunciado
-                valle_lat = lat + 0.45
+                valle_lat = lat + 0.45 * width
                 valle_amp = -amp * 0.45 + gap
                 points.append([valle_lat, valle_amp])
             else:
-                # Ondas II y IV
-                valle_lat = lat + 0.35
+                valle_lat = lat + 0.35 * width
                 valle_amp = -amp * 0.35 + gap
                 points.append([valle_lat, valle_amp])
             
-            # RETORNO AL BASELINE (más gradual)
-            points.append([valle_lat + 0.2, gap * 0.5])
+            # RETORNO AL BASELINE (ajustado por width)
+            points.append([valle_lat + 0.2 * width, gap * 0.5])
         
         # Ondas tardías (después de V)
-        if 'V' in latencies and waves_visible.get('V', False):
+        if 'V' in latencies:
             v_lat = latencies['V']['lat']
             v_amp = amplitudes['V']['amp']
+            v_width = amplitudes['V'].get('width', 1.0)
             
-            # SN10 y ondas lentas
-            points.append([v_lat + 1.6, v_amp * 0.5 + gap])
-            points.append([v_lat + 2.2, v_amp * 0.3 + gap])
-            points.append([v_lat + 2.8, v_amp * 0.4 + gap])
-            points.append([v_lat + 3.2, v_amp * 0.2 + gap])
+            # SN10 y ondas lentas (también se ensanchan)
+            points.append([v_lat + 1.6 * v_width, v_amp * 0.5 + gap])
+            points.append([v_lat + 2.2 * v_width, v_amp * 0.3 + gap])
+            points.append([v_lat + 2.8 * v_width, v_amp * 0.4 + gap])
+            points.append([v_lat + 3.2 * v_width, v_amp * 0.2 + gap])
         
         points.append([12, gap])
         
@@ -400,13 +435,11 @@ class ABRGenerator:
         
         return path[:, 0], path[:, 1]
     
+    
     def add_noise_by_fsp(self, x, y, fsp_actual, impedance=3.0):
         """
         Añade ruido basado en FSP calculado
-        CORREGIDO: Ruido con componentes de BAJA frecuencia (más realista)
-        
-        El ruido en ABR real es principalmente de baja frecuencia (10-100Hz),
-        no ruido blanco de alta frecuencia.
+        USA generar_caos_inicial escalado según FSP
         
         Args:
             x, y: señal
@@ -416,55 +449,37 @@ class ABRGenerator:
         Returns:
             x, y_noisy
         """
-        # Ruido base según impedancia - REDUCIDO
+        # Generar ruido base usando caos inicial (realista)
+        noise_base = self.generar_caos_inicial(x, fsp_actual)
+        
+        # Escalar ruido según impedancia
         if impedance < 3:
-            base_noise = 0.02
+            impedance_factor = 0.5
         elif impedance < 5:
-            base_noise = 0.04
+            impedance_factor = 1.0
         else:
-            base_noise = 0.07
+            impedance_factor = 1.5
         
-        # Ajustar ruido según FSP - MULTIPLICADORES REDUCIDOS
+        # Escalar ruido según FSP (más FSP = menos ruido)
         if fsp_actual < 1.0:
-            noise_multiplier = 3.0
+            fsp_factor = 2.5
         elif fsp_actual < 1.5:
-            noise_multiplier = 2.2
+            fsp_factor = 1.8
         elif fsp_actual < 2.0:
-            noise_multiplier = 1.6
+            fsp_factor = 1.3
         elif fsp_actual < 2.5:
-            noise_multiplier = 1.2
+            fsp_factor = 0.9
         elif fsp_actual < 3.0:
-            noise_multiplier = 0.9
+            fsp_factor = 0.6
         else:
-            noise_multiplier = 0.6
+            fsp_factor = 0.4
         
-        noise_level = base_noise * noise_multiplier
+        # Aplicar escalado
+        noise_scaled = noise_base * fsp_factor * impedance_factor
         
-        time = x
+        # Añadir a la señal
+        y_noisy = y + noise_scaled
         
-        # 1. RUIDO GAUSSIANO BASE
-        noise_raw = np.random.normal(0, noise_level, y.shape)
-        
-        # 2. FILTRAR PARA DEJAR SOLO FRECUENCIAS BAJAS (más realista)
-        # El ruido real en ABR es principalmente de baja frecuencia
-        b_low, a_low = signal.butter(4, 0.55, btype='low')
-        noise_filtered = signal.filtfilt(b_low, a_low, noise_raw)
-        
-        # 3. DRIFT de muy baja frecuencia (desplazamiento de línea base)
-        drift = noise_level * 0.3 * np.sin(2 * np.pi * 0.5 * time)
-        
-        # 4. INTERFERENCIA ELÉCTRICA 50/60Hz (solo si FSP bajo)
-        if fsp_actual < 2.0:
-            power_line = noise_level * 0.15 * np.sin(2 * np.pi * 50 * time)
-        else:
-            power_line = 0
-        
-        # 5. COMBINAR todos los componentes
-        noise_total = noise_filtered + drift + power_line
-        
-        y_noisy = y + noise_total
-        
-        return x , y 
         return x, y_noisy
     
     def add_artifact(self, x, y, transducer='insert_earphone'):
@@ -503,10 +518,13 @@ class ABRGenerator:
         """
         Genera curva ABR completa con sistema de transición progresiva
         
-        MODIFICADO: Implementa caos inicial → curva objetivo
+        MODIFICADO: 
+        - Accede a fsp_puntos desde case_config
+        - Elimina lógica de "no hay ondas visibles"
+        - Siempre genera curva objetivo + ruido
         
         Args:
-            case_config: dict con 'desviaciones' y 'fsp_puntos' del caso (nuevo)
+            case_config: dict con 'desviaciones' y 'fsp_puntos' del caso
             
         Returns:
             (x, y, metadata)
@@ -527,7 +545,18 @@ class ABRGenerator:
             if stim_type in case_config['desviaciones']:
                 desviaciones = case_config['desviaciones'][stim_type]
         
-        # 4. Calcular parámetros de ondas (con desviaciones)
+        # 4. Obtener FSP del caso (antes de calcular parámetros)
+        if case_config and 'fsp_puntos' in case_config:
+            fsp_800 = case_config['fsp_puntos']['800']
+            fsp_2000 = case_config['fsp_puntos']['2000']
+        else:
+            fsp_800 = 2.3
+            fsp_2000 = 2.8
+        
+        # 5. Calcular FSP actual
+        fsp_actual = self.calcular_fsp(stimulus_config['current_avg'], fsp_800, fsp_2000)
+        
+        # 6. Calcular parámetros de ondas (con desviaciones)
         values, waves_visible = self.calculate_wave_parameters(
             baseline, 
             stimulus_config['int'], 
@@ -536,47 +565,21 @@ class ABRGenerator:
             desviaciones
         )
         
-        # 5. Si no hay ondas visibles, retornar solo ruido
-        if not any(waves_visible.values()):
-            x = np.linspace(0, 12, 240)
-            y_caos = self.generar_caos_inicial(x)
-            
-            # Calcular FSP
-            fsp_800 = case_config['fsp_puntos']['800'] if case_config else 2.3
-            fsp_2000 = case_config['fsp_puntos']['2000'] if case_config else 2.8
-            fsp_actual = self.calcular_fsp(stimulus_config['current_avg'], fsp_800, fsp_2000)
-            
-            # Solo ruido (no hay señal)
-            x, y = self.add_noise_by_fsp(x, y_caos * 0.3, fsp_actual, technical_config['impedance'])
-            
-            return x, y, {'waves_visible': waves_visible, 'fsp': fsp_actual}
-        
-        # 6. Aplicar efectos de polaridad y rate
+        # 7. Aplicar efectos de polaridad y rate
         values, CM_value = self.apply_polarity_effects(values, stimulus_config['pol'])
         values = self.apply_rate_effects(values, stimulus_config['rate'], pathology)
         
-        # 7. Crear curva objetivo (sin promediación progresiva todavía)
+        # 8. Crear curva objetivo (SIEMPRE, incluso con ondas muy pequeñas)
         latencies = {k: {'lat': v['lat']} for k, v in values.items()}
         amplitudes = {k: {'amp': v['amp']} for k, v in values.items()}
         
         control_points = self.create_wave_points(latencies, amplitudes, waves_visible, CM_value)
         x, y_objetivo = self.generate_bezier_curve(control_points, n_samples=20)
         
-        # 8. Generar caos inicial
-        y_caos = self.generar_caos_inicial(x)
+        # 9. Generar caos inicial con FSP
+        y_caos = self.generar_caos_inicial(x, fsp_actual)
         
-        # 9. Obtener FSP del caso
-        if case_config and 'fsp_puntos' in case_config:
-            fsp_800 = case_config['fsp_puntos']['800']
-            fsp_2000 = case_config['fsp_puntos']['2000']
-        else:
-            fsp_800 = 2.3
-            fsp_2000 = 2.8
-        
-        # 10. Calcular FSP actual
-        fsp_actual = self.calcular_fsp(stimulus_config['current_avg'], fsp_800, fsp_2000)
-        
-        # 11. Interpolar entre caos y objetivo
+        # 10. Interpolar entre caos y objetivo
         y_transitoria = self.interpolar_curva(
             y_caos, 
             y_objetivo, 
@@ -586,28 +589,28 @@ class ABRGenerator:
             stimulus_config['average']
         )
         
-        # 12. Escalar amplitud progresivamente
+        # 11. Escalar amplitud progresivamente
         y_escalada = self.escalar_amplitud_progresiva(
             y_transitoria,
             stimulus_config['current_avg'],
             stimulus_config['average']
         )
         
-        # 13. Aplicar filtros
+        # 12. Aplicar filtros
         y_filtered = self.apply_filters(
             x, y_escalada,
             stimulus_config['filter_down'],
             stimulus_config['filter_passhigh']
         )
         
-        # 14. Añadir ruido según FSP
+        # 13. Añadir ruido según FSP
         x, y_noisy = self.add_noise_by_fsp(
             x, y_filtered,
             fsp_actual,
             technical_config['impedance']
         )
         
-        # 15. Añadir artefacto electromagnético
+        # 14. Añadir artefacto electromagnético
         x, y_final = self.add_artifact(x, y_noisy, technical_config['transducer'])
         
         metadata = {
