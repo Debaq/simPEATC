@@ -321,25 +321,118 @@ class ABRGenerator:
         return values, CM_value
     
     def apply_rate_effects(self, values, rate, pathology):
-        """Aplica efectos de tasa de estimulación"""
-        if rate > 50:
-            lat_increase = (rate - 50) * 0.008
-            for wave in values:
-                values[wave]['lat'] += lat_increase
-            
-            if rate > 70:
-                for wave in values:
-                    values[wave]['amp'] *= 0.85
-        elif rate < 15:
-            for wave in values:
-                values[wave]['lat'] -= 0.05
-                values[wave]['amp'] *= 1.1
+        """
+        Aplica efectos de tasa de estimulación según comportamiento electrofisiológico real
         
-        if pathology == 'neural' and 10 < rate < 30:
+        EFECTOS POR ONDA:
+        - Onda I: más afectada (desaparece a tasas altas)
+        - Onda V: más resistente (solo se reduce)
+        - Ondas II/IV: solo visibles en tasas medias
+        """
+        
+        # ========== TASAS BAJAS (≤15/s) ==========
+        if rate <= 15:
+            if 'I' in values:
+                values['I']['lat'] -= 0.35  # Más notorio
+                values['I']['amp'] *= 1.70  # +70%
+            
             if 'II' in values:
-                values['II']['amp'] *= 0.3
+                values['II']['amp'] *= 1.50  # II más prominente
+            
+            if 'III' in values:
+                values['III']['lat'] -= 0.25
+                values['III']['amp'] *= 1.50  # +50%
+            
             if 'IV' in values:
-                values['IV']['amp'] *= 0.3
+                values['IV']['amp'] *= 1.40  # IV más visible
+            
+            if 'V' in values:
+                values['V']['lat'] -= 0.35
+                values['V']['amp'] *= 1.60  # +60%
+        
+        # ========== TASAS MEDIAS (15-50/s) ==========
+        elif 15 < rate <= 50:
+            # Transición suave (interpolación lineal desde efectos bajos → normales)
+            factor = (rate - 15) / (50 - 15)  # 0 en rate=15, 1 en rate=50
+            
+            if 'I' in values:
+                lat_shift = -0.35 * (1 - factor)
+                amp_factor = 1.70 - 0.70 * factor  # De 1.70 a 1.00
+                values['I']['lat'] += lat_shift
+                values['I']['amp'] *= amp_factor
+            
+            if 'II' in values:
+                amp_factor = 1.50 - 0.50 * factor
+                values['II']['amp'] *= amp_factor
+            
+            if 'III' in values:
+                lat_shift = -0.25 * (1 - factor)
+                amp_factor = 1.50 - 0.50 * factor
+                values['III']['lat'] += lat_shift
+                values['III']['amp'] *= amp_factor
+            
+            if 'IV' in values:
+                amp_factor = 1.40 - 0.40 * factor
+                values['IV']['amp'] *= amp_factor
+            
+            if 'V' in values:
+                lat_shift = -0.35 * (1 - factor)
+                amp_factor = 1.60 - 0.60 * factor
+                values['V']['lat'] += lat_shift
+                values['V']['amp'] *= amp_factor
+        
+        # ========== TASAS ALTAS (>50/s) ==========
+        else:
+            # Calcular factor de progresión (50→70/s)
+            if rate <= 70:
+                factor = (rate - 50) / (70 - 50)  # 0 en 50/s, 1 en 70/s
+            else:
+                factor = 1.0 + (rate - 70) / 30  # Saturación gradual >70/s
+                factor = min(factor, 1.5)
+            
+            # ONDA I: muy afectada
+            if 'I' in values:
+                values['I']['lat'] += 0.40 * factor  # Más notorio
+                # Amplitud: de 100% → 30% (casi desaparece)
+                amp_reduction = 0.70 * factor  # Más drástico
+                values['I']['amp'] *= max(1.0 - amp_reduction, 0.001)
+            
+            # ONDA III: moderadamente afectada
+            if 'III' in values:
+                values['III']['lat'] += 0.40 * factor
+                amp_reduction = 0.50 * factor  # Más notorio
+                values['III']['amp'] *= max(1.0 - amp_reduction, 0.001)
+            
+            # ONDA V: más resistente
+            if 'V' in values:
+                values['V']['lat'] += 0.50 * factor  # Más notorio
+                amp_reduction = 0.50 * factor  # Más notorio
+                values['V']['amp'] *= max(1.0 - amp_reduction, 0.001)
+            
+            # ONDAS II y IV: DESAPARECEN progresivamente
+            if 'II' in values:
+                # A 50/s empieza a reducirse, a 60/s casi invisible
+                if rate >= 60:
+                    values['II']['amp'] *= 0.05  # Casi desaparece
+                else:
+                    disappear_factor = (rate - 50) / 10  # 0→1 entre 50→60
+                    values['II']['amp'] *= max(1.0 - 0.95 * disappear_factor, 0.05)
+            
+            if 'IV' in values:
+                # Similar a II
+                if rate >= 60:
+                    values['IV']['amp'] *= 0.05
+                else:
+                    disappear_factor = (rate - 50) / 10
+                    values['IV']['amp'] *= max(1.0 - 0.95 * disappear_factor, 0.05)
+        
+        # ========== EFECTOS ESPECIALES PARA PATOLOGÍA NEURAL ==========
+        if pathology == 'neural' and 10 < rate < 30:
+            # En patología neural, las ondas tempranas se degradan incluso a tasas "cómodas"
+            if 'II' in values:
+                values['II']['amp'] *= 0.30
+            if 'IV' in values:
+                values['IV']['amp'] *= 0.30
         
         return values
         
