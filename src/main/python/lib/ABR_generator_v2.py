@@ -464,6 +464,7 @@ class ABRGenerator:
         
         y_noisy = y + noise_total
         
+        return x , y 
         return x, y_noisy
     
     def add_artifact(self, x, y, transducer='insert_earphone'):
