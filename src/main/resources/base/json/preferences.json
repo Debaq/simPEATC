@@ -1,8 +1,0 @@
-{
-    "API_URL" : "http://localhost/LabSim/module/API.php",
-    "session_pred" : "tunnel",
-    "lang" : "ES_cl",
-    "styles" : [1, ["normal", "dark"]],
-    "online" : false
-    
-}

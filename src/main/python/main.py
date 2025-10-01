@@ -672,13 +672,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def inicializar_observador(self):
+        pass
         # Inicializar el observador de cambios
-        self.observer = Observer()
-        data = context.get_resource(f'cases/{self.json_file_path}')
+        #self.observer = Observer()
+        #data = context.get_resource(f'cases/{self.json_file_path}')
 
-        handler = JSONFileHandler(data, self.actualizar_datos)
-        self.observer.schedule(handler, path='.', recursive=False)
-        self.observer.start()
+        #handler = JSONFileHandler(data, self.actualizar_datos)
+        #self.observer.schedule(handler, path='.', recursive=False)
+        #self.observer.start()
     
     def actualizar_datos(self):
         self.data = self.cargar_json(self.json_file_path)

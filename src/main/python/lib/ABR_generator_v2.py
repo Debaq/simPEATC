@@ -178,20 +178,11 @@ class ABRGenerator:
         
         return stim_data
     
+  
     def calculate_wave_parameters(self, baseline, intensity, threshold, pathology, desviaciones=None):
         """
         Calcula latencias y amplitudes según intensidad
-        MODIFICADO: Ahora aplica desviaciones del caso
-        
-        Args:
-            baseline: valores normativos
-            intensity: intensidad del estímulo
-            threshold: umbral auditivo
-            pathology: tipo de patología
-            desviaciones: dict con desviaciones del caso (nuevo)
-            
-        Returns:
-            dict de valores modificados, dict de ondas visibles
+        ARREGLADO: Amplitudes disminuyen correctamente, ondas desaparecen
         """
         modified = {}
         waves_visible = {}
@@ -202,56 +193,65 @@ class ABRGenerator:
             return modified, waves_visible
         
         # Desplazamiento desde 80dB
-        intensity_diff = 80 - intensity
-        steps_from_80 = intensity_diff / 10
+        steps_from_80 = (80 - intensity) / 10
         
-        # Modificadores
-        lat_shift_per_10dB = 0.30
-        amp_decay_rates = {'I': 0.12, 'II': 0.10, 'III': 0.08, 'IV': 0.07, 'V': 0.05}
+        # Latencia: bajo 60dB se desplaza 0.3ms por cada 10dB
+        if intensity >= 60:
+            lat_shift = steps_from_80 * 0.08  # Muy poco desplazamiento entre 90-60
+        else:
+            lat_shift_60 = (80 - 60) / 10 * 0.08
+            lat_shift_below_60 = (60 - intensity) / 10 * 0.3
+            lat_shift = lat_shift_60 + lat_shift_below_60
         
-        # Calcular para cada onda
+        # Calcular para cada onda - SIEMPRE calcular, no omitir
         for wave in ['I', 'II', 'III', 'IV', 'V']:
             if wave not in baseline:
                 continue
             
-            # Determinar si está visible
-            if pathology == 'cochlear':
-                threshold_wave = threshold + {'I': 30, 'II': 25, 'III': 20, 'IV': 15, 'V': 10}[wave]
-            elif pathology == 'neural':
-                threshold_wave = threshold + {'I': 10, 'II': 15, 'III': 20, 'IV': 25, 'V': 30}[wave]
-            else:  # normal o conductive
-                threshold_wave = threshold + {'I': 15, 'II': 12, 'III': 10, 'IV': 8, 'V': 5}[wave]
-            
-            waves_visible[wave] = intensity >= threshold_wave
-            
-            if not waves_visible[wave]:
-                continue
-            
             # Calcular latencia
-            base_lat = baseline[wave]['lat']  # ← CORREGIDO
-            lat_shift = steps_from_80 * lat_shift_per_10dB
+            base_lat = baseline[wave]['lat']
             calculated_lat = base_lat + lat_shift
             
-            # NUEVO: Aplicar desviación del caso
+            # Onda I apenas se desplaza (origen coclear)
+            if wave == 'I':
+                calculated_lat = base_lat + lat_shift * 0.2
+            
+            # Aplicar desviación del caso
             if desviaciones and wave in ['I', 'III', 'V']:
                 onda_key = f"onda_{wave}"
                 if onda_key in desviaciones:
                     calculated_lat += desviaciones[onda_key]['lat']
             
-            # Calcular amplitud
-            base_amp = baseline[wave]['amp']  # ← CORREGIDO
-            amp_decay = amp_decay_rates[wave]
-            amp_factor = np.exp(-amp_decay * abs(steps_from_80))
+            # Calcular amplitud - SIEMPRE, incluso si es muy pequeña
+            base_amp = baseline[wave]['amp']
+            
+            # Decaimiento exponencial desde 80dB
+            decay_rate = {'I': 0.09, 'II': 0.09, 'III': 0.07, 'IV': 0.07, 'V': 0.045}[wave]
+            amp_factor = np.exp(-decay_rate * (80 - intensity) / 10)
             calculated_amp = base_amp * amp_factor
             
-            # NUEVO: Aplicar desviación del caso
+            # Aplicar desviación del caso
             if desviaciones and wave in ['I', 'III', 'V']:
                 onda_key = f"onda_{wave}"
                 if onda_key in desviaciones:
                     calculated_amp += desviaciones[onda_key]['amp']
             
-            # Asegurar valores positivos
-            calculated_amp = max(calculated_amp, 0.05)
+            # Asegurar valores positivos mínimos
+            calculated_amp = max(calculated_amp, 0.01)
+            
+            # Determinar visibilidad: onda visible si amplitud > umbral mínimo
+            min_visible_amp = 0.05
+            if wave == 'I' or wave == 'II':
+                # I y II desaparecen a 70dB
+                waves_visible[wave] = intensity >= 70 and calculated_amp >= min_visible_amp
+            elif wave == 'III':
+                # III desaparece ~10dB antes del umbral
+                waves_visible[wave] = intensity >= (threshold + 10) and calculated_amp >= min_visible_amp
+            elif wave == 'IV':
+                waves_visible[wave] = intensity >= (threshold + 8) and calculated_amp >= min_visible_amp
+            else:  # V
+                # V persiste hasta el umbral
+                waves_visible[wave] = intensity >= threshold and calculated_amp >= min_visible_amp
             
             modified[wave] = {
                 'lat': calculated_lat,
@@ -303,7 +303,15 @@ class ABRGenerator:
         return values
     
     def create_wave_points(self, latencies, amplitudes, waves_visible, CM_value=None, gap=0):
-        """Crea puntos de control para Bézier"""
+        """
+        Crea puntos de control para Bézier con morfología realista de ABR
+        
+        MEJORAS:
+        - Peaks con meseta (principalmente III y V)
+        - Onda V con meseta amplia (complejo IV-V)
+        - Medición desde peak positivo al negativo siguiente
+        - Valles asimétricos realistas
+        """
         points = [[0, 0]]
         
         # Microfónico coclear
@@ -313,30 +321,67 @@ class ABRGenerator:
             points.append([cm_lat * 2, 0])
             points.append([cm_lat * 2.5, 0])
         
-        # Ondas I a V
+        # Ondas I a V con morfología mejorada
         for wave in ['I', 'II', 'III', 'IV', 'V']:
             if wave not in latencies:
                 continue
             
+            lat = latencies[wave]['lat']
+            amp = amplitudes[wave]['amp'] + gap
+            
+            # Si la onda no es visible, usar amplitud MUY pequeña pero no cero
             if not waves_visible.get(wave, False):
-                lat = latencies[wave]['lat']
-                points.append([lat, gap])
-                points.append([lat + 0.2, gap])
-            else:
-                lat = latencies[wave]['lat']
-                amp = amplitudes[wave]['amp'] + gap
-                
+                amp = gap + 0.01  # Casi en el baseline pero mantiene la forma
+            
+            # INICIO DE ASCENSO (más suave)
+            points.append([lat - 0.15, gap])
+            
+            # PEAK POSITIVO CON MESETA
+            if wave in ['III', 'V']:
+                # Ondas III y V tienen meseta pronunciada
+                meseta_width = 0.15 if wave == 'III' else 0.25  # V más amplia (IV-V)
                 points.append([lat, amp])
-                
-                valle_lat = lat + 0.35
-                valle_amp = -amp * 0.4 + gap
+                points.append([lat + meseta_width, amp])  # Meseta
+            elif wave == 'I':
+                # Onda I: peak más agudo, meseta muy pequeña
+                points.append([lat, amp])
+                points.append([lat + 0.05, amp])
+            else:
+                # Ondas II y IV: meseta moderada
+                points.append([lat, amp])
+                points.append([lat + 0.1, amp])
+            
+            # DESCENSO Y VALLE NEGATIVO (asimétrico)
+            if wave == 'V':
+                # Onda V: valle más profundo y amplio
+                valle_lat = lat + 0.6
+                valle_amp = -amp * 0.5 + gap
                 points.append([valle_lat, valle_amp])
+            elif wave == 'I':
+                # Onda I: valle muy pequeño
+                valle_lat = lat + 0.35
+                valle_amp = -amp * 0.3 + gap
+                points.append([valle_lat, valle_amp])
+            elif wave == 'III':
+                # Onda III: valle pronunciado
+                valle_lat = lat + 0.45
+                valle_amp = -amp * 0.45 + gap
+                points.append([valle_lat, valle_amp])
+            else:
+                # Ondas II y IV
+                valle_lat = lat + 0.35
+                valle_amp = -amp * 0.35 + gap
+                points.append([valle_lat, valle_amp])
+            
+            # RETORNO AL BASELINE (más gradual)
+            points.append([valle_lat + 0.2, gap * 0.5])
         
-        # Ondas tardías
+        # Ondas tardías (después de V)
         if 'V' in latencies and waves_visible.get('V', False):
             v_lat = latencies['V']['lat']
             v_amp = amplitudes['V']['amp']
             
+            # SN10 y ondas lentas
             points.append([v_lat + 1.6, v_amp * 0.5 + gap])
             points.append([v_lat + 2.2, v_amp * 0.3 + gap])
             points.append([v_lat + 2.8, v_amp * 0.4 + gap])
