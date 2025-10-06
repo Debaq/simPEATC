@@ -698,19 +698,104 @@ class ABRGenerator:
         return x, y + artifact
     
     def apply_filters(self, x, y, filter_low, filter_high, fs=20000):
-        """Aplica filtros digitales"""
+        """
+        Aplica filtros con efectos morfológicos reales según literatura ABR
+        
+        EFECTOS ELECTROFISIOLÓGICOS:
+        - Pasa-bajo restrictivo (4000→1000 Hz): ensancha ondas, reduce amplitud, +latencia
+        - Pasa-alto permisivo (250→3.3 Hz): baseline drift, ruido LF, amplitud variable
+        
+        Args:
+            filter_low: pasa-bajo (1000-4000 Hz)
+            filter_high: pasa-alto (3.3-250 Hz)
+        """
+        print(f"DEBUG FILTROS: filter_low={filter_low}, filter_high={filter_high}")
+
         nyquist = fs / 2
+        y_filtered = y.copy()
         
-        low_norm = min(filter_low / nyquist, 0.99)
-        b_low, a_low = signal.butter(4, low_norm, btype='low')
-        y_filtered = signal.filtfilt(b_low, a_low, y)
+        # ========== PASA-BAJO: Morfología ==========
+        # Referencia: 3000 Hz (estándar)
+        # 4000 Hz → más picudo
+        # 1000 Hz → muy suavizado
         
-        high_norm = max(filter_high / nyquist, 0.01)
-        b_high, a_high = signal.butter(4, high_norm, btype='high')
-        y_filtered = signal.filtfilt(b_high, a_high, y_filtered)
+        if filter_low < nyquist * 0.99:
+            low_norm = filter_low / nyquist
+            low_norm = min(low_norm, 0.99)
+            
+            # Orden del filtro según frecuencia
+            # Más restrictivo = más orden = más suavizado
+            if filter_low >= 3000:
+                order = 4  # Normal/picudo
+            elif filter_low >= 2000:
+                order = 5  # Intermedio
+            else:
+                order = 6  # Muy suavizado
+            
+            b_low, a_low = signal.butter(order, low_norm, btype='low')
+            y_filtered = signal.filtfilt(b_low, a_low, y_filtered)
+            
+            # EFECTO MORFOLÓGICO: Ensanchamiento + reducción amplitud
+            if filter_low < 3000:
+                # Calcular factor según desviación del estándar
+                deviation_factor = (3000 - filter_low) / 2000  # 0→1 para 3000→1000
+                
+                # Ensanchamiento temporal (convolución con ventana)
+                window_size = int(3 + deviation_factor * 5)  # 3→8 samples
+                if window_size > 1:
+                    window = np.ones(window_size) / window_size
+                    y_filtered = np.convolve(y_filtered, window, mode='same')
+                
+                # Reducción de amplitud (10-15%)
+                amplitude_reduction = 1.0 - (0.10 + deviation_factor * 0.05)
+                y_filtered *= amplitude_reduction
+        
+        # ========== PASA-ALTO: Baseline Drift ==========
+        # Referencia: 100 Hz (estándar)
+        # 250 Hz → muy limpio
+        # 3.3 Hz → mucho drift
+        
+        if filter_high > 0.5:
+            high_norm = filter_high / nyquist
+            high_norm = max(high_norm, 0.0001)
+            
+            # Orden según frecuencia
+            if filter_high >= 150:
+                order = 6  # Muy limpio
+            elif filter_high >= 50:
+                order = 5  # Intermedio
+            else:
+                order = 4  # Más drift
+            
+            b_high, a_high = signal.butter(order, high_norm, btype='high')
+            y_filtered = signal.filtfilt(b_high, a_high, y_filtered)
+            
+            # EFECTO MORFOLÓGICO: Baseline drift + ruido LF
+            if filter_high < 100:
+                # Calcular factor según desviación del estándar
+                # Escala logarítmica porque 3.3→100 es muy amplio
+                if filter_high < 10:
+                    deviation_factor = 1.0  # Máximo drift
+                else:
+                    deviation_factor = (100 - filter_high) / 90  # 0→1 para 100→10
+                
+                # Añadir baseline drift (ondas lentas)
+                drift_freq = 0.5 + deviation_factor * 1.5  # 0.5→2 Hz
+                drift_amplitude = 0.03 + deviation_factor * 0.07  # 0.03→0.1
+                drift = drift_amplitude * np.sin(2 * np.pi * drift_freq * x / 12)
+                
+                # Añadir ruido de baja frecuencia
+                lf_noise_level = 0.01 + deviation_factor * 0.03  # 0.01→0.04
+                lf_noise = np.random.normal(0, lf_noise_level, len(x))
+                
+                # Suavizar el ruido LF (para que sea "lento")
+                b_smooth, a_smooth = signal.butter(2, 0.05, btype='low')
+                lf_noise = signal.filtfilt(b_smooth, a_smooth, lf_noise)
+                
+                y_filtered += drift + lf_noise
         
         return y_filtered
-    
+
     def generate_curve(self, population, pathology, stimulus_config, technical_config, case_config=None):
         """
         Genera curva ABR completa con sistema de transición progresiva
@@ -719,6 +804,7 @@ class ABRGenerator:
         - Accede a fsp_puntos desde case_config
         - Elimina lógica de "no hay ondas visibles"
         - Siempre genera curva objetivo + ruido
+        - FILTROS AL FINAL (como equipos reales)
         
         Args:
             case_config: dict con 'desviaciones' y 'fsp_puntos' del caso
@@ -793,22 +879,22 @@ class ABRGenerator:
             stimulus_config['average']
         )
         
-        # 12. Aplicar filtros
-        y_filtered = self.apply_filters(
-            x, y_escalada,
-            stimulus_config['filter_down'],
-            stimulus_config['filter_passhigh']
-        )
-        
-        # 13. Añadir ruido según FSP
+        # 12. Añadir ruido según FSP (ANTES de filtros)
         x, y_noisy = self.add_noise_by_fsp(
-            x, y_filtered,
+            x, y_escalada,
             fsp_actual,
             technical_config['impedance']
         )
         
-        # 14. Añadir artefacto electromagnético
-        x, y_final = self.add_artifact(x, y_noisy, technical_config['transducer'])
+        # 13. Añadir artefacto electromagnético (ANTES de filtros)
+        x, y_artifact = self.add_artifact(x, y_noisy, technical_config['transducer'])
+        
+        # 14. Aplicar filtros AL FINAL (como equipos ABR reales)
+        y_final = self.apply_filters(
+            x, y_artifact,
+            stimulus_config['filter_down'],
+            stimulus_config['filter_passhigh']
+        )
         
         metadata = {
             'population': population,
