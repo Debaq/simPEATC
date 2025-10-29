@@ -34,6 +34,7 @@ from UI.AbrMain_ui import Ui_MainWindow
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 from lib.conbinaciones import elegir_combinacion_especifica, casos, namecasos, combinaciones
+from verificacion import verificar_activacion
 
 tr = QCoreApplication.translate
 
@@ -696,6 +697,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 if __name__ == '__main__':
+    if not verificar_activacion():
+        sys.exit(1)  # Cerrar aplicación si no está activada
+    
     window = MainWindow()
     style_file = context.get_resource('qss/style_base.qss')
 
