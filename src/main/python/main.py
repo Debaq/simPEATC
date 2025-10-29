@@ -33,7 +33,7 @@ from UI.AbrAdvanceSettings_ui import Ui_AdvanceSettings
 from UI.AbrMain_ui import Ui_MainWindow
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
-from lib.conbinaciones import elegir_combinacion_especifica, casos, namecasos
+from lib.conbinaciones import elegir_combinacion_especifica, casos, namecasos, combinaciones
 
 tr = QCoreApplication.translate
 
@@ -94,7 +94,7 @@ class CuadroDialogoTest(QDialog):
         layout = QVBoxLayout(self)
 
         self.combo_box = QComboBox()
-        self.create_list(N_CASES)
+        self.create_list(len(combinaciones))  # En lugar de N_CASES
         layout.addWidget(self.combo_box)
 
         self.accept_button = QPushButton("Aceptar")

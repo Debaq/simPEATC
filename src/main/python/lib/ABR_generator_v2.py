@@ -204,6 +204,7 @@ class ABRGenerator:
         MODIFICADO: Las ondas NUNCA desaparecen, solo se hacen imperceptibles
         - Amplitud decae exponencialmente
         - Las ondas se ensanchan a baja intensidad
+        - FIX: Corrige división por cero cuando threshold >= 80dB
         """
         modified = {}
         
@@ -245,8 +246,13 @@ class ABRGenerator:
                 # Onda V: de 80dB (100%) a umbral (5%) linealmente
                 if intensity >= threshold:
                     db_range = 80 - threshold
-                    db_from_threshold = intensity - threshold
-                    amp_factor = 0.05 + 0.95 * (db_from_threshold / db_range)
+                    
+                    # FIX: Verificar división por cero cuando threshold >= 80dB
+                    if db_range == 0:
+                        amp_factor = 1.0  # Amplitud máxima a 80dB
+                    else:
+                        db_from_threshold = intensity - threshold
+                        amp_factor = 0.05 + 0.95 * (db_from_threshold / db_range)
                 else:
                     # Bajo umbral: sigue bajando linealmente a 0
                     db_range = 10  # 10dB bajo umbral = 0%
@@ -260,8 +266,16 @@ class ABRGenerator:
                 if intensity >= disappear_at:
                     # De 80dB a punto de desaparición (5%) linealmente
                     db_range = 80 - disappear_at
-                    db_from_disappear = intensity - disappear_at
-                    amp_factor = 0.05 + 0.95 * (db_from_disappear / db_range)
+                    
+                    # FIX: Verificar división por cero
+                    if db_range <= 0:
+                        if disappear_at >= 80:
+                            amp_factor = 1.0
+                        else:
+                            amp_factor = 0.05
+                    else:
+                        db_from_disappear = intensity - disappear_at
+                        amp_factor = 0.05 + 0.95 * (db_from_disappear / db_range)
                 else:
                     # Bajo punto de desaparición: sigue a 0 linealmente
                     db_range = 10
@@ -300,7 +314,7 @@ class ABRGenerator:
         waves_visible = {w: True for w in ['I', 'II', 'III', 'IV', 'V']}
         
         return modified, waves_visible
-    
+
     def apply_polarity_effects(self, values, polarity):
         """Aplica efectos de polaridad"""
         CM_value = None
