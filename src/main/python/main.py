@@ -235,7 +235,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         QMainWindow.__init__(self)
         self.setupUi(self)
         self.setWindowTitle("simPeatc")
-        self.showFullScreen()
+        #self.showFullScreen()
 
         self.control = AbrControl()
         self.detail = AbrDetail()

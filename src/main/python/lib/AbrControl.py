@@ -10,6 +10,24 @@ class AbrControl(QWidget, Ui_Abr_Config):
         QWidget.__init__(self)
         self.setupUi(self)
         self.config_btn()
+        self.disable_unimplemented_stimuli()
+
+
+    def disable_unimplemented_stimuli(self) -> None:
+        """Desactiva estímulos no implementados (chirp, lschirp, burst)"""
+        model = self.cb_stim.model()
+        
+        # Buscar y desactivar items específicos
+        for i in range(self.cb_stim.count()):
+            item_text = self.cb_stim.itemText(i).lower()
+            
+            # Desactivar chirp, lschirp y burst
+            if any(stim in item_text for stim in ['chirp', 'lschirp', 'burst', 'tone']):
+                item = model.item(i)
+                item.setEnabled(False)
+                # Opcional: agregar tooltip explicativo
+                item.setToolTip("Estímulo en desarrollo - Próximamente disponible")
+
 
     def get_data(self) -> dict:
         stim = self.cb_stim.currentText()

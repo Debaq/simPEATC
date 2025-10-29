@@ -635,7 +635,30 @@ class ABRGenerator:
         
         points.append([12, base_height])
         
-        return np.array(points)
+        # ========== VERIFICACIÓN Y CORRECCIÓN ==========
+        points = np.array(points)
+        
+        # Verificar si hay x que retroceden
+        x_coords = points[:, 0]
+        problemas = []
+        for i in range(1, len(x_coords)):
+            if x_coords[i] < x_coords[i-1]:
+                problemas.append(f"Índice {i}: x[{i-1}]={x_coords[i-1]:.3f} > x[{i}]={x_coords[i]:.3f}")
+        
+        if problemas:
+            print("⚠️ ADVERTENCIA: Puntos de control NO ordenados:")
+            for p in problemas:
+                print(f"  {p}")
+            
+            # CORRECCIÓN: Forzar orden estricto
+            for i in range(1, len(points)):
+                if points[i, 0] <= points[i-1, 0]:
+                    # Avanzar mínimamente desde el punto anterior
+                    points[i, 0] = points[i-1, 0] + 0.01
+            
+            print("✓ Corregido: puntos ahora ordenados")
+        
+        return points
 
     def generate_bezier_curve(self, control_points, n_samples=20):
         """Genera curva Bézier suave"""
