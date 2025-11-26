@@ -33,9 +33,11 @@ from lib.ABR_generator_2 import ABR_Curve
 from PySide6.QtCore import QTimer
 
 ######COSAS PARA EL WIDGET DE LA PRUEBA
-from PySide6.QtWidgets import QMessageBox, QSpinBox, QScrollArea, QVBoxLayout, QLabel
+from PySide6.QtWidgets import QMessageBox, QSpinBox, QScrollArea, QVBoxLayout, QLabel, QDialog, QHBoxLayout
 
 from PySide6.QtWidgets import QFileDialog
+import json
+import os
 
 
 
@@ -235,22 +237,124 @@ class CaseSelect(QMessageBox):
         self.get_n.setMaximum(26)
         self.get_n.setMinimum(1)
         self.get_n.setPrefix("Caso: ")
-               
+
         lay = QVBoxLayout()
         lay.addWidget(self.get_n)
 
         self.setStyleSheet("QScrollArea{min-width:300 px; min-height: 400px}")
         #self.buttons[0].clicked.connect(self.test)
 
-        
+
     def closeEvent(self, *args):
         self.sig.emit(self.get_n.value())
-        
+
     def changeEvent(self, *args):
         self.sig.emit(self.get_n.value())
 
-        
-        
+
+class OsceStationDialog(QDialog):
+    """Diálogo para selección de estaciones OSCE"""
+    station_selected = Signal(int)  # Emite el número de estación (3, 4, 5)
+
+    def __init__(self, completed_stations=None, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Selección de Estación OSCE")
+        self.setModal(True)
+        self.setFixedSize(400, 250)
+
+        # Lista de estaciones completadas
+        self.completed_stations = completed_stations if completed_stations else []
+
+        # Layout principal
+        main_layout = QVBoxLayout(self)
+
+        # Título
+        title_label = QLabel("Seleccione la estación a realizar:")
+        title_label.setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px;")
+        main_layout.addWidget(title_label)
+
+        # Mensaje de progreso
+        self.progress_label = QLabel(self._get_progress_text())
+        self.progress_label.setStyleSheet("font-size: 12px; margin: 5px; color: #666;")
+        main_layout.addWidget(self.progress_label)
+
+        # Layout de botones
+        buttons_layout = QHBoxLayout()
+
+        # Crear botones para las 3 estaciones
+        self.btn_station_3 = QPushButton("ESTACIÓN 3")
+        self.btn_station_4 = QPushButton("ESTACIÓN 4")
+        self.btn_station_5 = QPushButton("ESTACIÓN 5")
+
+        # Estilo de botones
+        button_style = """
+            QPushButton {
+                font-size: 14px;
+                font-weight: bold;
+                padding: 15px;
+                border: 2px solid #3498db;
+                border-radius: 5px;
+                background-color: #3498db;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+            QPushButton:disabled {
+                background-color: #95a5a6;
+                border-color: #95a5a6;
+                color: #ecf0f1;
+            }
+        """
+
+        self.btn_station_3.setStyleSheet(button_style)
+        self.btn_station_4.setStyleSheet(button_style)
+        self.btn_station_5.setStyleSheet(button_style)
+
+        # Deshabilitar estaciones completadas
+        if 3 in self.completed_stations:
+            self.btn_station_3.setEnabled(False)
+        if 4 in self.completed_stations:
+            self.btn_station_4.setEnabled(False)
+        if 5 in self.completed_stations:
+            self.btn_station_5.setEnabled(False)
+
+        # Conectar señales
+        self.btn_station_3.clicked.connect(lambda: self._on_station_selected(3))
+        self.btn_station_4.clicked.connect(lambda: self._on_station_selected(4))
+        self.btn_station_5.clicked.connect(lambda: self._on_station_selected(5))
+
+        # Agregar botones al layout
+        buttons_layout.addWidget(self.btn_station_3)
+        buttons_layout.addWidget(self.btn_station_4)
+        buttons_layout.addWidget(self.btn_station_5)
+
+        main_layout.addLayout(buttons_layout)
+
+        # Nota informativa
+        info_label = QLabel("Cada estación tiene una duración de 5 minutos")
+        info_label.setStyleSheet("font-size: 11px; margin: 10px; color: #888; font-style: italic;")
+        main_layout.addWidget(info_label)
+
+    def _get_progress_text(self):
+        """Genera texto de progreso"""
+        completed = len(self.completed_stations)
+        return f"Estaciones completadas: {completed}/3"
+
+    def _on_station_selected(self, station_number):
+        """Maneja la selección de una estación"""
+        self.station_selected.emit(station_number)
+        self.accept()
+
+    def closeEvent(self, event):
+        """Prevenir cierre sin selección si no hay estaciones completadas"""
+        if len(self.completed_stations) == 0:
+            event.ignore()
+        else:
+            event.accept()
+
+
+
 
 
 class MainWindow(QWidget, Ui_ABRSim):
@@ -299,7 +403,26 @@ class MainWindow(QWidget, Ui_ABRSim):
 
         self.current_curves = [None, None]
         self.cases_list = [str(i) for i in range(25)]
-        self.cases_()
+
+        # === SISTEMA OSCE ===
+        # Variables para manejo de estaciones OSCE
+        self.osce_mode = True  # Modo OSCE activado
+        self.completed_stations = []  # Lista de estaciones completadas [3, 4, 5]
+        self.current_station = None  # Estación actual en ejecución
+        self.station_data = {}  # Datos de todas las estaciones {3: {...}, 4: {...}, 5: {...}}
+        self.station_time_remaining = 0  # Tiempo restante en segundos (5 min = 300 seg)
+        self.station_timer = QTimer(self)
+        self.station_timer.timeout.connect(self.update_station_timer)
+
+        # Archivo para persistencia de datos OSCE
+        self.osce_data_file = "osce_session_data.json"
+
+        # Inicializar con diálogo de estaciones en lugar de cases_()
+        if self.osce_mode:
+            self.show_station_dialog()
+        else:
+            self.cases_()
+
         self.repro = 0
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.anim_upgradeGraph)
@@ -352,7 +475,233 @@ class MainWindow(QWidget, Ui_ABRSim):
       result = CaseSelect(self.cases_list, None)
       result.sig.connect(self.cases)
       result.exec()
-    
+
+
+    # ===== MÉTODOS SISTEMA OSCE =====
+
+    def show_station_dialog(self):
+        """Muestra el diálogo de selección de estaciones OSCE"""
+        dialog = OsceStationDialog(self.completed_stations, self)
+        dialog.station_selected.connect(self.start_station)
+        dialog.exec()
+
+    def start_station(self, station_number):
+        """Inicia una estación específica"""
+        self.current_station = station_number
+        self.station_time_remaining = 300  # 5 minutos = 300 segundos
+
+        # Inicializar datos de la estación
+        self.station_data[station_number] = {
+            'station': station_number,
+            'start_time': datetime.now().isoformat(),
+            'data': {},
+            'curves': [],
+            'store': {}
+        }
+
+        # Iniciar timer de estación
+        self.station_timer.start(1000)  # 1 segundo
+
+        # Actualizar UI
+        self.setWindowTitle(f"simPEATC - ESTACIÓN {station_number} - Tiempo: 05:00")
+
+        # Mensaje de inicio
+        QMessageBox.information(
+            self,
+            f"Estación {station_number}",
+            f"Iniciando Estación {station_number}\n\nTiempo disponible: 5 minutos",
+            QMessageBox.Ok
+        )
+
+    def update_station_timer(self):
+        """Actualiza el timer de la estación cada segundo"""
+        if self.station_time_remaining > 0:
+            self.station_time_remaining -= 1
+
+            # Calcular minutos y segundos
+            minutes = self.station_time_remaining // 60
+            seconds = self.station_time_remaining % 60
+
+            # Actualizar título de ventana
+            self.setWindowTitle(
+                f"simPEATC - ESTACIÓN {self.current_station} - Tiempo: {minutes:02d}:{seconds:02d}"
+            )
+
+            # Advertencia cuando queden 30 segundos
+            if self.station_time_remaining == 30:
+                QMessageBox.warning(
+                    self,
+                    "Advertencia de Tiempo",
+                    "Quedan 30 segundos para finalizar la estación",
+                    QMessageBox.Ok
+                )
+
+        else:
+            # Tiempo agotado
+            self.on_station_time_up()
+
+    def on_station_time_up(self):
+        """Maneja el evento cuando se acaba el tiempo de una estación"""
+        self.station_timer.stop()
+
+        # Guardar datos de la estación actual
+        self.save_station_data()
+
+        # Agregar estación a completadas
+        if self.current_station not in self.completed_stations:
+            self.completed_stations.append(self.current_station)
+
+        # Mensaje de fin de estación
+        QMessageBox.information(
+            self,
+            "Tiempo Agotado",
+            f"Se ha completado la Estación {self.current_station}",
+            QMessageBox.Ok
+        )
+
+        # Resetear para siguiente estación
+        self.reset_station()
+
+        # Verificar si se completaron las 3 estaciones
+        if len(self.completed_stations) >= 3:
+            self.complete_all_stations()
+        else:
+            # Mostrar diálogo para siguiente estación
+            self.show_station_dialog()
+
+    def save_station_data(self):
+        """Guarda los datos de la estación actual"""
+        if self.current_station:
+            # Actualizar datos de la estación
+            self.station_data[self.current_station]['end_time'] = datetime.now().isoformat()
+            self.station_data[self.current_station]['store'] = dict(self.store)
+            self.station_data[self.current_station]['completed'] = True
+
+            # Guardar en archivo JSON
+            try:
+                # Leer datos existentes si los hay
+                if os.path.exists(self.osce_data_file):
+                    with open(self.osce_data_file, 'r', encoding='utf-8') as f:
+                        all_data = json.load(f)
+                else:
+                    all_data = {'sessions': []}
+
+                # Agregar o actualizar sesión actual
+                session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+                session_data = {
+                    'session_id': session_id,
+                    'completed_stations': self.completed_stations,
+                    'stations': self.station_data
+                }
+
+                all_data['sessions'].append(session_data)
+
+                # Guardar archivo
+                with open(self.osce_data_file, 'w', encoding='utf-8') as f:
+                    json.dump(all_data, f, indent=2, ensure_ascii=False)
+
+                print(f"Datos de Estación {self.current_station} guardados exitosamente")
+
+            except Exception as e:
+                QMessageBox.warning(
+                    self,
+                    "Error al Guardar",
+                    f"No se pudieron guardar los datos de la estación:\n{str(e)}",
+                    QMessageBox.Ok
+                )
+
+    def reset_station(self):
+        """Resetea el estado para la siguiente estación"""
+        # Limpiar gráficos
+        self.graph_right.clearGraph()
+        self.graph_left.clearGraph()
+
+        # Limpiar store
+        self.store.clear()
+
+        # Resetear variables
+        self.current_curves = [None, None]
+        self.count_prom = 0
+        self.new_curve = True
+        self.new_current_curve = ""
+
+        # Detener cualquier captura en progreso
+        if self.timer.isActive():
+            self.timer.stop()
+
+        # Resetear UI
+        self.disabled_in_capture(False)
+        self.setWindowTitle("simPEATC")
+
+        self.current_station = None
+
+    def complete_all_stations(self):
+        """Maneja la finalización de las 3 estaciones"""
+        # Guardar todo y generar reporte final
+        self.save_final_report()
+
+        # Mensaje de finalización
+        reply = QMessageBox.information(
+            self,
+            "OSCE Completado",
+            "Has completado las 3 estaciones del OSCE.\n\n"
+            "Los datos han sido guardados.\n\n"
+            "¿Deseas iniciar una nueva sesión?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+
+        if reply == QMessageBox.Yes:
+            # Resetear completamente
+            self.reset_all_osce()
+        else:
+            # Cerrar aplicación
+            self.close()
+
+    def save_final_report(self):
+        """Guarda un reporte final de todas las estaciones"""
+        try:
+            report_filename = f"osce_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+
+            report_data = {
+                'fecha': datetime.now().isoformat(),
+                'estaciones_completadas': self.completed_stations,
+                'datos_estaciones': self.station_data
+            }
+
+            with open(report_filename, 'w', encoding='utf-8') as f:
+                json.dump(report_data, f, indent=2, ensure_ascii=False)
+
+            QMessageBox.information(
+                self,
+                "Reporte Guardado",
+                f"Reporte final guardado en:\n{report_filename}",
+                QMessageBox.Ok
+            )
+
+        except Exception as e:
+            QMessageBox.warning(
+                self,
+                "Error",
+                f"No se pudo guardar el reporte final:\n{str(e)}",
+                QMessageBox.Ok
+            )
+
+    def reset_all_osce(self):
+        """Resetea completamente el sistema OSCE para una nueva sesión"""
+        # Limpiar todas las variables
+        self.completed_stations.clear()
+        self.station_data.clear()
+        self.current_station = None
+        self.station_time_remaining = 0
+
+        # Resetear estación
+        self.reset_station()
+
+        # Mostrar diálogo inicial de nuevo
+        self.show_station_dialog()
+
+    # ===== FIN MÉTODOS SISTEMA OSCE =====
+
 
     def printer(self, direccion):
         #print(self.store)     
