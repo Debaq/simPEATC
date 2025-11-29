@@ -41,10 +41,52 @@ class AbrControl(QWidget, Ui_Abr_Config):
         side = self.cb_side.currentText()
         atten = self.ch_atten.isChecked()
 
-        return {"stim":stim, "pol":pol, "int":inty, "mkg":mkg, 
-                "rate":rate, "filter_down":filter_passdown, 
+        return {"stim":stim, "pol":pol, "int":inty, "mkg":mkg,
+                "rate":rate, "filter_down":filter_passdown,
                 "filter_passhigh": filter_passhigh, "average" : average,
                 "side":side, "atten":atten}
+
+    def set_data(self, config: dict) -> None:
+        """Aplica configuración a los widgets del control"""
+        if 'stim' in config:
+            idx = self.cb_stim.findText(config['stim'])
+            if idx >= 0:
+                self.cb_stim.setCurrentIndex(idx)
+
+        if 'pol' in config:
+            idx = self.cb_pol.findText(config['pol'])
+            if idx >= 0:
+                self.cb_pol.setCurrentIndex(idx)
+
+        if 'int' in config:
+            self.sb_intencity.setValue(config['int'])
+
+        if 'mkg' in config:
+            self.sb_mskg.setValue(config['mkg'])
+
+        if 'rate' in config:
+            self.sb_rate.setValue(config['rate'])
+
+        if 'filter_down' in config:
+            idx = self.cb_filter_down.findText(config['filter_down'])
+            if idx >= 0:
+                self.cb_filter_down.setCurrentIndex(idx)
+
+        if 'filter_passhigh' in config:
+            idx = self.cb_filter_up.findText(config['filter_passhigh'])
+            if idx >= 0:
+                self.cb_filter_up.setCurrentIndex(idx)
+
+        if 'average' in config:
+            self.sb_prom.setValue(config['average'])
+
+        if 'side' in config:
+            idx = self.cb_side.findText(config['side'])
+            if idx >= 0:
+                self.cb_side.setCurrentIndex(idx)
+
+        if 'atten' in config:
+            self.ch_atten.setChecked(config['atten'])
 
     def disabled_all(self, value:bool=True) -> None:
         self.cb_stim.setDisabled(value)
