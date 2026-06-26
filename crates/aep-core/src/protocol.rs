@@ -108,6 +108,31 @@ impl Protocol {
         }
     }
 
+    /// Protocolo P300 (oddball): tono estandar 1000 Hz frecuente + desviante
+    /// 2000 Hz raro (p = 0.2), ventana larga.
+    pub fn p300(ear: Ear) -> Self {
+        let standard = Stimulus::toneburst_default(ear, 1000.0);
+        let deviant = Stimulus::toneburst_default(ear, 2000.0);
+        Self {
+            modality: Modality::P300,
+            stimulus: standard,
+            acquisition: Acquisition::oddball_default(ear),
+            paradigm: Paradigm::Oddball {
+                standard,
+                deviant,
+                deviant_prob: 0.2,
+            },
+        }
+    }
+
+    /// Protocolo MMN (oddball): igual que P300 pero la respuesta de interes es
+    /// la negatividad de disparidad preatencional.
+    pub fn mmn(ear: Ear) -> Self {
+        let mut p = Self::p300(ear);
+        p.modality = Modality::Mmn;
+        p
+    }
+
     /// Protocolo ALR/CAEP: click a 60 dB nHL, tasa muy baja (1.1/s) y ventana
     /// larga.
     pub fn alr(ear: Ear) -> Self {

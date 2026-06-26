@@ -183,6 +183,30 @@ impl Acquisition {
         }
     }
 
+    /// Configuracion oddball (P300/MMN) por defecto: ventana 100 ms pre +
+    /// 600 ms post, 0.5-30 Hz orden 2, 300 sweeps (del flujo desviante),
+    /// muestreo 500 Hz.
+    pub fn oddball_default(ear: Ear) -> Self {
+        Self {
+            window: TimeWindow {
+                pre_ms: 100.0,
+                post_ms: 600.0,
+            },
+            filter: Bandpass {
+                hp_hz: 0.5,
+                lp_hz: 30.0,
+                notch_hz: None,
+                order: 2,
+            },
+            sweeps: 300,
+            artifact_reject_uv: 100.0,
+            sample_rate_hz: 500.0,
+            gain: 20_000.0,
+            montage: Montage::abr_ipsilateral(ear),
+            impedance_kohm: 3.0,
+        }
+    }
+
     /// Configuracion ALR/CAEP por defecto: ventana 50 ms pre + 350 ms post,
     /// 1-30 Hz orden 2, 200 sweeps, muestreo 1 kHz, montaje de vertex.
     pub fn alr_default(ear: Ear) -> Self {

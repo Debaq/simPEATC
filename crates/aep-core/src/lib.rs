@@ -68,4 +68,4 @@ pub use stimulus::{
 pub use subject::{Age, ArousalState, Attention, Ear, Sex, Subject};
 pub use synth::NoiseProfile;
 pub use units::Level;
-pub use waveform::{Recording, Waveform};
+pub use waveform::{OddballRecording, Recording, Waveform};

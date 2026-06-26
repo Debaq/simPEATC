@@ -168,6 +168,8 @@ impl CaseDef {
             "ECochG" | "Ecochg" | "ecochg" => Protocol::ecochg(ear),
             "Mlr" | "MLR" | "mlr" => Protocol::mlr(ear),
             "Alr" | "ALR" | "alr" | "CAEP" => Protocol::alr(ear),
+            "P300" | "p300" => Protocol::p300(ear),
+            "Mmn" | "MMN" | "mmn" => Protocol::mmn(ear),
             _ => Protocol::abr_click(ear),
         };
         p.stimulus = Stimulus {

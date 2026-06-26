@@ -11,14 +11,16 @@
 //!    de linea base → acumulacion.
 //! 3. Promediado → F_sp → deteccion de picos → `Recording`.
 
+use crate::acquisition::Acquisition;
+use crate::component::{Component, ComponentShape, WavePeak};
 use crate::dsp::{f_sp, Averager, IirFilter};
+use crate::models::cognitive::CognitiveModel;
 use crate::models::{model_for, ResponseModel};
-use crate::protocol::Protocol;
+use crate::protocol::{Modality, Paradigm, Protocol};
 use crate::rng::Lcg;
 use crate::subject::Subject;
 use crate::synth::{self, NoiseProfile};
-use crate::waveform::{Recording, Waveform};
-use crate::component::{Component, ComponentShape, WavePeak};
+use crate::waveform::{OddballRecording, Recording, Waveform};
 
 /// Probabilidad de que un sweep traiga un artefacto (parpadeo/muscular).
 const ARTIFACT_PROB: f64 = 0.03;
@@ -34,9 +36,76 @@ impl EvokedPotentialEngine {
     /// Para modalidades aun no implementadas (Capas 2-7) devuelve un `Recording`
     /// vacio.
     pub fn simulate(protocol: &Protocol, subject: &Subject) -> Recording {
-        match model_for(protocol.modality) {
-            Some(model) => run_pipeline(&*model, protocol, subject),
-            None => Recording::default(),
+        match protocol.modality {
+            // Los cognitivos pasan por el flujo oddball; el canal es la diferencia.
+            Modality::P300 | Modality::Mmn => {
+                let odd = Self::simulate_oddball(protocol, subject);
+                Recording {
+                    channels: vec![odd.difference],
+                    detected: odd.detected,
+                    fsp: odd.fsp,
+                    accepted_sweeps: odd.accepted_sweeps,
+                    rejected_sweeps: odd.rejected_sweeps,
+                }
+            }
+            _ => match model_for(protocol.modality) {
+                Some(model) => run_pipeline(&*model, protocol, subject),
+                None => Recording::default(),
+            },
+        }
+    }
+
+    /// Simula un paradigma oddball: promedia el flujo estandar y el desviante y
+    /// calcula la onda diferencia (desviante − estandar).
+    ///
+    /// Devuelve un `OddballRecording` vacio si el protocolo no es oddball.
+    pub fn simulate_oddball(protocol: &Protocol, subject: &Subject) -> OddballRecording {
+        let Paradigm::Oddball {
+            standard,
+            deviant,
+            deviant_prob,
+        } = protocol.paradigm
+        else {
+            return OddballRecording::default();
+        };
+
+        let cog = CognitiveModel::new(protocol.modality);
+        let acq = &protocol.acquisition;
+        // Ruido cortical de fondo (banda lenta, grande), como en la ALR.
+        let noise = impedance_noise(NoiseProfile::new(2.0), acq);
+
+        let obligatory = cog.obligatory(&standard, subject);
+        let diff_comps = cog.difference(&standard, &deviant, deviant_prob, subject);
+
+        // Estandar: solo la respuesta obligatoria. Desviante: obligatoria + dif.
+        let std_comps = obligatory.clone();
+        let dev_comps: Vec<Component> = obligatory
+            .into_iter()
+            .chain(diff_comps.iter().cloned())
+            .collect();
+
+        let base = seed(protocol, subject);
+        let std_resp = average_response(&std_comps, acq, &noise, base ^ 0x5101);
+        let dev_resp = average_response(&dev_comps, acq, &noise, base ^ 0xD202);
+
+        // Onda diferencia, punto a punto.
+        let difference: Vec<f64> = dev_resp
+            .mean
+            .iter()
+            .zip(std_resp.mean.iter())
+            .map(|(d, s)| d - s)
+            .collect();
+        let detected = detect_peaks(&diff_comps, &dev_resp.times, &difference);
+        let diff_times = dev_resp.times.clone();
+
+        OddballRecording {
+            standard: Waveform::new(std_resp.times, std_resp.mean),
+            deviant: Waveform::new(dev_resp.times, dev_resp.mean),
+            difference: Waveform::new(diff_times, difference),
+            detected,
+            fsp: dev_resp.fsp,
+            accepted_sweeps: dev_resp.accepted,
+            rejected_sweeps: dev_resp.rejected,
         }
     }
 }
@@ -45,11 +114,42 @@ impl EvokedPotentialEngine {
 fn run_pipeline(model: &dyn ResponseModel, protocol: &Protocol, subject: &Subject) -> Recording {
     let acq = &protocol.acquisition;
     let comps = model.components(protocol, subject);
+    let noise = impedance_noise(model.background_noise(subject), acq);
+    let resp = average_response(&comps, acq, &noise, seed(protocol, subject));
+    let detected = detect_peaks(&comps, &resp.times, &resp.mean);
 
-    // Ruido de fondo del modelo, elevado por la impedancia de electrodos.
-    let mut noise = model.background_noise(subject);
-    noise = NoiseProfile::new(noise.rms_uv * (1.0 + acq.impedance_kohm / 10.0));
+    Recording {
+        channels: vec![Waveform::new(resp.times, resp.mean)],
+        detected,
+        fsp: resp.fsp,
+        accepted_sweeps: resp.accepted,
+        rejected_sweeps: resp.rejected,
+    }
+}
 
+/// Ruido de fondo elevado por la impedancia de electrodos.
+pub(crate) fn impedance_noise(noise: NoiseProfile, acq: &Acquisition) -> NoiseProfile {
+    NoiseProfile::new(noise.rms_uv * (1.0 + acq.impedance_kohm / 10.0))
+}
+
+/// Resultado de promediar un conjunto de componentes por la cadena de adquisicion.
+pub(crate) struct AveragedResponse {
+    pub times: Vec<f64>,
+    pub mean: Vec<f64>,
+    pub fsp: f64,
+    pub accepted: u32,
+    pub rejected: u32,
+}
+
+/// Promedia sweep a sweep (sintesis → artefacto → rechazo → filtro → baseline)
+/// un conjunto de componentes. Es el nucleo reutilizable de la §4, compartido
+/// por el flujo transitorio y por el oddball (dos flujos).
+pub(crate) fn average_response(
+    comps: &[Component],
+    acq: &Acquisition,
+    noise: &NoiseProfile,
+    base_seed: u64,
+) -> AveragedResponse {
     let n = acq.window.n_samples(acq.sample_rate_hz).max(2);
     let times = synth::time_axis(&acq.window, n);
     let sp_index = n / 2;
@@ -63,14 +163,13 @@ fn run_pipeline(model: &dyn ResponseModel, protocol: &Protocol, subject: &Subjec
 
     let target = acq.sweeps.max(1);
     let max_attempts = target.saturating_mul(2).max(target.saturating_add(100));
-    let base_seed = seed(protocol, subject);
 
     let mut produced = 0u32;
     while avg.accepted() < target && produced < max_attempts {
         let mut rng = Lcg::new(base_seed ^ (produced as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15));
         produced += 1;
 
-        let mut sweep = synth::synth_sweep(&comps, &times, &noise, &mut rng);
+        let mut sweep = synth::synth_sweep(comps, &times, noise, &mut rng);
         inject_artifact(&mut sweep, &mut rng, acq.artifact_reject_uv);
 
         // Rechazo de artefactos sobre la senal CRUDA (pre-filtro), como el equipo.
@@ -91,15 +190,12 @@ fn run_pipeline(model: &dyn ResponseModel, protocol: &Protocol, subject: &Subjec
 
     let mean = avg.mean();
     let fsp = f_sp(&mean, avg.sp_samples());
-    let detected = detect_peaks(&comps, &times, &mean);
-    let waveform = Waveform::new(times, mean);
-
-    Recording {
-        channels: vec![waveform],
-        detected,
+    AveragedResponse {
+        times,
+        mean,
         fsp,
-        accepted_sweeps: avg.accepted(),
-        rejected_sweeps: rejected,
+        accepted: avg.accepted(),
+        rejected,
     }
 }
 
@@ -140,6 +236,15 @@ fn baseline_correct(sweep: &mut [f64], times: &[f64]) {
 /// amplitudes (y razones como V/I) son aproximadas. Medicion pico-a-valle y
 /// filtrado de fase cero quedan como refinamiento futuro.
 fn detect_peaks(comps: &[Component], times: &[f64], mean: &[f64]) -> Vec<WavePeak> {
+    // La ventana de busqueda debe cubrir al menos unas muestras de la rejilla:
+    // a tasas de muestreo bajas (ALR/oddball) el paso temporal supera 0.7 ms.
+    let grid_step = if times.len() > 1 {
+        (times[1] - times[0]).abs()
+    } else {
+        PEAK_SEARCH_MS
+    };
+    let search = PEAK_SEARCH_MS.max(2.5 * grid_step);
+
     comps
         .iter()
         // El microfonico es oscilatorio: no tiene un pico puntual que medir.
@@ -149,8 +254,8 @@ fn detect_peaks(comps: &[Component], times: &[f64], mean: &[f64]) -> Vec<WavePea
             // Busca el maximo si la deflexion esperada es positiva (ondas ABR) o
             // el minimo si es negativa (AP/SP de la ECochG).
             let want_max = c.amplitude_uv >= 0.0;
-            let lo = c.latency_ms - PEAK_SEARCH_MS;
-            let hi = c.latency_ms + PEAK_SEARCH_MS;
+            let lo = c.latency_ms - search;
+            let hi = c.latency_ms + search;
             let mut best: Option<(usize, f64)> = None;
             for (i, &t) in times.iter().enumerate() {
                 if t < lo || t > hi {
@@ -199,7 +304,7 @@ fn seed(protocol: &Protocol, subject: &Subject) -> u64 {
 mod tests {
     use super::*;
     use crate::protocol::Protocol;
-    use crate::subject::{Ear, Subject};
+    use crate::subject::{Attention, Ear, Subject};
     use crate::units::Level;
 
     #[test]
@@ -252,6 +357,33 @@ mod tests {
         p.modality = crate::protocol::Modality::Assr;
         let rec = EvokedPotentialEngine::simulate(&p, &Subject::default());
         assert!(rec.channels.is_empty());
+    }
+
+    #[test]
+    fn oddball_detecta_p3b_y_mmn_con_atencion() {
+        let p = Protocol::p300(Ear::Right);
+        let subj = Subject {
+            attention: Attention::Active,
+            ..Default::default()
+        };
+        let odd = EvokedPotentialEngine::simulate_oddball(&p, &subj);
+        assert!(odd.peak("MMN").is_some(), "falta MMN");
+        assert!(odd.peak("P3b").is_some(), "falta P3b");
+        // Las tres curvas tienen la misma longitud.
+        assert_eq!(odd.standard.len(), odd.difference.len());
+        assert_eq!(odd.deviant.len(), odd.difference.len());
+    }
+
+    #[test]
+    fn oddball_sin_atencion_mantiene_mmn_pero_no_p3b() {
+        let p = Protocol::p300(Ear::Right);
+        let subj = Subject {
+            attention: Attention::Ignoring,
+            ..Default::default()
+        };
+        let odd = EvokedPotentialEngine::simulate_oddball(&p, &subj);
+        assert!(odd.peak("MMN").is_some(), "la MMN es preatencional");
+        assert!(odd.peak("P3b").is_none(), "la P3b necesita atencion");
     }
 
     #[test]

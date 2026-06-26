@@ -381,7 +381,7 @@ Cada capa es entregable e independiente: añade variables y una modalidad, con t
 - Componentes P1, N1, P2, N2; ventana larga; filtro 1–30 Hz.
 - Dependencia de **estado de alerta** y **atención**; uso con estímulos de habla.
 
-### Capa 6 — Cognitivos (P300, MMN)
+### Capa 6 — Cognitivos (P300, MMN) — ✅ HECHA
 - Paradigma **oddball**, doble flujo, onda diferencia.
 - P3a/P3b, dependencia de atención y edad; MMN preatencional.
 

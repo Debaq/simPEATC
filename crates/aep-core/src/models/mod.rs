@@ -9,6 +9,7 @@
 
 pub mod abr;
 pub mod alr;
+pub mod cognitive;
 pub mod ecochg;
 pub mod mlr;
 

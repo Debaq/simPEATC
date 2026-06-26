@@ -105,6 +105,37 @@ impl Recording {
     }
 }
 
+/// Registro de un paradigma oddball (P300 / MMN).
+///
+/// Lleva las tres curvas que se ensenan: respuesta al **estandar** (frecuente),
+/// al **desviante** (raro) y la **onda diferencia** (desviante − estandar),
+/// donde emergen la MMN y la P300. `detected` lleva los picos medidos sobre la
+/// onda diferencia.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct OddballRecording {
+    /// Respuesta promediada al estimulo estandar.
+    pub standard: Waveform,
+    /// Respuesta promediada al estimulo desviante.
+    pub deviant: Waveform,
+    /// Onda diferencia (desviante − estandar).
+    pub difference: Waveform,
+    /// Picos detectados sobre la onda diferencia (MMN, P3a, P3b).
+    pub detected: Vec<WavePeak>,
+    /// F_sp de la onda diferencia.
+    pub fsp: f64,
+    /// Sweeps aceptados del flujo desviante.
+    pub accepted_sweeps: u32,
+    /// Sweeps rechazados del flujo desviante.
+    pub rejected_sweeps: u32,
+}
+
+impl OddballRecording {
+    /// Pico detectado con una etiqueta dada (p.ej. "MMN", "P3b").
+    pub fn peak(&self, label: &str) -> Option<&WavePeak> {
+        self.detected.iter().find(|w| w.label == label)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

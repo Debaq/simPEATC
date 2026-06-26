@@ -146,6 +146,24 @@ fn alr_n1_mayor_atendiendo_y_menor_dormido() {
 }
 
 #[test]
+fn p300_atento_detecta_p3b_pero_ignorando_no() {
+    let atento = simular("p300_atento");
+    assert!(atento.peak("P3b").is_some(), "atento deberia dar P3b");
+    assert!(atento.peak("MMN").is_some(), "deberia haber MMN");
+
+    let ignorando = simular("p300_ignorando");
+    assert!(ignorando.peak("P3b").is_none(), "ignorando no deberia dar P3b");
+    assert!(ignorando.peak("MMN").is_some(), "la MMN persiste sin atender");
+}
+
+#[test]
+fn mmn_basico_detecta_mmn_sin_atender() {
+    let rec = simular("mmn_basico");
+    assert!(rec.peak("MMN").is_some(), "MMN preatencional");
+    assert!(rec.peak("P3b").is_none(), "la modalidad MMN no da P3b");
+}
+
+#[test]
 fn catalogo_cubre_los_sitios_de_lesion_clave() {
     let cat = CaseCatalog::embedded();
     let mut vistos = std::collections::HashSet::new();

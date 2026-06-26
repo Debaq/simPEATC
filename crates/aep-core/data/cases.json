@@ -193,6 +193,48 @@
       "state": "NaturalSleep",
       "attention": "Passive",
       "lesions": []
+    },
+    {
+      "id": "p300_atento",
+      "name": "P300 atendiendo (cuenta los raros)",
+      "description": "Paradigma oddball con atencion activa: emerge la P3b en la onda diferencia.",
+      "modality": "P300",
+      "ear": "Right",
+      "intensity_db_nhl": 70.0,
+      "sweeps": 300,
+      "age_years": 30.0,
+      "sex": "Female",
+      "state": "Awake",
+      "attention": "Active",
+      "lesions": []
+    },
+    {
+      "id": "p300_ignorando",
+      "name": "P300 ignorando el estimulo",
+      "description": "Mismo oddball pero sin atender: la P3b desaparece y persiste la MMN preatencional.",
+      "modality": "P300",
+      "ear": "Right",
+      "intensity_db_nhl": 70.0,
+      "sweeps": 300,
+      "age_years": 30.0,
+      "sex": "Female",
+      "state": "Awake",
+      "attention": "Ignoring",
+      "lesions": []
+    },
+    {
+      "id": "mmn_basico",
+      "name": "MMN (negatividad de disparidad)",
+      "description": "Respuesta preatencional a un desviante; util en sujetos que no colaboran.",
+      "modality": "Mmn",
+      "ear": "Right",
+      "intensity_db_nhl": 70.0,
+      "sweeps": 300,
+      "age_years": 30.0,
+      "sex": "Female",
+      "state": "Awake",
+      "attention": "Ignoring",
+      "lesions": []
     }
   ]
 }
