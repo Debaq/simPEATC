@@ -16,7 +16,14 @@ class AbrDetailAllCurves(QWidget, Ui_DetailAllCurves):
     
     def del_register(self):
         pass
-    
+
+    def clear_all(self):
+        """Limpia completamente la tabla de curvas"""
+        # Limpiar todas las filas excepto los headers
+        self.tw_curves_list.setRowCount(0)
+        # Limpiar diccionario de datos
+        self.data = {}
+
     def process_and_fill_data (self, data_dict):
         for i in data_dict:
             data = {i:data_dict[i]}

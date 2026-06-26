@@ -1,0 +1,15 @@
+# Ignorar archivos y directorios generados por el servidor
+pdfs_osce/
+html_osce/
+json_osce/
+imagenes_osce/
+osce_log.txt
+*.log
+
+# No ignorar los archivos base del sistema
+!.htaccess
+!index.html
+!listar_pdfs.php
+!recibir_pdf.php
+!README_INSTALACION.md
+!INSTRUCCIONES_RAPIDAS.txt

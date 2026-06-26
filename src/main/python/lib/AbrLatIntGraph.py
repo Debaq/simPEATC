@@ -101,10 +101,15 @@ class GraphLatInt(pg.GraphicsLayoutWidget):
                 self.pw.removeItem(item)
     
     def export_(self):
+        import os
         width = self.pw.size().width()
         height = self.pw.size().height()
         export = exporters.ImageExporter(self.pw)
-        export.export(context.get_resource(f'temp/LatInt.png'))
+
+        # Usar context.get_resource para el directorio, luego construir la ruta del archivo
+        temp_dir = context.get_resource('temp')
+        output_file = os.path.join(temp_dir, 'LatInt.png')
+        export.export(output_file)
 
 if __name__ == '__main__':
     import pyqtgraph.examples

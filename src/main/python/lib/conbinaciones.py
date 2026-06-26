@@ -637,6 +637,11 @@ combinaciones = [
     ('conductivo_4', 'neural_6'),
     ('coclear_8', 'coclear_9'),
     ('neural_8', 'neural_9'),
+
+    # Casos OSCE Estación 4 (agregados para evaluación)
+    ('normal_1', 'conductivo_1'),   # Estación 4 - Caso 1: OD Normal, OI Conductivo
+    ('coclear_2', 'normal_2'),      # Estación 4 - Caso 2: OD Coclear, OI Normal
+    ('neural_4', 'neural_5'),       # Estación 4 - Caso 3: OD Schwannoma pequeño, OI Schwannoma mediano
 ]
 
 

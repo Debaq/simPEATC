@@ -58,6 +58,11 @@ class Ui_AdvanceSettings(object):
 
         self.comboBox_2 = QComboBox(AdvanceSettings)
         self.comboBox_2.addItem("")
+        self.comboBox_2.addItem("")
+        self.comboBox_2.addItem("")
+        self.comboBox_2.addItem("")
+        self.comboBox_2.addItem("")
+        self.comboBox_2.addItem("")
         self.comboBox_2.setObjectName(u"comboBox_2")
 
         self.gridLayout.addWidget(self.comboBox_2, 2, 2, 1, 1)
@@ -68,6 +73,10 @@ class Ui_AdvanceSettings(object):
         self.gridLayout.addWidget(self.label_4, 3, 0, 1, 1)
 
         self.comboBox_3 = QComboBox(AdvanceSettings)
+        self.comboBox_3.addItem("")
+        self.comboBox_3.addItem("")
+        self.comboBox_3.addItem("")
+        self.comboBox_3.addItem("")
         self.comboBox_3.addItem("")
         self.comboBox_3.setObjectName(u"comboBox_3")
 
@@ -157,10 +166,19 @@ class Ui_AdvanceSettings(object):
 
         self.label_2.setText(QCoreApplication.translate("AdvanceSettings", u"Ventana", None))
         self.label_3.setText(QCoreApplication.translate("AdvanceSettings", u"FSP", None))
-        self.comboBox_2.setItemText(0, QCoreApplication.translate("AdvanceSettings", u"Detecci\u00f3n 99% y FSP de 3.1", None))
+        self.comboBox_2.setItemText(0, QCoreApplication.translate("AdvanceSettings", u"Desabilitados", None))
+        self.comboBox_2.setItemText(1, QCoreApplication.translate("AdvanceSettings", u"Detecci\u00f3n 95% y FSP de 2.0", None))
+        self.comboBox_2.setItemText(2, QCoreApplication.translate("AdvanceSettings", u"Detecci\u00f3n 97% y FSP de 2.5", None))
+        self.comboBox_2.setItemText(3, QCoreApplication.translate("AdvanceSettings", u"Detecci\u00f3n 99% y FSP de 3.1", None))
+        self.comboBox_2.setItemText(4, QCoreApplication.translate("AdvanceSettings", u"Detecci\u00f3n 99.5% y FSP de 3.5", None))
+        self.comboBox_2.setItemText(5, QCoreApplication.translate("AdvanceSettings", u"Detecci\u00f3n 99.9% y FSP de 4.0", None))
 
         self.label_4.setText(QCoreApplication.translate("AdvanceSettings", u"Ruido residual", None))
         self.comboBox_3.setItemText(0, QCoreApplication.translate("AdvanceSettings", u"40nV", None))
+        self.comboBox_3.setItemText(1, QCoreApplication.translate("AdvanceSettings", u"60nV", None))
+        self.comboBox_3.setItemText(2, QCoreApplication.translate("AdvanceSettings", u"80nV", None))
+        self.comboBox_3.setItemText(3, QCoreApplication.translate("AdvanceSettings", u"100nV", None))
+        self.comboBox_3.setItemText(4, QCoreApplication.translate("AdvanceSettings", u"120nV", None))
 
         self.label_5.setText(QCoreApplication.translate("AdvanceSettings", u"Electrodo Vertex", None))
         self.comboBox_4.setItemText(0, QCoreApplication.translate("AdvanceSettings", u"A1", None))

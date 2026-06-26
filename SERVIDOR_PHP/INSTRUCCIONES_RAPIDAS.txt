@@ -1,0 +1,82 @@
+================================================================================
+INSTALACIÓN RÁPIDA DEL SERVIDOR OSCE
+================================================================================
+
+📁 ARCHIVOS A SUBIR A https://tmeduca.org/osce/
+================================================================================
+
+Sube estos archivos al servidor web:
+
+1. index.html              → Página principal con listado de PDFs
+2. listar_pdfs.php         → API para obtener lista de PDFs (usada por index.html)
+3. recibir_pdf.php         → Endpoint que recibe los PDFs desde la aplicación
+4. .htaccess               → Configuración de Apache/PHP
+
+📌 IMPORTANTE: Los directorios se crean automáticamente al recibir el primer PDF.
+
+
+⚙️ CONFIGURACIÓN MÍNIMA
+================================================================================
+
+1. Permisos (si es necesario):
+   chmod 755 /ruta/osce/
+
+2. Verificar que PHP permite uploads:
+   - upload_max_filesize = 50M
+   - post_max_size = 50M
+   (El .htaccess ya incluye esto)
+
+3. Reiniciar servidor web:
+   sudo systemctl restart apache2
+
+
+✅ VERIFICAR FUNCIONAMIENTO
+================================================================================
+
+1. Accede a: https://tmeduca.org/osce/
+   → Debes ver la página de listado vacía
+
+2. Envía un PDF de prueba desde la aplicación
+   → El PDF debe aparecer en el listado automáticamente
+
+
+📊 ESTRUCTURA AUTOMÁTICA
+================================================================================
+
+Después del primer envío, se crearán estos directorios:
+
+/osce/
+├── index.html
+├── listar_pdfs.php
+├── recibir_pdf.php
+├── .htaccess
+├── osce_log.txt               ← Log de todos los envíos
+├── pdfs_osce/                 ← PDFs recibidos (accesibles públicamente)
+├── html_osce/                 ← Reportes HTML (si se envían)
+├── json_osce/                 ← Metadatos (protegidos por .htaccess)
+└── imagenes_osce/             ← Imágenes de curvas ABR
+
+
+🔧 LA APLICACIÓN PYTHON
+================================================================================
+
+✓ Envía automáticamente al finalizar cada OSCE
+✓ URL hardcodeada: https://tmeduca.org/osce/recibir_pdf.php
+✓ No pregunta al usuario
+✓ Si falla, solo guarda localmente y continúa sin error
+
+
+📞 SOPORTE
+================================================================================
+
+Si tienes problemas, revisa:
+- Logs del servidor: /var/log/apache2/error.log
+- Permisos de directorios
+- Configuración PHP (upload_max_filesize)
+
+Lee el README_INSTALACION.md para instrucciones detalladas.
+
+
+Universidad Austral de Chile - Sede Puerto Montt
+Tecnología Médica - PEATC
+================================================================================

@@ -57,6 +57,12 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.lbl_time)
 
+        self.btn_skip_time_dev = QPushButton(self.centralwidget)
+        self.btn_skip_time_dev.setObjectName(u"btn_skip_time_dev")
+        self.btn_skip_time_dev.setVisible(False)  # Oculto por defecto
+
+        self.horizontalLayout.addWidget(self.btn_skip_time_dev)
+
         self.btn_next_case = QPushButton(self.centralwidget)
         self.btn_next_case.setObjectName(u"btn_next_case")
 
@@ -233,6 +239,7 @@ class Ui_MainWindow(object):
         self.actionCambiar_Caso.setText(QCoreApplication.translate("MainWindow", u"Cambiar Caso", None))
         self.lbl_info.setText("")
         self.lbl_time.setText("")
+        self.btn_skip_time_dev.setText(QCoreApplication.translate("MainWindow", u"\u23ed Saltar Tiempo (DEV)", None))
         self.btn_next_case.setText(QCoreApplication.translate("MainWindow", u"Caso siguiente", None))
         self.btn_scale_plus.setText(QCoreApplication.translate("MainWindow", u"+", None))
         self.lbl_scale.setText(QCoreApplication.translate("MainWindow", u"8\u00b5V", None))

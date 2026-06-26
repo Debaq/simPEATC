@@ -2,7 +2,7 @@ import shutil
 import os
 from datetime import datetime
 
-import fitz
+# fitz (PyMuPDF) se importa solo cuando se necesita para evitar errores al inicio
 from base import context
 from PySide6.QtCore import QCoreApplication, Qt, Signal
 from PySide6.QtGui import QColor, QImage, QPainter, QPixmap
@@ -28,6 +28,29 @@ class AbrReport(QWidget, Ui_AbrReport):
         self.btn_save.clicked.connect(self.open_save_as_dialog)
         self.case = ""
         self.type_use = "exam"
+        self.modo_estacion_5 = False  # Flag para modo Estación 5 OSCE
+
+    def activar_modo_estacion_5(self):
+        """
+        Activa el modo Estación 5 del OSCE:
+        - Oculta pestañas Esquema y Previsualización
+        - Solo muestra pestaña Conclusiones
+        - El informe se crea directamente aquí sin diálogo separado
+        """
+        self.modo_estacion_5 = True
+        # Ocultar pestañas Esquema (índice 1) y Previsualización (índice 2)
+        self.tabWidget.removeTab(2)  # Previsualización
+        self.tabWidget.removeTab(1)  # Esquema
+        # Ahora solo queda la pestaña Conclusiones (índice 0)
+        self.tabWidget.setCurrentIndex(0)
+        print("✓ Modo Estación 5 activado: Solo pestaña Conclusiones visible")
+
+    def desactivar_modo_estacion_5(self):
+        """Desactiva el modo Estación 5 y restaura todas las pestañas"""
+        if self.modo_estacion_5:
+            self.modo_estacion_5 = False
+            # Reconstruir el widget para restaurar todas las pestañas
+            print("✓ Modo Estación 5 desactivado")
 
     def change_tab(self, tab):
         self.sig_update_pdf.emit(True)
@@ -57,6 +80,28 @@ class AbrReport(QWidget, Ui_AbrReport):
     def set_le_eva(self, text):
         self.le_eva.setDisabled(True)
         self.le_eva.setText(text)
+
+    def obtener_informe_estacion_5(self):
+        """
+        Obtiene el informe de la Estación 5 desde los campos de la pestaña Conclusiones
+        Retorna un dict compatible con el formato esperado por GeneradorInformeOSCE
+        """
+        import datetime
+
+        informe_data = {
+            'datos_caso': {
+                'identificacion': 'Caso 3 - Estación 5',
+                'fecha': self.lbl_date.text(),
+                'condiciones': 'Evaluación OSCE - Estación 5'
+            },
+            'hallazgos': self.text_edit_1.toPlainText(),  # Campo "Descripción"
+            'normativos': '',  # No hay campo específico, se incluye en conclusión
+            'conclusion': self.text_edit_2.toPlainText(),  # Campo "Conclusión"
+            'caso_id': self.case,
+            'timestamp': datetime.datetime.now().isoformat()
+        }
+
+        return informe_data
 
     def open_save_as_dialog(self):
         # Esta función abre el diálogo 'Guardar Como'
@@ -96,6 +141,13 @@ class AbrReport(QWidget, Ui_AbrReport):
 
     def perform_print(self, printer):
         try:
+            # Importar fitz solo cuando se necesita
+            try:
+                import fitz
+            except ImportError:
+                print("PyMuPDF (fitz) no está disponible. No se puede imprimir.")
+                return
+
             # Obtener el PDF actualmente visualizado
             pdf_path = self.file_pdf
             # Abrir el documento PDF con PyMuPDF
@@ -150,9 +202,18 @@ class PDFViewer(QGraphicsView):
         self.verticalScrollBar().valueChanged.connect(self.check_scroll_borders)
 
     def load_pdf(self, pdf_path):
-        # Abrir el documento PDF con PyMuPDF
-        self.doc = fitz.open(pdf_path)
-        self.show_page(self.current_page)
+        # Importar fitz solo cuando se necesita
+        try:
+            import fitz
+            # Abrir el documento PDF con PyMuPDF
+            self.doc = fitz.open(pdf_path)
+            self.show_page(self.current_page)
+        except ImportError:
+            print("PyMuPDF (fitz) no está disponible. No se puede cargar el PDF para visualización.")
+            self.doc = None
+        except Exception as e:
+            print(f"Error al cargar PDF: {e}")
+            self.doc = None
 
     def show_page(self, page_number):
         if self.doc is None or page_number < 0 or page_number >= len(self.doc):

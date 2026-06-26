@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSCE PEATC - Evaluaciones Recibidas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .table-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        td {
+            padding: 15px;
+            color: #495057;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .student-number {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .timestamp {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .file-size {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-view {
+            background: #e7f3ff;
+            color: #0066cc;
+        }
+
+        .btn-view:hover {
+            background: #cce5ff;
+        }
+
+        .btn-download {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .btn-download:hover {
+            background: #c8e6c9;
+        }
+
+        .btn-delete {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .btn-delete:hover {
+            background: #ffcdd2;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state svg {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 OSCE - PEATC</h1>
+            <p>Universidad Austral de Chile - Sede Puerto Montt</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="number" id="total-pdfs">0</div>
+                <div class="label">Total PDFs</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="total-size">0 MB</div>
+                <div class="label">Tamaño Total</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="ultimo-envio">-</div>
+                <div class="label">Último Envío</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="search" placeholder="🔍 Buscar por nombre o número de estudiante...">
+            </div>
+            <button class="btn btn-primary" onclick="cargarPDFs()">🔄 Actualizar</button>
+        </div>
+
+        <div class="table-container">
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Cargando evaluaciones...</p>
+            </div>
+
+            <div id="content" style="display: none;">
+                <table id="pdfs-table">
+                    <thead>
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Número</th>
+                            <th>Fecha y Hora</th>
+                            <th>Tamaño</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pdfs-tbody">
+                    </tbody>
+                </table>
+
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h3>No hay evaluaciones aún</h3>
+                    <p>Los PDFs enviados desde el simulador aparecerán aquí</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Sistema de Evaluación OSCE - Potenciales Evocados Auditivos de Tronco Cerebral</p>
+            <p style="margin-top: 5px; font-size: 0.8rem;">Tecnología Médica - UAch Puerto Montt</p>
+        </div>
+    </div>
+
+    <script>
+        // Configuración
+        const API_URL = 'listar_pdfs.php';
+
+        // Cargar PDFs al inicio
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarPDFs();
+
+            // Búsqueda en tiempo real
+            document.getElementById('search').addEventListener('input', (e) => {
+                filtrarTabla(e.target.value);
+            });
+        });
+
+        // Función para cargar PDFs
+        async function cargarPDFs() {
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('content');
+
+            loading.style.display = 'block';
+            content.style.display = 'none';
+
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+
+                if (data.exito) {
+                    mostrarPDFs(data.pdfs);
+                    actualizarEstadisticas(data.estadisticas);
+                } else {
+                    console.error('Error al cargar PDFs:', data.error);
+                }
+            } catch (error) {
+                console.error('Error de red:', error);
+            } finally {
+                loading.style.display = 'none';
+                content.style.display = 'block';
+            }
+        }
+
+        // Mostrar PDFs en la tabla
+        function mostrarPDFs(pdfs) {
+            const tbody = document.getElementById('pdfs-tbody');
+            const emptyState = document.getElementById('empty-state');
+            const table = document.getElementById('pdfs-table');
+
+            if (!pdfs || pdfs.length === 0) {
+                table.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            table.style.display = 'table';
+            emptyState.style.display = 'none';
+
+            tbody.innerHTML = pdfs.map(pdf => `
+                <tr data-nombre="${pdf.nombre_estudiante.toLowerCase()}" data-numero="${pdf.numero_estudiante.toLowerCase()}">
+                    <td>
+                        <div class="student-name">${pdf.nombre_estudiante}</div>
+                    </td>
+                    <td>
+                        <div class="student-number">${pdf.numero_estudiante}</div>
+                    </td>
+                    <td>
+                        <div class="timestamp">${formatearFecha(pdf.fecha_subida)}</div>
+                    </td>
+                    <td>
+                        <div class="file-size">${formatearTamanio(pdf.tamanio_bytes)}</div>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a href="pdfs_osce/${pdf.archivo_pdf}" target="_blank" class="action-btn btn-view">
+                                👁️ Ver
+                            </a>
+                            <a href="pdfs_osce/${pdf.archivo_pdf}" download class="action-btn btn-download">
+                                ⬇️ Descargar
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Actualizar estadísticas
+        function actualizarEstadisticas(stats) {
+            document.getElementById('total-pdfs').textContent = stats.total_archivos;
+            document.getElementById('total-size').textContent = formatearTamanio(stats.tamanio_total);
+            document.getElementById('ultimo-envio').textContent = stats.ultimo_envio
+                ? formatearFechaRelativa(stats.ultimo_envio)
+                : '-';
+        }
+
+        // Filtrar tabla
+        function filtrarTabla(termino) {
+            const filas = document.querySelectorAll('#pdfs-tbody tr');
+            const terminoLower = termino.toLowerCase();
+
+            filas.forEach(fila => {
+                const nombre = fila.dataset.nombre;
+                const numero = fila.dataset.numero;
+                const coincide = nombre.includes(terminoLower) || numero.includes(terminoLower);
+                fila.style.display = coincide ? '' : 'none';
+            });
+        }
+
+        // Formatear fecha
+        function formatearFecha(fecha) {
+            const d = new Date(fecha);
+            const opciones = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return d.toLocaleString('es-CL', opciones);
+        }
+
+        // Formatear fecha relativa
+        function formatearFechaRelativa(fecha) {
+            const ahora = new Date();
+            const entonces = new Date(fecha);
+            const diff = Math.floor((ahora - entonces) / 1000); // segundos
+
+            if (diff < 60) return 'Hace un momento';
+            if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
+            if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} h`;
+            return formatearFecha(fecha);
+        }
+
+        // Formatear tamaño de archivo
+        function formatearTamanio(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>

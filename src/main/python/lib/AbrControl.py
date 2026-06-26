@@ -10,17 +10,21 @@ class AbrControl(QWidget, Ui_Abr_Config):
         QWidget.__init__(self)
         self.setupUi(self)
         self.config_btn()
-        self.disable_unimplemented_stimuli()
+        # ESTACIÓN 3 OSCE: Todos los estímulos están habilitados
+        # self.disable_unimplemented_stimuli()
 
 
     def disable_unimplemented_stimuli(self) -> None:
-        """Desactiva estímulos no implementados (chirp, lschirp, burst)"""
+        """Desactiva estímulos no implementados (chirp, lschirp, burst)
+        NOTA: Este método está deshabilitado para la Estación 3 del OSCE
+        donde los estudiantes deben poder seleccionar todos los estímulos.
+        """
         model = self.cb_stim.model()
-        
+
         # Buscar y desactivar items específicos
         for i in range(self.cb_stim.count()):
             item_text = self.cb_stim.itemText(i).lower()
-            
+
             # Desactivar chirp, lschirp y burst
             if any(stim in item_text for stim in ['chirp', 'lschirp', 'burst', 'tone']):
                 item = model.item(i)

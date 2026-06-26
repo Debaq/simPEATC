@@ -258,6 +258,29 @@ class AbrGraph(GraphicsLayoutWidgetMod):
         else:
             self.update_marks(x,y, name)
 
+    def recreate_mark(self, curve_name, lbl_mark, mark_data):
+        """Recrea una marca guardada en el gráfico"""
+        x, y = mark_data
+        name = f'{curve_name}_{lbl_mark}'
+
+        # Verificar que la curva y la marca existen en los datos
+        if curve_name not in self.marks:
+            self.marks[curve_name] = {}
+
+        self.marks[curve_name][lbl_mark] = [x, y]
+
+        # Ajustar y con el gap de la curva
+        y_adjusted = y + self.data[curve_name].get('gap', 1.8)
+
+        # Crear el texto visual de la marca
+        curve_mark = f"<span style='color: #000; font-size: 7pt;'><h3>&darr;<sup>{lbl_mark}</sup></h3></span>"
+        text = TextItemMod(name=name, tipo='mark', curve_parent=curve_name, html=curve_mark, anchor=(0.34,0.6), color=(0,0,0,255))
+        font = QFont()
+        font.setPixelSize(13)
+        text.setFont(font)
+        text.setPos(x, y_adjusted+0.1)
+        self.pw.addItem(text)
+
     def update_marks(self,x , y, name):
         name_curve,mark = name.split('_')
         self.marks[name_curve][mark][0] = x
@@ -347,7 +370,27 @@ class AbrGraph(GraphicsLayoutWidgetMod):
                     value = self.data[i]["repro"]
         return value
 
+    def limpiar_todo(self):
+        """Limpia completamente el gráfico: todas las curvas, labels y marcas"""
+        # Eliminar todos los PlotDataItems (curvas)
+        for item in self.pw.listDataItems()[:]:
+            self.pw.removeItem(item)
+
+        # Eliminar todos los TextItemMod (labels y marcas)
+        for item in self.pw.items[:]:
+            if isinstance(item, TextItemMod):
+                self.pw.removeItem(item)
+
+        # Limpiar diccionarios internos
+        self.data = {}
+        self.marks = {}
+        self.curve_int = {}
+        self.act_curve = None
+
+        print(f"   🧹 Gráfico lado {self.side} limpiado completamente")
+
     def export_(self):
+        import os
         self.inf_a.hide()
         self.inf_b.hide()
         width = self.pw.size().width()
@@ -355,9 +398,13 @@ class AbrGraph(GraphicsLayoutWidgetMod):
         options = {'width':width, 'height':height, 'background': self.color_background}
         #export = generateSvg(self.pw, options=options)
         export = pg.exporters.ImageExporter(self.pw)
-        export.export(context.get_resource(f'temp/{self.side}.png'))
+
+        # Usar context.get_resource para el directorio, luego construir la ruta del archivo
+        temp_dir = context.get_resource('temp')
+        output_file = os.path.join(temp_dir, f'{self.side}.png')
+        export.export(output_file)
 
         self.inf_a.show()
         self.inf_b.show()
-       
+
 

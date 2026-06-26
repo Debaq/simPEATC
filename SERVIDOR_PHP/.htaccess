@@ -1,0 +1,39 @@
+# .htaccess para https://tmeduca.org/osce/
+
+# Habilitar uploads grandes
+php_value upload_max_filesize 50M
+php_value post_max_size 50M
+php_value max_execution_time 300
+php_value max_input_time 300
+
+# Listado de directorios deshabilitado por seguridad
+Options -Indexes
+
+# Proteger archivos de configuración
+<FilesMatch "^(\.htaccess|\.htpasswd|.*\.log|.*\.json)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Permitir CORS para la aplicación
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST"
+    Header set Access-Control-Allow-Headers "Content-Type"
+</IfModule>
+
+# Redirección amigable para index
+DirectoryIndex index.html index.php
+
+# Cache para archivos estáticos
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType application/pdf "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+</IfModule>
+
+# Comprimir archivos
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/json
+</IfModule>
