@@ -24,6 +24,7 @@
 //! ```
 
 pub mod acquisition;
+pub mod cases;
 pub mod component;
 pub mod dsp;
 pub mod engine;
@@ -44,11 +45,14 @@ pub mod waveform;
 pub use acquisition::{
     Acquisition, Bandpass, Channel, ElectrodeSite, Montage, TimeWindow,
 };
+pub use cases::{CaseCatalog, CaseDef};
 pub use component::{Component, ComponentShape, WavePeak};
 pub use engine::EvokedPotentialEngine;
 pub use lesion::{FreqProfile, Lesion, LesionSite};
 pub use models::{model_for, ResponseModel};
-pub use modulation::{apply_intensity, apply_rate, apply_temperature};
+pub use modulation::{
+    apply_age, apply_intensity, apply_polarity, apply_rate, apply_sex, apply_temperature,
+};
 pub use protocol::{Modality, Paradigm, Protocol};
 pub use rng::Lcg;
 pub use stimulus::{

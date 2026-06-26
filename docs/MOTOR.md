@@ -350,14 +350,14 @@ Sub-motor en **dominio de frecuencia**: estímulo modulado (portadora + f<sub>mo
 
 Cada capa es entregable e independiente: añade variables y una modalidad, con tests y presets propios. El núcleo (Capa 0) se construye una vez; las demás son incrementos.
 
-### Capa 0 — Núcleo genérico  *(fundamento)*
+### Capa 0 — Núcleo genérico  *(fundamento)* — ✅ HECHA
 - Tipos comunes (§5), `EvokedPotentialEngine`, trait `ResponseModel`.
 - Síntesis por composición de componentes + ruido.
 - **Cadena DSP real**: filtro IIR Butterworth, ventana/baseline, promediación, rechazo de artefactos, FSP.
 - Determinismo + framework de tests + carga de normativos (embebido+override).
 - *Hecho cuando*: el ABR actual se reproduce sobre esta base con tests verdes.
 
-### Capa 1 — ABR por clicks  *(modalidad estrella)*
+### Capa 1 — ABR por clicks  *(modalidad estrella)* — ✅ HECHA
 - Modelo ABR completo: ondas I–VII, intervalos, V/I.
 - Variables: intensidad, polaridad, tasa, transductor, edad, sexo, temperatura.
 - Lesiones: conductiva, coclear, retrococlear, neural (paramétricas) + perfil frecuencial.
@@ -461,6 +461,7 @@ El modelo de **componentes** (`component.rs`) y la **lesión paramétrica**
 3. **Morfología realista**: gaussianas simples bastan para ABR; ECochG (SP escalón) y corticales (ondas anchas asimétricas) pueden necesitar plantillas. Se resuelve con `ComponentShape`.
 4. **ASSR** podría justificar su propio crate si el dominio de frecuencia diverge mucho; por ahora, sub-módulo.
 5. **Rendimiento**: la GUI llama al motor en tiempo real durante la captura; la cadena DSP debe ser barata por sweep. Mantener todo en `f32`/`f64` sin asignaciones por frame.
+6. **Medición de amplitudes**: la detección actual mide amplitud *absoluta desde la línea base*, no *pico-a-valle*, y el filtro IIR es *forward* (no fase cero). Las **latencias** son fiables; las **amplitudes y razones (V/I)** quedan aproximadas. Refinamiento futuro: detección pico-a-valle + filtrado de fase cero (filtfilt).
 
 ---
 

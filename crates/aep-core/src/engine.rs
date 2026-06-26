@@ -133,6 +133,12 @@ fn baseline_correct(sweep: &mut [f64], times: &[f64]) {
 }
 
 /// Busca cada componente esperado como un maximo local cerca de su latencia.
+///
+/// La amplitud reportada es **absoluta desde la linea base** en el pico, no
+/// pico-a-valle como en la medicion clinica; ademas el filtrado IIR forward
+/// sesga las amplitudes absolutas. Por eso las latencias son fiables pero las
+/// amplitudes (y razones como V/I) son aproximadas. Medicion pico-a-valle y
+/// filtrado de fase cero quedan como refinamiento futuro.
 fn detect_peaks(comps: &[Component], times: &[f64], mean: &[f64]) -> Vec<WavePeak> {
     comps
         .iter()

@@ -1,0 +1,105 @@
+{
+  "cases": [
+    {
+      "id": "normal",
+      "name": "Audicion normal",
+      "description": "Adulto sano. Ondas I-V presentes, latencias e intervalos normales.",
+      "ear": "Right",
+      "intensity_db_nhl": 80.0,
+      "sweeps": 2000,
+      "age_years": 30.0,
+      "sex": "Female",
+      "lesions": []
+    },
+    {
+      "id": "conductiva_moderada",
+      "name": "Hipoacusia conductiva moderada",
+      "description": "Patologia de oido medio. Alarga las latencias absolutas por igual y preserva los intervalos interpico.",
+      "ear": "Right",
+      "intensity_db_nhl": 80.0,
+      "sweeps": 2000,
+      "age_years": 35.0,
+      "sex": "Male",
+      "lesions": [
+        { "site": "Conductive", "severity_db": 40.0, "profile": "Flat" }
+      ]
+    },
+    {
+      "id": "coclear_agudos",
+      "name": "Hipoacusia coclear en agudos",
+      "description": "Perdida sensorial descendente. Reclutamiento: latencias casi normales a alta intensidad, amplitudes reducidas.",
+      "ear": "Left",
+      "intensity_db_nhl": 80.0,
+      "sweeps": 2000,
+      "age_years": 60.0,
+      "sex": "Male",
+      "lesions": [
+        { "site": "Cochlear", "severity_db": 50.0, "profile": "HighFrequency" }
+      ]
+    },
+    {
+      "id": "coclear_plana_severa",
+      "name": "Hipoacusia coclear plana severa",
+      "description": "Perdida sensorial plana. Cerca del umbral solo sobrevive la onda V.",
+      "ear": "Right",
+      "intensity_db_nhl": 75.0,
+      "sweeps": 3000,
+      "age_years": 50.0,
+      "sex": "Female",
+      "lesions": [
+        { "site": "Cochlear", "severity_db": 65.0, "profile": "Flat" }
+      ]
+    },
+    {
+      "id": "mixta",
+      "name": "Hipoacusia mixta",
+      "description": "Componente conductivo + coclear coexistentes en el mismo oido.",
+      "ear": "Right",
+      "intensity_db_nhl": 85.0,
+      "sweeps": 2000,
+      "age_years": 45.0,
+      "sex": "Male",
+      "lesions": [
+        { "site": "Conductive", "severity_db": 30.0, "profile": "Flat" },
+        { "site": "Cochlear", "severity_db": 40.0, "profile": "Flat" }
+      ]
+    },
+    {
+      "id": "neurinoma",
+      "name": "Neurinoma del acustico (retrococlear)",
+      "description": "Lesion del VIII par. Alarga selectivamente las ondas tardias: aumenta el intervalo I-V y baja la razon V/I.",
+      "ear": "Left",
+      "intensity_db_nhl": 85.0,
+      "sweeps": 3000,
+      "age_years": 55.0,
+      "sex": "Female",
+      "lesions": [
+        { "site": "Retrocochlear", "severity_db": 35.0, "profile": "Flat" }
+      ]
+    },
+    {
+      "id": "neuropatia",
+      "name": "Neuropatia / desincronia auditiva",
+      "description": "Desincronia neural. ABR ausente o muy anomalo pese a funcion coclear (CM) conservada.",
+      "ear": "Right",
+      "intensity_db_nhl": 90.0,
+      "sweeps": 4000,
+      "age_years": 8.0,
+      "sex": "Male",
+      "lesions": [
+        { "site": "Neural", "severity_db": 60.0, "profile": "Flat" }
+      ]
+    },
+    {
+      "id": "neonatal_normal",
+      "name": "Recien nacido normal",
+      "description": "Neonato sano. Latencias largas por mielinizacion incompleta; el intervalo I-V tambien esta alargado.",
+      "ear": "Right",
+      "intensity_db_nhl": 80.0,
+      "sweeps": 2000,
+      "age_years": 0.05,
+      "sex": "Female",
+      "lesions": []
+    }
+  ]
+}

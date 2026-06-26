@@ -67,6 +67,30 @@ impl Recording {
     pub fn primary(&self) -> Option<&Waveform> {
         self.channels.first()
     }
+
+    /// Pico detectado con una etiqueta dada.
+    pub fn peak(&self, label: &str) -> Option<&WavePeak> {
+        self.detected.iter().find(|w| w.label == label)
+    }
+
+    /// Intervalo interpico `b − a` (ms), si ambos picos existen.
+    ///
+    /// Tipicos en el ABR: `I–III`, `III–V`, `I–V`.
+    pub fn interpeak(&self, a: &str, b: &str) -> Option<f64> {
+        Some(self.peak(b)?.latency_ms - self.peak(a)?.latency_ms)
+    }
+
+    /// Razon de amplitudes onda V / onda I (ratio V/I), si ambas existen.
+    ///
+    /// Normalmente ≥ 1 en el adulto; un V/I bajo sugiere patologia retrococlear.
+    pub fn v_i_ratio(&self) -> Option<f64> {
+        let i = self.peak("I")?.amplitude_uv;
+        let v = self.peak("V")?.amplitude_uv;
+        if i.abs() < 1e-9 {
+            return None;
+        }
+        Some(v / i)
+    }
 }
 
 #[cfg(test)]
@@ -85,5 +109,31 @@ mod tests {
     fn max_abs() {
         let w = Waveform::new(vec![0.0, 1.0, 2.0], vec![0.1, -0.5, 0.3]);
         assert!((w.max_abs_uv() - 0.5).abs() < 1e-9);
+    }
+
+    fn rec_con_picos() -> Recording {
+        Recording {
+            detected: vec![
+                WavePeak { label: "I".into(), latency_ms: 1.5, amplitude_uv: 0.25 },
+                WavePeak { label: "III".into(), latency_ms: 3.7, amplitude_uv: 0.30 },
+                WavePeak { label: "V".into(), latency_ms: 5.6, amplitude_uv: 0.50 },
+            ],
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn intervalos_interpico() {
+        let r = rec_con_picos();
+        assert!((r.interpeak("I", "V").unwrap() - 4.1).abs() < 1e-9);
+        assert!((r.interpeak("I", "III").unwrap() - 2.2).abs() < 1e-9);
+        assert!((r.interpeak("III", "V").unwrap() - 1.9).abs() < 1e-9);
+        assert!(r.interpeak("I", "X").is_none());
+    }
+
+    #[test]
+    fn ratio_v_i() {
+        let r = rec_con_picos();
+        assert!((r.v_i_ratio().unwrap() - 2.0).abs() < 1e-9);
     }
 }

@@ -76,6 +76,17 @@ impl App {
     }
 
     fn view(&self) -> Element<'_, Message> {
+        let iv = self
+            .rec
+            .interpeak("I", "V")
+            .map(|x| format!("{x:.2} ms"))
+            .unwrap_or_else(|| "—".to_string());
+        let vi = self
+            .rec
+            .v_i_ratio()
+            .map(|x| format!("{x:.2}"))
+            .unwrap_or_else(|| "—".to_string());
+
         let picos: String = if self.rec.detected.is_empty() {
             "Sin ondas detectadas".to_string()
         } else {
@@ -101,6 +112,8 @@ impl App {
             ))
             .size(13),
             button("Capturar").on_press(Message::Capture),
+            text(format!("Intervalo I-V: {iv}")).size(13),
+            text(format!("Razon V/I: {vi}")).size(13),
             text(picos).size(14),
         ]
         .spacing(10)

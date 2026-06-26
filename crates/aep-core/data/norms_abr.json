@@ -36,6 +36,20 @@
       "amplitude_uv": 0.50,
       "width_ms": 0.40,
       "generator": "Lemnisco lateral / coliculo inferior"
+    },
+    {
+      "label": "VI",
+      "latency_ms": 7.2,
+      "amplitude_uv": 0.25,
+      "width_ms": 0.45,
+      "generator": "Coliculo inferior / nucleo geniculado medial"
+    },
+    {
+      "label": "VII",
+      "latency_ms": 8.6,
+      "amplitude_uv": 0.18,
+      "width_ms": 0.50,
+      "generator": "Radiaciones talamocorticales auditivas"
     }
   ]
 }

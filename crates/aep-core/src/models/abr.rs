@@ -1,15 +1,25 @@
 //! Modelo de respuesta del ABR / PEATC por click.
 //!
-//! Construye las ondas I–V desde la tabla normativa y les aplica las reglas
-//! clinicas (intensidad efectiva sobre umbral, temperatura, tasa, retardo del
-//! transductor y patron de lesion). Es el modelo que valida el nucleo de la
-//! Capa 0 (MOTOR.md §12).
+//! Construye las ondas I–VII desde la tabla normativa y les aplica las reglas
+//! clinicas. El punto fino del ABR es como cada **sitio de lesion** altera la
+//! respuesta de forma distinta:
+//!
+//! - **Conductiva**: atenua lo que llega a la coclea → alarga las latencias
+//!   absolutas por igual, pero **preserva los intervalos interpico**.
+//! - **Coclear**: eleva el umbral pero, por **reclutamiento**, a alta intensidad
+//!   la latencia es casi normal; lo que cae es el margen sobre umbral (amplitud).
+//! - **Retrococlear**: alarga selectivamente las ondas tardias → ↑ intervalo I–V.
+//! - **Neural**: desincronia → atenua/cancela las ondas.
+//!
+//! Es el modelo que valida el nucleo y la modalidad estrella (MOTOR.md §12).
 
 use super::ResponseModel;
 use crate::acquisition::Acquisition;
 use crate::component::Component;
 use crate::lesion::{Lesion, LesionSite};
-use crate::modulation::{apply_intensity, apply_rate, apply_temperature};
+use crate::modulation::{
+    apply_age, apply_intensity, apply_polarity, apply_rate, apply_sex, apply_temperature,
+};
 use crate::norms::AbrNorms;
 use crate::protocol::Protocol;
 use crate::subject::{ArousalState, Ear, Subject};
@@ -27,6 +37,14 @@ impl Default for AbrModel {
     }
 }
 
+/// Umbrales efectivos separados por mecanismo, a una frecuencia dada.
+struct Thresholds {
+    /// Perdida conductiva (atenua antes de la coclea).
+    conductive: f64,
+    /// Perdida coclear (eleva umbral sensorial, con reclutamiento).
+    cochlear: f64,
+}
+
 impl AbrModel {
     /// Modelo con las normas embebidas.
     pub fn new() -> Self {
@@ -40,13 +58,23 @@ impl AbrModel {
         Self { norms }
     }
 
-    /// Desplazamiento de umbral (dB) por las lesiones del oido a la frecuencia
-    /// dominante del estimulo. Capa 0: domina el peor desplazamiento.
-    fn threshold_shift(&self, subject: &Subject, ear: Ear, freq_hz: f64) -> f64 {
-        subject
-            .lesions_on(ear)
-            .map(|l| l.threshold_shift_at(freq_hz))
-            .fold(0.0, f64::max)
+    /// Reparte el desplazamiento de umbral de las lesiones del oido segun su
+    /// mecanismo. La conductiva es aditiva; la coclear toma el peor.
+    fn thresholds(&self, lesions: &[&Lesion], freq_hz: f64) -> Thresholds {
+        let mut conductive = 0.0;
+        let mut cochlear = 0.0_f64;
+        for l in lesions {
+            let shift = l.threshold_shift_at(freq_hz);
+            match l.site {
+                LesionSite::Conductive => conductive += shift,
+                LesionSite::Cochlear => cochlear = cochlear.max(shift),
+                _ => {}
+            }
+        }
+        Thresholds {
+            conductive,
+            cochlear,
+        }
     }
 }
 
@@ -58,17 +86,14 @@ fn retrocochlear_factor(label: &str) -> f64 {
         "III" => 0.4,
         "IV" => 0.7,
         "V" => 1.0,
+        "VI" => 1.1,
+        "VII" => 1.2,
         _ => 0.5,
     }
 }
 
-/// Aplica el patron especifico del sitio de lesion a un componente.
-///
-/// La conductiva y la coclear actuan ya via el umbral efectivo (alargan
-/// latencias absolutas / reducen el nivel efectivo). Aqui se anaden los patrones
-/// que NO se reducen a un simple desplazamiento de nivel:
-/// - Retrococlear: alarga selectivamente las ondas tardias (↑ intervalo I–V).
-/// - Neural: atenua/cancela las ondas (desincronia).
+/// Aplica el patron especifico del sitio de lesion que NO se reduce a un
+/// desplazamiento de nivel (retrococlear y neural).
 fn apply_lesion_pattern(c: &mut Component, lesions: &[&Lesion]) {
     for l in lesions {
         match l.site {
@@ -79,8 +104,8 @@ fn apply_lesion_pattern(c: &mut Component, lesions: &[&Lesion]) {
                 let keep = (1.0 - l.severity_db / 60.0).clamp(0.0, 1.0);
                 c.amplitude_uv *= keep;
             }
-            // Conductiva, coclear y central: cubiertas por el umbral efectivo
-            // (o sin efecto relevante para el ABR en Capa 0).
+            // Conductiva y coclear: via umbral efectivo. Central: sin efecto en
+            // el ABR de tronco (afecta componentes corticales, capas tardias).
             _ => {}
         }
     }
@@ -92,10 +117,18 @@ impl ResponseModel for AbrModel {
         let ear = stim.ear;
         let freq = stim.kind.dominant_freq_hz();
         let level_nhl = stim.level.as_nhl();
-        let threshold = self.threshold_shift(subject, ear, freq);
-        let effective = level_nhl - threshold;
         let delay = stim.transducer.acoustic_delay_ms();
+        let years = subject.age.approx_years();
         let lesions: Vec<&Lesion> = subject.lesions_on(ear).collect();
+
+        let th = self.thresholds(&lesions, freq);
+        // Nivel que llega a la coclea tras la perdida conductiva.
+        let level_at_cochlea = level_nhl - th.conductive;
+        // Margen audible sobre el umbral total (determina la amplitud).
+        let margin = level_at_cochlea - th.cochlear;
+        // La latencia depende del nivel post-conductivo: la conductiva la alarga,
+        // la coclear no (reclutamiento).
+        let level_for_latency = level_at_cochlea;
 
         let mut comps = Vec::with_capacity(self.norms.waves.len());
         for w in &self.norms.waves {
@@ -106,12 +139,14 @@ impl ResponseModel for AbrModel {
                 w.width_ms,
                 w.generator.clone(),
             );
-            apply_intensity(&mut c, effective, self.norms.reference_db_nhl);
+            apply_intensity(&mut c, level_for_latency, margin, self.norms.reference_db_nhl);
             apply_temperature(&mut c, subject.temperature_c);
             apply_rate(&mut c, stim.rate_hz, self.norms.reference_rate_hz);
+            apply_sex(&mut c, subject.sex);
+            apply_age(&mut c, years);
+            apply_polarity(&mut c, stim.polarity);
             c.latency_ms += delay;
             apply_lesion_pattern(&mut c, &lesions);
-            // Solo conservar ondas con amplitud apreciable.
             if c.amplitude_uv.abs() > 1e-6 {
                 comps.push(c);
             }
@@ -146,22 +181,38 @@ mod tests {
     use crate::lesion::FreqProfile;
     use crate::protocol::Protocol;
     use crate::subject::Subject;
+    use crate::units::Level;
 
-    fn intervalo_iv(comps: &[Component]) -> Option<f64> {
-        let i = comps.iter().find(|c| c.label == "I")?.latency_ms;
-        let v = comps.iter().find(|c| c.label == "V")?.latency_ms;
-        Some(v - i)
+    fn interval(comps: &[Component], a: &str, b: &str) -> Option<f64> {
+        let la = comps.iter().find(|c| c.label == a)?.latency_ms;
+        let lb = comps.iter().find(|c| c.label == b)?.latency_ms;
+        Some(lb - la)
+    }
+
+    fn cochlear(severity: f64) -> Lesion {
+        Lesion {
+            site: LesionSite::Cochlear,
+            ear: Ear::Right,
+            severity_db: severity,
+            freq_profile: FreqProfile::Flat,
+        }
+    }
+
+    fn conductive(severity: f64) -> Lesion {
+        Lesion {
+            site: LesionSite::Conductive,
+            ear: Ear::Right,
+            severity_db: severity,
+            freq_profile: FreqProfile::Flat,
+        }
     }
 
     #[test]
-    fn normal_produce_ondas_en_rango() {
-        let model = AbrModel::new();
-        let p = Protocol::abr_click(Ear::Right);
-        let s = Subject::default();
-        let comps = model.components(&p, &s);
-        // Onda V presente y en rango normativo (~5.6 ms + retardo inserto 0.9).
+    fn normal_tiene_siete_ondas_y_v_en_rango() {
+        let comps = AbrModel::new().components(&Protocol::abr_click(Ear::Right), &Subject::default());
+        assert_eq!(comps.len(), 7); // I..VII
         let v = comps.iter().find(|c| c.label == "V").unwrap();
-        assert!((v.latency_ms - 6.5).abs() < 0.6, "V = {} ms", v.latency_ms);
+        assert!((v.latency_ms - 6.4).abs() < 0.7, "V = {} ms", v.latency_ms);
     }
 
     #[test]
@@ -170,12 +221,86 @@ mod tests {
         let mut p = Protocol::abr_click(Ear::Right);
         let s = Subject::default();
         let alta = model.components(&p, &s);
-        p.stimulus.level = crate::units::Level::DbNhl(30.0);
+        p.stimulus.level = Level::DbNhl(30.0);
         let baja = model.components(&p, &s);
         let v_alta = alta.iter().find(|c| c.label == "V").unwrap();
         let v_baja = baja.iter().find(|c| c.label == "V").unwrap();
         assert!(v_baja.latency_ms > v_alta.latency_ms);
         assert!(v_baja.amplitude_uv < v_alta.amplitude_uv);
+    }
+
+    #[test]
+    fn conductiva_alarga_absolutas_preserva_intervalo() {
+        let model = AbrModel::new();
+        let p = Protocol::abr_click(Ear::Right);
+        let sano = Subject::default();
+        let mut enfermo = Subject::default();
+        enfermo.lesions.push(conductive(35.0));
+        let v_sano = model
+            .components(&p, &sano)
+            .iter()
+            .find(|c| c.label == "V")
+            .unwrap()
+            .latency_ms;
+        let comps_enf = model.components(&p, &enfermo);
+        let v_enf = comps_enf.iter().find(|c| c.label == "V").unwrap().latency_ms;
+        // Alarga la latencia absoluta...
+        assert!(v_enf > v_sano);
+        // ...pero el intervalo I–V se preserva.
+        let iv_sano = interval(&model.components(&p, &sano), "I", "V").unwrap();
+        let iv_enf = interval(&comps_enf, "I", "V").unwrap();
+        assert!((iv_enf - iv_sano).abs() < 0.1, "sano={iv_sano} enfermo={iv_enf}");
+    }
+
+    #[test]
+    fn coclear_reclutamiento_preserva_latencia_a_alta_intensidad() {
+        let model = AbrModel::new();
+        let p = Protocol::abr_click(Ear::Right);
+        let sano = Subject::default();
+        let mut coch = Subject::default();
+        coch.lesions.push(cochlear(40.0));
+        let v_sano = model
+            .components(&p, &sano)
+            .iter()
+            .find(|c| c.label == "V")
+            .unwrap()
+            .latency_ms;
+        let comps_c = model.components(&p, &coch);
+        let v_coch = comps_c.iter().find(|c| c.label == "V").unwrap();
+        // A 80 dB la latencia es casi normal (reclutamiento)...
+        assert!((v_coch.latency_ms - v_sano).abs() < 0.1, "sano={v_sano} coclear={}", v_coch.latency_ms);
+        // ...pero la amplitud cae respecto al sano.
+        let amp_sano = model
+            .components(&p, &sano)
+            .iter()
+            .find(|c| c.label == "V")
+            .unwrap()
+            .amplitude_uv;
+        assert!(v_coch.amplitude_uv < amp_sano);
+    }
+
+    #[test]
+    fn conductiva_vs_coclear_se_distinguen_en_latencia() {
+        let model = AbrModel::new();
+        let p = Protocol::abr_click(Ear::Right);
+        let mut cond = Subject::default();
+        cond.lesions.push(conductive(40.0));
+        let mut coch = Subject::default();
+        coch.lesions.push(cochlear(40.0));
+        let v_cond = model
+            .components(&p, &cond)
+            .iter()
+            .find(|c| c.label == "V")
+            .unwrap()
+            .latency_ms;
+        let v_coch = model
+            .components(&p, &coch)
+            .iter()
+            .find(|c| c.label == "V")
+            .unwrap()
+            .latency_ms;
+        // Mismo umbral, distinto mecanismo: la conductiva alarga mas la latencia.
+        assert!(v_cond > v_coch + 0.5, "conductiva={v_cond} coclear={v_coch}");
     }
 
     #[test]
@@ -190,8 +315,8 @@ mod tests {
             severity_db: 40.0,
             freq_profile: FreqProfile::Flat,
         });
-        let iv_sano = intervalo_iv(&model.components(&p, &sano)).unwrap();
-        let iv_enf = intervalo_iv(&model.components(&p, &enfermo)).unwrap();
+        let iv_sano = interval(&model.components(&p, &sano), "I", "V").unwrap();
+        let iv_enf = interval(&model.components(&p, &enfermo), "I", "V").unwrap();
         assert!(iv_enf > iv_sano + 0.3, "sano={iv_sano} enfermo={iv_enf}");
     }
 
@@ -207,26 +332,7 @@ mod tests {
             freq_profile: FreqProfile::Flat,
         });
         let comps = model.components(&p, &s);
-        // Las ondas quedan muy atenuadas (o ausentes).
         let max_amp = comps.iter().map(|c| c.amplitude_uv.abs()).fold(0.0, f64::max);
         assert!(max_amp < 0.1, "amplitud maxima {max_amp}");
-    }
-
-    #[test]
-    fn conductiva_preserva_intervalo_i_v() {
-        let model = AbrModel::new();
-        let p = Protocol::abr_click(Ear::Right);
-        let sano = Subject::default();
-        let mut enfermo = Subject::default();
-        enfermo.lesions.push(Lesion {
-            site: LesionSite::Conductive,
-            ear: Ear::Right,
-            severity_db: 30.0,
-            freq_profile: FreqProfile::Flat,
-        });
-        let iv_sano = intervalo_iv(&model.components(&p, &sano)).unwrap();
-        let iv_enf = intervalo_iv(&model.components(&p, &enfermo)).unwrap();
-        // La conductiva alarga absolutas pero respeta el intervalo interpico.
-        assert!((iv_enf - iv_sano).abs() < 0.15, "sano={iv_sano} enfermo={iv_enf}");
     }
 }
