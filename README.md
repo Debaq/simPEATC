@@ -4,6 +4,18 @@ Simulador educativo de Potenciales Evocados Auditivos de Tronco Cerebral (PEATC/
 
 Universidad Austral de Chile — Sede Puerto Montt.
 
-## Estado
+## Migración a Rust
 
-Migración a **Rust** en curso. La versión Python original está respaldada en la rama `python_legacy`.
+Reescritura en Rust en curso. La versión Python original está en la rama `python_legacy`.
+
+### Estructura (workspace)
+
+- `crates/abr-core` — motor de simulación ABR, **sin GUI** (testeable solo).
+- `crates/simpeatc-gui` — interfaz gráfica con [`iced`](https://iced.rs).
+
+### Uso
+
+```bash
+cargo test -p abr-core   # pruebas del motor
+cargo run -p simpeatc-gui  # abre la GUI
+```

@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = ["crates/abr-core", "crates/simpeatc-gui"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Nicolas Quezada Quezada", "David Avila Quezada"]
+repository = "https://github.com/Debaq/simPEATC"
+
+[workspace.dependencies]
+abr-core = { path = "crates/abr-core" }
+iced = "0.14"

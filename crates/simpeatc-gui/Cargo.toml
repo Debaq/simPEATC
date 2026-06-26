@@ -1,0 +1,16 @@
+[package]
+name = "simpeatc-gui"
+description = "Interfaz grafica (iced) del simulador ABR simPEATC"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "simpeatc"
+path = "src/main.rs"
+
+[dependencies]
+abr-core = { workspace = true }
+iced = { workspace = true, features = ["canvas"] }
