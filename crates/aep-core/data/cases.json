@@ -100,6 +100,20 @@
       "age_years": 0.05,
       "sex": "Female",
       "lesions": []
+    },
+    {
+      "id": "meniere",
+      "name": "Enfermedad de Meniere (ECochG)",
+      "description": "Hidrops endolinfatico. Electrococleografia con razon SP/AP elevada por aumento del potencial de sumacion.",
+      "modality": "ECochG",
+      "ear": "Left",
+      "intensity_db_nhl": 90.0,
+      "sweeps": 1500,
+      "age_years": 45.0,
+      "sex": "Female",
+      "lesions": [
+        { "site": "Cochlear", "severity_db": 40.0, "profile": "LowFrequency" }
+      ]
     }
   ]
 }

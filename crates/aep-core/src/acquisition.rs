@@ -61,9 +61,11 @@ pub enum ElectrodeSite {
     Mastoid(Ear),
     /// Lobulo de la oreja del oido indicado.
     Earlobe(Ear),
-    /// Conducto auditivo externo (ECochG extratimpanica).
+    /// Conducto auditivo externo (ECochG extratimpanica, EAC).
     EarCanal(Ear),
-    /// Promontorio / transtimpanica (ECochG invasiva).
+    /// Membrana timpanica (ECochG timpanica, TM).
+    TympanicMembrane(Ear),
+    /// Promontorio / transtimpanica (ECochG invasiva, TT).
     Promontory(Ear),
     /// Nuca / 7a cervical.
     Nape,
@@ -95,6 +97,18 @@ impl Montage {
             channels: vec![Channel {
                 noninv: ElectrodeSite::Cz,
                 inv: ElectrodeSite::Mastoid(ear),
+            }],
+            ground: ElectrodeSite::Fpz,
+        }
+    }
+
+    /// Montaje ECochG: electrodo coclear activo (`active`) − mastoides
+    /// contralateral, tierra en Fpz.
+    pub fn ecochg(ear: Ear, active: ElectrodeSite) -> Self {
+        Self {
+            channels: vec![Channel {
+                noninv: active,
+                inv: ElectrodeSite::Mastoid(ear.opposite()),
             }],
             ground: ElectrodeSite::Fpz,
         }
@@ -142,6 +156,30 @@ impl Acquisition {
             sample_rate_hz: 30_000.0,
             gain: 100_000.0,
             montage: Montage::abr_ipsilateral(ear),
+            impedance_kohm: 3.0,
+        }
+    }
+
+    /// Configuracion ECochG por defecto: ventana 0.5 ms pre + 5 ms post,
+    /// 10-1500 Hz orden 2, 1500 sweeps, muestreo 40 kHz, electrodo de
+    /// promontorio (transtimpanica, la de mejor relacion senal/ruido).
+    pub fn ecochg_default(ear: Ear) -> Self {
+        Self {
+            window: TimeWindow {
+                pre_ms: 0.5,
+                post_ms: 5.0,
+            },
+            filter: Bandpass {
+                hp_hz: 10.0,
+                lp_hz: 1500.0,
+                notch_hz: None,
+                order: 2,
+            },
+            sweeps: 1500,
+            artifact_reject_uv: 25.0,
+            sample_rate_hz: 40_000.0,
+            gain: 100_000.0,
+            montage: Montage::ecochg(ear, ElectrodeSite::Promontory(ear)),
             impedance_kohm: 3.0,
         }
     }

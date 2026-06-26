@@ -31,6 +31,10 @@ fn default_temp() -> f64 {
     37.0
 }
 
+fn default_modality() -> String {
+    "Abr".to_string()
+}
+
 /// Definicion de un caso clinico.
 #[derive(Debug, Clone, Deserialize)]
 pub struct CaseDef {
@@ -40,6 +44,9 @@ pub struct CaseDef {
     pub name: String,
     /// Descripcion didactica.
     pub description: String,
+    /// Modalidad ("Abr"/"ECochG"). Por defecto "Abr".
+    #[serde(default = "default_modality")]
+    pub modality: String,
     /// Oido explorado ("Left"/"Right").
     pub ear: String,
     /// Intensidad del estimulo (dB nHL).
@@ -123,10 +130,13 @@ impl CaseDef {
         }
     }
 
-    /// Construye el protocolo del caso (ABR click).
+    /// Construye el protocolo del caso segun su modalidad.
     pub fn protocol(&self) -> Protocol {
         let ear = self.ear();
-        let mut p = Protocol::abr_click(ear);
+        let mut p = match self.modality.as_str() {
+            "ECochG" | "Ecochg" | "ecochg" => Protocol::ecochg(ear),
+            _ => Protocol::abr_click(ear),
+        };
         p.stimulus = Stimulus {
             level: Level::DbNhl(self.intensity_db_nhl),
             ..p.stimulus
@@ -209,6 +219,21 @@ mod tests {
         let s = mixta.subject();
         assert_eq!(s.lesions.len(), 2);
         assert!(s.lesions.iter().all(|l| l.ear == mixta.ear()));
+    }
+
+    #[test]
+    fn meniere_es_ecochg_con_sp_ap_elevada() {
+        use crate::models::model_for;
+        let cat = CaseCatalog::embedded();
+        let meniere = cat.get("meniere").unwrap();
+        let p = meniere.protocol();
+        assert_eq!(p.modality, crate::protocol::Modality::ECochG);
+        // Razon SP/AP a nivel de componentes (fisiologia limpia, sin sesgo DSP).
+        let model = model_for(p.modality).unwrap();
+        let comps = model.components(&p, &meniere.subject());
+        let sp = comps.iter().find(|c| c.label == "SP").unwrap().amplitude_uv.abs();
+        let ap = comps.iter().find(|c| c.label == "AP").unwrap().amplitude_uv.abs();
+        assert!(sp / ap > 0.4, "SP/AP = {}", sp / ap);
     }
 
     #[test]

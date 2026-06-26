@@ -364,7 +364,7 @@ Cada capa es entregable e independiente: añade variables y una modalidad, con t
 - Catálogo de presets (portar los 30 casos del Python).
 - *Hecho cuando*: casos normal/conductiva/retrococlear/neuropatía se distinguen y miden bien.
 
-### Capa 2 — ECochG
+### Capa 2 — ECochG — ✅ HECHA
 - Componentes CM, SP, AP (N1/N2); ratio SP/AP.
 - Dependencia de polaridad (CM se invierte/cancela) y electrodo (TT/TM/EAC).
 - Preset Ménière (hidrops → SP/AP elevado).

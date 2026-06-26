@@ -67,6 +67,19 @@ impl Protocol {
             paradigm: Paradigm::Transient,
         }
     }
+
+    /// Protocolo ECochG: click a alta intensidad (90 dB nHL), ventana corta y
+    /// electrodo de promontorio.
+    pub fn ecochg(ear: Ear) -> Self {
+        let mut stimulus = Stimulus::click_default(ear);
+        stimulus.level = crate::units::Level::DbNhl(90.0);
+        Self {
+            modality: Modality::ECochG,
+            stimulus,
+            acquisition: Acquisition::ecochg_default(ear),
+            paradigm: Paradigm::Transient,
+        }
+    }
 }
 
 #[cfg(test)]

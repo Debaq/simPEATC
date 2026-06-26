@@ -18,7 +18,7 @@ use crate::rng::Lcg;
 use crate::subject::Subject;
 use crate::synth::{self, NoiseProfile};
 use crate::waveform::{Recording, Waveform};
-use crate::{component::WavePeak, component::Component};
+use crate::component::{Component, ComponentShape, WavePeak};
 
 /// Probabilidad de que un sweep traiga un artefacto (parpadeo/muscular).
 const ARTIFACT_PROB: f64 = 0.03;
@@ -142,8 +142,13 @@ fn baseline_correct(sweep: &mut [f64], times: &[f64]) {
 fn detect_peaks(comps: &[Component], times: &[f64], mean: &[f64]) -> Vec<WavePeak> {
     comps
         .iter()
+        // El microfonico es oscilatorio: no tiene un pico puntual que medir.
+        .filter(|c| !matches!(c.shape, ComponentShape::Microphonic { .. }))
         .filter(|c| c.amplitude_uv.abs() > 1e-3)
         .filter_map(|c| {
+            // Busca el maximo si la deflexion esperada es positiva (ondas ABR) o
+            // el minimo si es negativa (AP/SP de la ECochG).
+            let want_max = c.amplitude_uv >= 0.0;
             let lo = c.latency_ms - PEAK_SEARCH_MS;
             let hi = c.latency_ms + PEAK_SEARCH_MS;
             let mut best: Option<(usize, f64)> = None;
@@ -152,9 +157,12 @@ fn detect_peaks(comps: &[Component], times: &[f64], mean: &[f64]) -> Vec<WavePea
                     continue;
                 }
                 let v = mean[i];
-                match best {
-                    Some((_, bv)) if v <= bv => {}
-                    _ => best = Some((i, v)),
+                let better = match best {
+                    None => true,
+                    Some((_, bv)) => (want_max && v > bv) || (!want_max && v < bv),
+                };
+                if better {
+                    best = Some((i, v));
                 }
             }
             best.map(|(i, _)| WavePeak {

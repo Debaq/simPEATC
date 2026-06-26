@@ -91,6 +91,18 @@ impl Recording {
         }
         Some(v / i)
     }
+
+    /// Razon SP/AP de la ECochG (amplitudes absolutas), si ambos existen.
+    ///
+    /// Normal ≲ 0.4; elevada (> 0.4–0.5) sugiere hidrops endolinfatico (Ménière).
+    pub fn sp_ap_ratio(&self) -> Option<f64> {
+        let sp = self.peak("SP")?.amplitude_uv.abs();
+        let ap = self.peak("AP")?.amplitude_uv.abs();
+        if ap < 1e-9 {
+            return None;
+        }
+        Some(sp / ap)
+    }
 }
 
 #[cfg(test)]

@@ -8,6 +8,7 @@
 //! Capa 0 implementa solo el ABR; el resto llega en capas posteriores.
 
 pub mod abr;
+pub mod ecochg;
 
 use crate::acquisition::Acquisition;
 use crate::component::Component;
@@ -33,6 +34,7 @@ pub trait ResponseModel {
 pub fn model_for(modality: Modality) -> Option<Box<dyn ResponseModel>> {
     match modality {
         Modality::Abr => Some(Box::new(abr::AbrModel::new())),
+        Modality::ECochG => Some(Box::new(ecochg::EcochgModel::new())),
         _ => None,
     }
 }
