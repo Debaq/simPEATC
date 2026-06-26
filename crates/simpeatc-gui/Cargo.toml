@@ -12,5 +12,5 @@ name = "simpeatc"
 path = "src/main.rs"
 
 [dependencies]
-abr-core = { workspace = true }
+aep-core = { workspace = true }
 iced = { workspace = true, features = ["canvas"] }

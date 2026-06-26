@@ -1,0 +1,41 @@
+{
+  "reference_db_nhl": 80.0,
+  "reference_rate_hz": 11.1,
+  "waves": [
+    {
+      "label": "I",
+      "latency_ms": 1.5,
+      "amplitude_uv": 0.25,
+      "width_ms": 0.30,
+      "generator": "Porcion distal del nervio auditivo (VIII par)"
+    },
+    {
+      "label": "II",
+      "latency_ms": 2.6,
+      "amplitude_uv": 0.15,
+      "width_ms": 0.32,
+      "generator": "Porcion proximal del nervio auditivo / nucleo coclear"
+    },
+    {
+      "label": "III",
+      "latency_ms": 3.7,
+      "amplitude_uv": 0.30,
+      "width_ms": 0.35,
+      "generator": "Nucleo coclear / complejo olivar superior"
+    },
+    {
+      "label": "IV",
+      "latency_ms": 4.8,
+      "amplitude_uv": 0.20,
+      "width_ms": 0.38,
+      "generator": "Complejo olivar superior / lemnisco lateral"
+    },
+    {
+      "label": "V",
+      "latency_ms": 5.6,
+      "amplitude_uv": 0.50,
+      "width_ms": 0.40,
+      "generator": "Lemnisco lateral / coliculo inferior"
+    }
+  ]
+}

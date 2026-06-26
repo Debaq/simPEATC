@@ -1,0 +1,12 @@
+[package]
+name = "aep-core"
+description = "Motor de simulacion de Potenciales Evocados Auditivos (AEP): ECochG, ABR/PEATC, MLR, ALR, P300/MMN, ASSR"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

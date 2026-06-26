@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/abr-core", "crates/simpeatc-gui"]
+members = ["crates/aep-core", "crates/simpeatc-gui"]
 
 [workspace.package]
 version = "0.1.0"
@@ -10,5 +10,5 @@ authors = ["Nicolas Quezada Quezada", "David Avila Quezada"]
 repository = "https://github.com/Debaq/simPEATC"
 
 [workspace.dependencies]
-abr-core = { path = "crates/abr-core" }
+aep-core = { path = "crates/aep-core" }
 iced = "0.14"
