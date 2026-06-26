@@ -160,6 +160,29 @@ impl Acquisition {
         }
     }
 
+    /// Configuracion MLR por defecto: ventana 10 ms pre + 90 ms post,
+    /// 10-300 Hz orden 2, 800 sweeps, muestreo 2 kHz, montaje de vertex.
+    pub fn mlr_default(ear: Ear) -> Self {
+        Self {
+            window: TimeWindow {
+                pre_ms: 10.0,
+                post_ms: 90.0,
+            },
+            filter: Bandpass {
+                hp_hz: 10.0,
+                lp_hz: 300.0,
+                notch_hz: None,
+                order: 2,
+            },
+            sweeps: 800,
+            artifact_reject_uv: 50.0,
+            sample_rate_hz: 2_000.0,
+            gain: 50_000.0,
+            montage: Montage::abr_ipsilateral(ear),
+            impedance_kohm: 3.0,
+        }
+    }
+
     /// Configuracion ECochG por defecto: ventana 0.5 ms pre + 5 ms post,
     /// 10-1500 Hz orden 2, 1500 sweeps, muestreo 40 kHz, electrodo de
     /// promontorio (transtimpanica, la de mejor relacion senal/ruido).

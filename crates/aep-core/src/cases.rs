@@ -35,6 +35,10 @@ fn default_modality() -> String {
     "Abr".to_string()
 }
 
+fn default_state() -> String {
+    "Awake".to_string()
+}
+
 /// Definicion de un caso clinico.
 #[derive(Debug, Clone, Deserialize)]
 pub struct CaseDef {
@@ -60,6 +64,9 @@ pub struct CaseDef {
     /// Temperatura corporal (°C).
     #[serde(default = "default_temp")]
     pub temperature_c: f64,
+    /// Estado de alerta ("Awake"/"NaturalSleep"/"Sedated"/"Anesthetized").
+    #[serde(default = "default_state")]
+    pub state: String,
     /// Lesiones del caso (sobre el oido explorado).
     #[serde(default)]
     lesions: Vec<CaseLesionDef>,
@@ -76,6 +83,15 @@ fn parse_sex(s: &str) -> Sex {
     match s {
         "Male" | "male" | "M" => Sex::Male,
         _ => Sex::Female,
+    }
+}
+
+fn parse_state(s: &str) -> ArousalState {
+    match s {
+        "NaturalSleep" => ArousalState::NaturalSleep,
+        "Sedated" => ArousalState::Sedated,
+        "Anesthetized" => ArousalState::Anesthetized,
+        _ => ArousalState::Awake,
     }
 }
 
@@ -124,7 +140,7 @@ impl CaseDef {
             },
             sex: parse_sex(&self.sex),
             temperature_c: self.temperature_c,
-            state: ArousalState::Awake,
+            state: parse_state(&self.state),
             attention: Attention::Passive,
             lesions,
         }
@@ -135,6 +151,7 @@ impl CaseDef {
         let ear = self.ear();
         let mut p = match self.modality.as_str() {
             "ECochG" | "Ecochg" | "ecochg" => Protocol::ecochg(ear),
+            "Mlr" | "MLR" | "mlr" => Protocol::mlr(ear),
             _ => Protocol::abr_click(ear),
         };
         p.stimulus = Stimulus {

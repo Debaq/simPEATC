@@ -90,6 +90,34 @@ fn audiograma_estimado_del_coclear_en_agudos_desciende() {
 }
 
 #[test]
+fn mlr_adulto_detecta_pa() {
+    let rec = simular("mlr_adulto_normal");
+    assert!(rec.peak("Pa").is_some(), "MLR adulto deberia detectar Pa");
+}
+
+#[test]
+fn mlr_pa_menor_en_nino_y_sedado_que_en_adulto() {
+    use aep_core::model_for;
+    let cat = CaseCatalog::embedded();
+    let pa = |id: &str| {
+        let c = cat.get(id).unwrap();
+        let p = c.protocol();
+        let subj = c.subject();
+        model_for(p.modality)
+            .unwrap()
+            .components(&p, &subj)
+            .iter()
+            .find(|x| x.label == "Pa")
+            .unwrap()
+            .amplitude_uv
+            .abs()
+    };
+    let adulto = pa("mlr_adulto_normal");
+    assert!(pa("mlr_nino_inmaduro") < adulto, "nino");
+    assert!(pa("mlr_sedado") < adulto, "sedado");
+}
+
+#[test]
 fn catalogo_cubre_los_sitios_de_lesion_clave() {
     let cat = CaseCatalog::embedded();
     let mut vistos = std::collections::HashSet::new();

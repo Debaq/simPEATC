@@ -114,6 +114,43 @@
       "lesions": [
         { "site": "Cochlear", "severity_db": 40.0, "profile": "LowFrequency" }
       ]
+    },
+    {
+      "id": "mlr_adulto_normal",
+      "name": "MLR adulto normal",
+      "description": "Respuesta de latencia media normal: Na-Pa-Nb-Pb presentes, Pa robusta.",
+      "modality": "Mlr",
+      "ear": "Right",
+      "intensity_db_nhl": 70.0,
+      "sweeps": 800,
+      "age_years": 30.0,
+      "sex": "Female",
+      "lesions": []
+    },
+    {
+      "id": "mlr_nino_inmaduro",
+      "name": "MLR nino (Pa inmadura)",
+      "description": "La Pa madura hacia los 10-12 años; en el nino pequeño es de menor amplitud.",
+      "modality": "Mlr",
+      "ear": "Right",
+      "intensity_db_nhl": 70.0,
+      "sweeps": 800,
+      "age_years": 3.0,
+      "sex": "Male",
+      "lesions": []
+    },
+    {
+      "id": "mlr_sedado",
+      "name": "MLR bajo sedacion",
+      "description": "La sedacion atenua la respuesta cortical de latencia media.",
+      "modality": "Mlr",
+      "ear": "Right",
+      "intensity_db_nhl": 70.0,
+      "sweeps": 800,
+      "age_years": 40.0,
+      "sex": "Male",
+      "state": "Sedated",
+      "lesions": []
     }
   ]
 }

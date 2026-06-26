@@ -51,7 +51,7 @@ impl AbrModel {
     /// Modelo con las normas embebidas.
     pub fn new() -> Self {
         Self {
-            norms: AbrNorms::embedded(),
+            norms: AbrNorms::embedded_abr(),
         }
     }
 

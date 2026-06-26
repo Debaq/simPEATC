@@ -4,6 +4,9 @@
 //! que el motor **siempre arranca**. Opcionalmente, un JSON externo editado por
 //! el investigador (sin recompilar) los sobreescribe; si el override es invalido
 //! se ignora con un aviso y se usa el embebido.
+//!
+//! La misma estructura ([`NormTable`]) sirve para todas las modalidades
+//! tabuladas por ondas (ABR, MLR, ALR…): cambia solo el JSON.
 
 use serde::Deserialize;
 use std::path::Path;
@@ -11,11 +14,11 @@ use std::path::Path;
 /// Valores normativos de una onda.
 #[derive(Debug, Clone, Deserialize, PartialEq)]
 pub struct WaveNorm {
-    /// Etiqueta ("I", "III", "V"…).
+    /// Etiqueta ("I", "V", "Pa"…).
     pub label: String,
     /// Latencia normativa (ms) a la intensidad/tasa de referencia.
     pub latency_ms: f64,
-    /// Amplitud normativa (µV).
+    /// Amplitud normativa (µV), con signo (polaridad de la deflexion).
     pub amplitude_uv: f64,
     /// Ancho (sigma, ms).
     pub width_ms: f64,
@@ -24,9 +27,9 @@ pub struct WaveNorm {
     pub generator: String,
 }
 
-/// Tabla normativa del ABR.
+/// Tabla normativa por ondas (independiente de la modalidad).
 #[derive(Debug, Clone, Deserialize, PartialEq)]
-pub struct AbrNorms {
+pub struct NormTable {
     /// Intensidad de referencia de las latencias (dB nHL).
     pub reference_db_nhl: f64,
     /// Tasa de estimulacion de referencia (Hz).
@@ -35,14 +38,26 @@ pub struct AbrNorms {
     pub waves: Vec<WaveNorm>,
 }
 
-/// JSON embebido en el binario.
-const EMBEDDED_ABR: &str = include_str!("../data/norms_abr.json");
+/// Alias historico: la tabla del ABR es una `NormTable`.
+pub type AbrNorms = NormTable;
 
-impl AbrNorms {
-    /// Tabla embebida (siempre disponible). Panica solo si el JSON compilado es
-    /// invalido, lo que seria un bug detectado por los tests.
-    pub fn embedded() -> Self {
-        serde_json::from_str(EMBEDDED_ABR).expect("norms_abr.json embebido invalido")
+const EMBEDDED_ABR: &str = include_str!("../data/norms_abr.json");
+const EMBEDDED_MLR: &str = include_str!("../data/norms_mlr.json");
+
+impl NormTable {
+    /// Parsea una tabla desde texto JSON.
+    pub fn from_json(text: &str) -> Result<Self, serde_json::Error> {
+        serde_json::from_str(text)
+    }
+
+    /// Tabla ABR embebida.
+    pub fn embedded_abr() -> Self {
+        Self::from_json(EMBEDDED_ABR).expect("norms_abr.json embebido invalido")
+    }
+
+    /// Tabla MLR embebida.
+    pub fn embedded_mlr() -> Self {
+        Self::from_json(EMBEDDED_MLR).expect("norms_mlr.json embebido invalido")
     }
 
     /// Validacion minima de esquema.
@@ -56,31 +71,32 @@ impl AbrNorms {
                 .all(|w| w.latency_ms > 0.0 && w.width_ms > 0.0 && !w.label.is_empty())
     }
 
-    /// Carga con override opcional. Si `path` es `Some` y el archivo es valido,
-    /// lo usa; en cualquier otro caso, el embebido (con aviso si fallo el parseo).
-    pub fn load(path: Option<&Path>) -> Self {
+    /// Carga la tabla ABR con override opcional. Si `path` es `Some` y el
+    /// archivo es valido, lo usa; en cualquier otro caso, el embebido (con aviso
+    /// si fallo el parseo).
+    pub fn load_abr(path: Option<&Path>) -> Self {
         let Some(path) = path else {
-            return Self::embedded();
+            return Self::embedded_abr();
         };
         match std::fs::read_to_string(path) {
-            Ok(text) => match serde_json::from_str::<AbrNorms>(&text) {
+            Ok(text) => match Self::from_json(&text) {
                 Ok(norms) if norms.is_valid() => norms,
                 Ok(_) => {
                     eprintln!(
                         "aviso: override de normas '{}' no pasa la validacion; uso embebido",
                         path.display()
                     );
-                    Self::embedded()
+                    Self::embedded_abr()
                 }
                 Err(e) => {
                     eprintln!(
                         "aviso: override de normas '{}' invalido ({e}); uso embebido",
                         path.display()
                     );
-                    Self::embedded()
+                    Self::embedded_abr()
                 }
             },
-            Err(_) => Self::embedded(),
+            Err(_) => Self::embedded_abr(),
         }
     }
 
@@ -95,33 +111,40 @@ mod tests {
     use super::*;
 
     #[test]
-    fn embebido_parsea_y_es_valido() {
-        let n = AbrNorms::embedded();
+    fn embebido_abr_parsea_y_es_valido() {
+        let n = NormTable::embedded_abr();
         assert!(n.is_valid());
         assert_eq!(n.reference_db_nhl, 80.0);
         assert!(n.wave("I").is_some());
-        assert!(n.wave("III").is_some());
         assert!(n.wave("V").is_some());
     }
 
     #[test]
-    fn ondas_en_orden_de_latencia() {
-        let n = AbrNorms::embedded();
+    fn embebido_mlr_parsea_y_es_valido() {
+        let n = NormTable::embedded_mlr();
+        assert!(n.is_valid());
+        assert!(n.wave("Pa").is_some());
+        assert!(n.wave("Nb").is_some());
+        // Pa es la onda mas amplia y positiva.
+        assert!(n.wave("Pa").unwrap().amplitude_uv > 0.0);
+    }
+
+    #[test]
+    fn ondas_abr_en_orden_de_latencia() {
+        let n = NormTable::embedded_abr();
         let i = n.wave("I").unwrap().latency_ms;
-        let iii = n.wave("III").unwrap().latency_ms;
         let v = n.wave("V").unwrap().latency_ms;
-        assert!(i < iii && iii < v);
+        assert!(i < v);
     }
 
     #[test]
     fn load_sin_path_devuelve_embebido() {
-        let n = AbrNorms::load(None);
-        assert_eq!(n, AbrNorms::embedded());
+        assert_eq!(NormTable::load_abr(None), NormTable::embedded_abr());
     }
 
     #[test]
     fn load_con_path_inexistente_cae_a_embebido() {
-        let n = AbrNorms::load(Some(Path::new("/no/existe/norms.json")));
-        assert_eq!(n, AbrNorms::embedded());
+        let n = NormTable::load_abr(Some(Path::new("/no/existe/norms.json")));
+        assert_eq!(n, NormTable::embedded_abr());
     }
 }

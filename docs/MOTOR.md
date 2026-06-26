@@ -373,7 +373,7 @@ Cada capa es entregable e independiente: añade variables y una modalidad, con t
 - Estímulos específicos en frecuencia (500–4000 Hz): tone-burst y **chirps de primera clase** (CE-Chirp, LS-Chirp *level-specific*, y NB-chirp de banda estrecha frecuencia-específico).
 - Búsqueda de umbral por frecuencia, gráfico latencia-intensidad, **audiograma estimado** (por tone-burst o por NB-chirp).
 
-### Capa 4 — MLR
+### Capa 4 — MLR — ✅ HECHA
 - Componentes Na, Pa, Nb, Pb; ventana media; filtro 10–300 Hz.
 - Dependencia de **edad** (Pa madura ~10–12 años), **estado** y **sedación**.
 

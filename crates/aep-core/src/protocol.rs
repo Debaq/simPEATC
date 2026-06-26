@@ -95,6 +95,19 @@ impl Protocol {
         Self::abr_chirp(ear, ChirpKind::NarrowBand { freq_hz })
     }
 
+    /// Protocolo MLR: click a 70 dB nHL, tasa baja (7.1/s) y ventana media.
+    pub fn mlr(ear: Ear) -> Self {
+        let mut stimulus = Stimulus::click_default(ear);
+        stimulus.level = crate::units::Level::DbNhl(70.0);
+        stimulus.rate_hz = 7.1;
+        Self {
+            modality: Modality::Mlr,
+            stimulus,
+            acquisition: Acquisition::mlr_default(ear),
+            paradigm: Paradigm::Transient,
+        }
+    }
+
     /// Protocolo ECochG: click a alta intensidad (90 dB nHL), ventana corta y
     /// electrodo de promontorio.
     pub fn ecochg(ear: Ear) -> Self {

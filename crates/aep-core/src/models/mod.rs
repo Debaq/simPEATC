@@ -9,6 +9,7 @@
 
 pub mod abr;
 pub mod ecochg;
+pub mod mlr;
 
 use crate::acquisition::Acquisition;
 use crate::component::Component;
@@ -35,6 +36,7 @@ pub fn model_for(modality: Modality) -> Option<Box<dyn ResponseModel>> {
     match modality {
         Modality::Abr => Some(Box::new(abr::AbrModel::new())),
         Modality::ECochG => Some(Box::new(ecochg::EcochgModel::new())),
+        Modality::Mlr => Some(Box::new(mlr::MlrModel::new())),
         _ => None,
     }
 }

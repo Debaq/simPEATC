@@ -1,0 +1,34 @@
+{
+  "reference_db_nhl": 70.0,
+  "reference_rate_hz": 7.1,
+  "waves": [
+    {
+      "label": "Na",
+      "latency_ms": 18.0,
+      "amplitude_uv": -0.30,
+      "width_ms": 3.0,
+      "generator": "Via talamocortical / corteza auditiva primaria"
+    },
+    {
+      "label": "Pa",
+      "latency_ms": 30.0,
+      "amplitude_uv": 0.75,
+      "width_ms": 4.0,
+      "generator": "Corteza auditiva primaria (giro de Heschl) / talamo"
+    },
+    {
+      "label": "Nb",
+      "latency_ms": 40.0,
+      "amplitude_uv": -0.40,
+      "width_ms": 4.5,
+      "generator": "Corteza auditiva primaria / asociacion"
+    },
+    {
+      "label": "Pb",
+      "latency_ms": 52.0,
+      "amplitude_uv": 0.40,
+      "width_ms": 5.0,
+      "generator": "Corteza auditiva de asociacion (P50/P1)"
+    }
+  ]
+}
