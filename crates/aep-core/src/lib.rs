@@ -24,6 +24,7 @@
 //! ```
 
 pub mod acquisition;
+pub mod audiometry;
 pub mod cases;
 pub mod component;
 pub mod dsp;
@@ -45,6 +46,7 @@ pub mod waveform;
 pub use acquisition::{
     Acquisition, Bandpass, Channel, ElectrodeSite, Montage, TimeWindow,
 };
+pub use audiometry::{estimate_audiogram, estimate_threshold, latency_intensity_curve};
 pub use cases::{CaseCatalog, CaseDef};
 pub use component::{Component, ComponentShape, WavePeak};
 pub use engine::EvokedPotentialEngine;
@@ -52,6 +54,7 @@ pub use lesion::{FreqProfile, Lesion, LesionSite};
 pub use models::{model_for, ResponseModel};
 pub use modulation::{
     apply_age, apply_intensity, apply_polarity, apply_rate, apply_sex, apply_temperature,
+    apply_tone_frequency,
 };
 pub use protocol::{Modality, Paradigm, Protocol};
 pub use rng::Lcg;

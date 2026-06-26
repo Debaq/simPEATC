@@ -68,6 +68,16 @@ impl Protocol {
         }
     }
 
+    /// Protocolo ABR por tone-burst especifico en frecuencia.
+    pub fn abr_toneburst(ear: Ear, freq_hz: f64) -> Self {
+        Self {
+            modality: Modality::Abr,
+            stimulus: Stimulus::toneburst_default(ear, freq_hz),
+            acquisition: Acquisition::abr_default(ear),
+            paradigm: Paradigm::Transient,
+        }
+    }
+
     /// Protocolo ECochG: click a alta intensidad (90 dB nHL), ventana corta y
     /// electrodo de promontorio.
     pub fn ecochg(ear: Ear) -> Self {

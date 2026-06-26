@@ -369,7 +369,7 @@ Cada capa es entregable e independiente: añade variables y una modalidad, con t
 - Dependencia de polaridad (CM se invierte/cancela) y electrodo (TT/TM/EAC).
 - Preset Ménière (hidrops → SP/AP elevado).
 
-### Capa 3 — ABR tone-burst + latencia/intensidad
+### Capa 3 — ABR tone-burst + latencia/intensidad — ✅ HECHA
 - Estímulos específicos en frecuencia (500–4000 Hz), CE-Chirp.
 - Búsqueda de umbral por frecuencia, gráfico latencia-intensidad, **audiograma estimado**.
 

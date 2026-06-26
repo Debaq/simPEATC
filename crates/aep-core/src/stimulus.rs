@@ -171,6 +171,26 @@ impl Stimulus {
             masking: None,
         }
     }
+
+    /// Tone-burst ABR especifico en frecuencia: envolvente Hanning 2-1-2 ciclos,
+    /// alternante (cancela el microfonico), 80 dB nHL, 27.7/s, inserto.
+    pub fn toneburst_default(ear: Ear, freq_hz: f64) -> Self {
+        Self {
+            kind: StimulusKind::ToneBurst {
+                freq_hz,
+                cycles_rise: 2,
+                cycles_plateau: 1,
+                cycles_fall: 2,
+                window: RampWindow::Hanning,
+            },
+            ear,
+            polarity: Polarity::Alternating,
+            level: Level::DbNhl(80.0),
+            rate_hz: 27.7,
+            transducer: Transducer::Insert,
+            masking: None,
+        }
+    }
 }
 
 #[cfg(test)]

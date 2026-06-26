@@ -19,9 +19,11 @@ use crate::component::Component;
 use crate::lesion::{Lesion, LesionSite};
 use crate::modulation::{
     apply_age, apply_intensity, apply_polarity, apply_rate, apply_sex, apply_temperature,
+    apply_tone_frequency, TONE_FREQ_REF_HZ,
 };
 use crate::norms::AbrNorms;
 use crate::protocol::Protocol;
+use crate::stimulus::StimulusKind;
 use crate::subject::{ArousalState, Ear, Subject};
 use crate::synth::NoiseProfile;
 
@@ -119,6 +121,8 @@ impl ResponseModel for AbrModel {
         let level_nhl = stim.level.as_nhl();
         let delay = stim.transducer.acoustic_delay_ms();
         let years = subject.age.approx_years();
+        let is_tone = matches!(stim.kind, StimulusKind::ToneBurst { .. });
+        let is_chirp = matches!(stim.kind, StimulusKind::Chirp { .. });
         let lesions: Vec<&Lesion> = subject.lesions_on(ear).collect();
 
         let th = self.thresholds(&lesions, freq);
@@ -145,6 +149,14 @@ impl ResponseModel for AbrModel {
             apply_sex(&mut c, subject.sex);
             apply_age(&mut c, years);
             apply_polarity(&mut c, stim.polarity);
+            if is_tone {
+                // Estimulo especifico en frecuencia: latencia/amplitud por tono.
+                apply_tone_frequency(&mut c, freq, TONE_FREQ_REF_HZ);
+            }
+            if is_chirp {
+                // El chirp compensa la dispersion coclear → mejor sincronia.
+                c.amplitude_uv *= 1.3;
+            }
             c.latency_ms += delay;
             apply_lesion_pattern(&mut c, &lesions);
             if c.amplitude_uv.abs() > 1e-6 {
@@ -318,6 +330,66 @@ mod tests {
         let iv_sano = interval(&model.components(&p, &sano), "I", "V").unwrap();
         let iv_enf = interval(&model.components(&p, &enfermo), "I", "V").unwrap();
         assert!(iv_enf > iv_sano + 0.3, "sano={iv_sano} enfermo={iv_enf}");
+    }
+
+    #[test]
+    fn toneburst_grave_mas_tardio_que_agudo() {
+        let model = AbrModel::new();
+        let s = Subject::default();
+        let v = |f| {
+            model
+                .components(&Protocol::abr_toneburst(Ear::Right, f), &s)
+                .iter()
+                .find(|c| c.label == "V")
+                .unwrap()
+                .latency_ms
+        };
+        assert!(v(500.0) > v(4000.0), "500={} 4000={}", v(500.0), v(4000.0));
+    }
+
+    #[test]
+    fn perdida_en_agudos_afecta_el_tono_agudo_no_el_grave() {
+        let model = AbrModel::new();
+        let mut s = Subject::default();
+        s.lesions.push(Lesion {
+            site: LesionSite::Cochlear,
+            ear: Ear::Right,
+            severity_db: 50.0,
+            freq_profile: FreqProfile::HighFrequency,
+        });
+        let amp = |f| {
+            model
+                .components(&Protocol::abr_toneburst(Ear::Right, f), &s)
+                .iter()
+                .find(|c| c.label == "V")
+                .map(|c| c.amplitude_uv.abs())
+                .unwrap_or(0.0)
+        };
+        // El tono agudo (4 kHz) cae por la perdida; el grave (500 Hz) se respeta.
+        assert!(amp(4000.0) < amp(500.0), "4000={} 500={}", amp(4000.0), amp(500.0));
+    }
+
+    #[test]
+    fn chirp_da_mas_amplitud_que_click() {
+        let model = AbrModel::new();
+        let s = Subject::default();
+        let v_click = model
+            .components(&Protocol::abr_click(Ear::Right), &s)
+            .iter()
+            .find(|c| c.label == "V")
+            .unwrap()
+            .amplitude_uv;
+        let mut p = Protocol::abr_click(Ear::Right);
+        p.stimulus.kind = crate::stimulus::StimulusKind::Chirp {
+            kind: crate::stimulus::ChirpKind::CeChirp,
+        };
+        let v_chirp = model
+            .components(&p, &s)
+            .iter()
+            .find(|c| c.label == "V")
+            .unwrap()
+            .amplitude_uv;
+        assert!(v_chirp > v_click, "chirp={v_chirp} click={v_click}");
     }
 
     #[test]

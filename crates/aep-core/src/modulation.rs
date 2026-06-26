@@ -20,6 +20,10 @@ pub const TEMP_REF_C: f64 = 37.0;
 pub const TEMP_COEF: f64 = 0.2;
 /// Desplazamiento de latencia por tasa (ms por octava de tasa sobre la ref.).
 pub const RATE_COEF: f64 = 0.15;
+/// Frecuencia de referencia del tone-burst (Hz) para la dependencia de latencia.
+pub const TONE_FREQ_REF_HZ: f64 = 2000.0;
+/// Alargamiento de latencia por octava por debajo de la referencia (ms).
+pub const TONE_FREQ_LAT_COEF: f64 = 0.5;
 /// Acortamiento relativo de latencia en la mujer (factor multiplicativo).
 pub const FEMALE_LAT_FACTOR: f64 = 0.98;
 /// Aumento relativo de amplitud en la mujer.
@@ -100,6 +104,21 @@ pub fn apply_age(c: &mut Component, years: f64) {
         0.0
     };
     c.latency_ms += maturation + aging;
+}
+
+/// Aplica la dependencia de **frecuencia** del tone-burst.
+///
+/// Los tonos graves dan latencias mas largas (la onda viajera tarda en llegar
+/// al apice) y amplitudes algo menores (respuesta mas dispersa) que los agudos.
+/// Solo se aplica a estimulos especificos en frecuencia (tone-burst), no al
+/// click ni al chirp.
+pub fn apply_tone_frequency(c: &mut Component, freq_hz: f64, ref_hz: f64) {
+    if freq_hz <= 0.0 {
+        return;
+    }
+    let octaves_below = (ref_hz / freq_hz).log2().max(0.0);
+    c.latency_ms += octaves_below * TONE_FREQ_LAT_COEF;
+    c.amplitude_uv *= (1.0 - 0.08 * octaves_below).max(0.6);
 }
 
 /// Aplica el efecto de la **polaridad** del estimulo (sutil en el ABR; afecta
@@ -209,6 +228,16 @@ mod tests {
         let shift_i = i.latency_ms - 1.5;
         let shift_v = v.latency_ms - 5.6;
         assert!(shift_v > shift_i); // la V madura mas tarde → mas desplazada
+    }
+
+    #[test]
+    fn tono_grave_mas_tardio_y_menor_que_agudo() {
+        let mut grave = comp();
+        let mut agudo = comp();
+        apply_tone_frequency(&mut grave, 500.0, TONE_FREQ_REF_HZ);
+        apply_tone_frequency(&mut agudo, 4000.0, TONE_FREQ_REF_HZ);
+        assert!(grave.latency_ms > agudo.latency_ms);
+        assert!(grave.amplitude_uv < agudo.amplitude_uv);
     }
 
     #[test]

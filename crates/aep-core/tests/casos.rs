@@ -4,7 +4,7 @@
 //! diagnostico: normal / conductiva / coclear / retrococlear / neuropatia se
 //! distinguen y se miden bien sobre la curva ya promediada (con ruido real).
 
-use aep_core::{CaseCatalog, EvokedPotentialEngine, LesionSite, Recording};
+use aep_core::{estimate_audiogram, CaseCatalog, EvokedPotentialEngine, LesionSite, Recording};
 
 fn simular(id: &str) -> Recording {
     let cat = CaseCatalog::embedded();
@@ -75,6 +75,18 @@ fn todos_los_casos_alcanzan_su_objetivo_de_sweeps() {
         let rec = EvokedPotentialEngine::simulate(&c.protocol(), &c.subject());
         assert_eq!(rec.accepted_sweeps, c.protocol().acquisition.sweeps, "caso {}", c.id);
     }
+}
+
+#[test]
+fn audiograma_estimado_del_coclear_en_agudos_desciende() {
+    // El ABR por tone-burst estima un audiograma descendente en una perdida
+    // coclear de agudos.
+    let cat = CaseCatalog::embedded();
+    let caso = cat.get("coclear_agudos").unwrap();
+    let audio = estimate_audiogram(caso.ear(), &caso.subject(), &[500.0, 1000.0, 2000.0, 4000.0]);
+    let grave = audio.iter().find(|(f, _)| *f == 500.0).unwrap().1.unwrap();
+    let agudo = audio.iter().find(|(f, _)| *f == 4000.0).unwrap().1.unwrap();
+    assert!(agudo > grave, "audiograma deberia descender: 500={grave} 4000={agudo}");
 }
 
 #[test]
