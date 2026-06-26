@@ -235,6 +235,32 @@
       "state": "Awake",
       "attention": "Ignoring",
       "lesions": []
+    },
+    {
+      "id": "assr_normal",
+      "name": "ASSR normal (80 Hz)",
+      "description": "Respuesta de estado estable de tronco (80 Hz) presente: estimacion objetiva de umbral.",
+      "modality": "Assr",
+      "ear": "Right",
+      "intensity_db_nhl": 80.0,
+      "sweeps": 200,
+      "age_years": 30.0,
+      "sex": "Female",
+      "state": "Awake",
+      "lesions": []
+    },
+    {
+      "id": "assr_lactante_dormido",
+      "name": "ASSR lactante dormido (80 Hz)",
+      "description": "El 80 Hz es robusto en sueno: de eleccion para estimar umbrales en el lactante.",
+      "modality": "Assr",
+      "ear": "Right",
+      "intensity_db_nhl": 80.0,
+      "sweeps": 200,
+      "age_years": 0.3,
+      "sex": "Male",
+      "state": "NaturalSleep",
+      "lesions": []
     }
   ]
 }

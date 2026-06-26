@@ -133,6 +133,23 @@ impl Protocol {
         p
     }
 
+    /// Protocolo ASSR: portadora `carrier_hz` modulada en amplitud a
+    /// `mod_freq_hz` (40 Hz cortical / 80 Hz tronco).
+    pub fn assr(ear: Ear, carrier_hz: f64, mod_freq_hz: f64) -> Self {
+        let stimulus = Stimulus::toneburst_default(ear, carrier_hz);
+        Self {
+            modality: Modality::Assr,
+            stimulus,
+            acquisition: Acquisition::assr_default(ear),
+            paradigm: Paradigm::SteadyState { mod_freq_hz },
+        }
+    }
+
+    /// Protocolo ASSR por defecto: portadora 2000 Hz, modulacion 80 Hz.
+    pub fn assr_default(ear: Ear) -> Self {
+        Self::assr(ear, 2000.0, 80.0)
+    }
+
     /// Protocolo ALR/CAEP: click a 60 dB nHL, tasa muy baja (1.1/s) y ventana
     /// larga.
     pub fn alr(ear: Ear) -> Self {

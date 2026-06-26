@@ -4,7 +4,9 @@
 //! diagnostico: normal / conductiva / coclear / retrococlear / neuropatia se
 //! distinguen y se miden bien sobre la curva ya promediada (con ruido real).
 
-use aep_core::{estimate_audiogram, CaseCatalog, EvokedPotentialEngine, LesionSite, Recording};
+use aep_core::{
+    assr_audiogram, estimate_audiogram, CaseCatalog, EvokedPotentialEngine, LesionSite, Recording,
+};
 
 fn simular(id: &str) -> Recording {
     let cat = CaseCatalog::embedded();
@@ -161,6 +163,25 @@ fn mmn_basico_detecta_mmn_sin_atender() {
     let rec = simular("mmn_basico");
     assert!(rec.peak("MMN").is_some(), "MMN preatencional");
     assert!(rec.peak("P3b").is_none(), "la modalidad MMN no da P3b");
+}
+
+#[test]
+fn assr_normal_detecta_respuesta() {
+    let cat = CaseCatalog::embedded();
+    let c = cat.get("assr_normal").unwrap();
+    let r = EvokedPotentialEngine::simulate_assr(&c.protocol(), &c.subject());
+    assert!(r.detected, "ASSR normal deberia detectar respuesta (F={})", r.f_ratio);
+}
+
+#[test]
+fn assr_audiograma_objetivo_desciende_en_perdida_agudos() {
+    let cat = CaseCatalog::embedded();
+    // Reutiliza el sujeto del caso coclear en agudos.
+    let c = cat.get("coclear_agudos").unwrap();
+    let audio = assr_audiogram(c.ear(), &c.subject(), &[500.0, 4000.0], 80.0);
+    let grave = audio.iter().find(|(f, _)| *f == 500.0).unwrap().1.unwrap();
+    let agudo = audio.iter().find(|(f, _)| *f == 4000.0).unwrap().1.unwrap();
+    assert!(agudo > grave + 20.0, "500={grave} 4000={agudo}");
 }
 
 #[test]

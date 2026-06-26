@@ -385,7 +385,7 @@ Cada capa es entregable e independiente: añade variables y una modalidad, con t
 - Paradigma **oddball**, doble flujo, onda diferencia.
 - P3a/P3b, dependencia de atención y edad; MMN preatencional.
 
-### Capa 7 — ASSR
+### Capa 7 — ASSR — ✅ HECHA
 - Sub-motor en dominio de frecuencia; detección estadística en f<sub>mod</sub>.
 - Estimación objetiva de umbrales (40 Hz adulto / 80 Hz lactante).
 
@@ -465,4 +465,27 @@ El modelo de **componentes** (`component.rs`) y la **lesión paramétrica**
 
 ---
 
-*Documento vivo. Las capas 0 y 1 son el foco inmediato; el resto se detalla al llegar a cada una.*
+*Documento vivo.*
+
+---
+
+## Estado del motor (todas las capas hechas)
+
+**El roadmap completo (Capas 0–7) está implementado en `aep-core`**, sin portar
+código del Python (diseño desde cero). Todas las modalidades del espectro
+funcionan con tests verdes:
+
+| Capa | Modalidad | Estado |
+|------|-----------|--------|
+| 0 | Núcleo genérico (engine, DSP real, FSP, normativos) | ✅ |
+| 1 | ABR/PEATC (I–VII, lesiones, sexo/edad/temp/tasa/polaridad) | ✅ |
+| 2 | ECochG (CM/SP/AP, electrodo, Ménière) | ✅ |
+| 3 | ABR tone-burst + chirps (CE/LS/NB) + audiograma estimado | ✅ |
+| 4 | MLR (Na/Pa/Nb/Pb, edad/estado/sedación) | ✅ |
+| 5 | ALR/CAEP (P1/N1/P2/N2, estado/atención) | ✅ |
+| 6 | Cognitivos P300/MMN (oddball + onda diferencia) | ✅ |
+| 7 | ASSR (dominio de frecuencia: FFT propia + F-test, audiograma objetivo) | ✅ |
+
+**Pendiente fuera del motor**: la GUI sigue siendo solo ABR click; queda
+exponer en pantalla las demás modalidades, el audiograma y las curvas. Y la
+**validación clínica** de las tablas normativas de MLR/ALR/P300 (§15.2).*

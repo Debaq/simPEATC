@@ -12,6 +12,7 @@
 //! 3. Promediado → F_sp → deteccion de picos → `Recording`.
 
 use crate::acquisition::Acquisition;
+use crate::assr::{self, AssrResult};
 use crate::component::{Component, ComponentShape, WavePeak};
 use crate::dsp::{f_sp, Averager, IirFilter};
 use crate::models::cognitive::CognitiveModel;
@@ -48,11 +49,30 @@ impl EvokedPotentialEngine {
                     rejected_sweeps: odd.rejected_sweeps,
                 }
             }
+            // ASSR es de dominio de frecuencia; el canal lleva la epoca
+            // promediada (vease tambien `simulate_assr`).
+            Modality::Assr => {
+                let (times, avg) = assr::averaged_epoch(protocol, subject);
+                let res = assr::detect_assr(protocol, subject);
+                Recording {
+                    channels: vec![Waveform::new(times, avg)],
+                    detected: Vec::new(),
+                    fsp: res.f_ratio,
+                    accepted_sweeps: res.n_epochs,
+                    rejected_sweeps: 0,
+                }
+            }
             _ => match model_for(protocol.modality) {
                 Some(model) => run_pipeline(&*model, protocol, subject),
                 None => Recording::default(),
             },
         }
+    }
+
+    /// Detecta la respuesta ASSR (dominio de frecuencia): energia en la
+    /// frecuencia de modulacion mediante FFT + F-test.
+    pub fn simulate_assr(protocol: &Protocol, subject: &Subject) -> AssrResult {
+        assr::detect_assr(protocol, subject)
     }
 
     /// Simula un paradigma oddball: promedia el flujo estandar y el desviante y
@@ -352,11 +372,14 @@ mod tests {
     }
 
     #[test]
-    fn modalidad_no_implementada_devuelve_vacio() {
-        let mut p = Protocol::abr_click(Ear::Right);
-        p.modality = crate::protocol::Modality::Assr;
+    fn assr_por_simulate_devuelve_la_epoca_promediada() {
+        // Todas las modalidades estan implementadas; el ASSR por `simulate`
+        // entrega la epoca promediada como canal (la deteccion va por
+        // `simulate_assr`).
+        let p = Protocol::assr_default(Ear::Right);
         let rec = EvokedPotentialEngine::simulate(&p, &Subject::default());
-        assert!(rec.channels.is_empty());
+        assert!(!rec.channels.is_empty());
+        assert!(rec.detected.is_empty());
     }
 
     #[test]

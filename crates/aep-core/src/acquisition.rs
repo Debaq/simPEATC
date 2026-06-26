@@ -183,6 +183,31 @@ impl Acquisition {
         }
     }
 
+    /// Configuracion ASSR por defecto: `sweeps` = numero de epocas a promediar.
+    ///
+    /// El sub-motor ASSR trabaja en el dominio de la frecuencia con su propio
+    /// tamano de FFT; aqui solo se fija el numero de epocas y el montaje.
+    pub fn assr_default(ear: Ear) -> Self {
+        Self {
+            window: TimeWindow {
+                pre_ms: 0.0,
+                post_ms: 1000.0,
+            },
+            filter: Bandpass {
+                hp_hz: 10.0,
+                lp_hz: 300.0,
+                notch_hz: None,
+                order: 2,
+            },
+            sweeps: 200,
+            artifact_reject_uv: 100.0,
+            sample_rate_hz: 1024.0,
+            gain: 20_000.0,
+            montage: Montage::abr_ipsilateral(ear),
+            impedance_kohm: 3.0,
+        }
+    }
+
     /// Configuracion oddball (P300/MMN) por defecto: ventana 100 ms pre +
     /// 600 ms post, 0.5-30 Hz orden 2, 300 sweeps (del flujo desviante),
     /// muestreo 500 Hz.

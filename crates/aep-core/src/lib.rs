@@ -24,6 +24,7 @@
 //! ```
 
 pub mod acquisition;
+pub mod assr;
 pub mod audiometry;
 pub mod cases;
 pub mod component;
@@ -46,6 +47,7 @@ pub mod waveform;
 pub use acquisition::{
     Acquisition, Bandpass, Channel, ElectrodeSite, Montage, TimeWindow,
 };
+pub use assr::{assr_audiogram, assr_threshold, detect_assr, AssrResult};
 pub use audiometry::{
     estimate_audiogram, estimate_audiogram_chirp, estimate_audiogram_with, estimate_threshold,
     latency_intensity_curve,

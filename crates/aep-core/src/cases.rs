@@ -170,6 +170,7 @@ impl CaseDef {
             "Alr" | "ALR" | "alr" | "CAEP" => Protocol::alr(ear),
             "P300" | "p300" => Protocol::p300(ear),
             "Mmn" | "MMN" | "mmn" => Protocol::mmn(ear),
+            "Assr" | "ASSR" | "assr" => Protocol::assr_default(ear),
             _ => Protocol::abr_click(ear),
         };
         p.stimulus = Stimulus {
