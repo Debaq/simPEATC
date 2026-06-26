@@ -8,6 +8,7 @@
 //! Capa 0 implementa solo el ABR; el resto llega en capas posteriores.
 
 pub mod abr;
+pub mod alr;
 pub mod ecochg;
 pub mod mlr;
 
@@ -37,6 +38,7 @@ pub fn model_for(modality: Modality) -> Option<Box<dyn ResponseModel>> {
         Modality::Abr => Some(Box::new(abr::AbrModel::new())),
         Modality::ECochG => Some(Box::new(ecochg::EcochgModel::new())),
         Modality::Mlr => Some(Box::new(mlr::MlrModel::new())),
+        Modality::Alr => Some(Box::new(alr::AlrModel::new())),
         _ => None,
     }
 }

@@ -183,6 +183,29 @@ impl Acquisition {
         }
     }
 
+    /// Configuracion ALR/CAEP por defecto: ventana 50 ms pre + 350 ms post,
+    /// 1-30 Hz orden 2, 200 sweeps, muestreo 1 kHz, montaje de vertex.
+    pub fn alr_default(ear: Ear) -> Self {
+        Self {
+            window: TimeWindow {
+                pre_ms: 50.0,
+                post_ms: 350.0,
+            },
+            filter: Bandpass {
+                hp_hz: 1.0,
+                lp_hz: 30.0,
+                notch_hz: None,
+                order: 2,
+            },
+            sweeps: 200,
+            artifact_reject_uv: 75.0,
+            sample_rate_hz: 1_000.0,
+            gain: 20_000.0,
+            montage: Montage::abr_ipsilateral(ear),
+            impedance_kohm: 3.0,
+        }
+    }
+
     /// Configuracion ECochG por defecto: ventana 0.5 ms pre + 5 ms post,
     /// 10-1500 Hz orden 2, 1500 sweeps, muestreo 40 kHz, electrodo de
     /// promontorio (transtimpanica, la de mejor relacion senal/ruido).

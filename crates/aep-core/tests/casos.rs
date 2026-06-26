@@ -118,6 +118,34 @@ fn mlr_pa_menor_en_nino_y_sedado_que_en_adulto() {
 }
 
 #[test]
+fn alr_despierto_detecta_n1() {
+    let rec = simular("alr_despierto_pasivo");
+    assert!(rec.peak("N1").is_some(), "ALR despierto deberia detectar N1");
+}
+
+#[test]
+fn alr_n1_mayor_atendiendo_y_menor_dormido() {
+    use aep_core::model_for;
+    let cat = CaseCatalog::embedded();
+    let n1 = |id: &str| {
+        let c = cat.get(id).unwrap();
+        let p = c.protocol();
+        let subj = c.subject();
+        model_for(p.modality)
+            .unwrap()
+            .components(&p, &subj)
+            .iter()
+            .find(|x| x.label == "N1")
+            .unwrap()
+            .amplitude_uv
+            .abs()
+    };
+    let pasivo = n1("alr_despierto_pasivo");
+    assert!(n1("alr_atento") > pasivo, "atento deberia realzar N1");
+    assert!(n1("alr_dormido") < pasivo, "el sueno deberia atenuar N1");
+}
+
+#[test]
 fn catalogo_cubre_los_sitios_de_lesion_clave() {
     let cat = CaseCatalog::embedded();
     let mut vistos = std::collections::HashSet::new();

@@ -377,7 +377,7 @@ Cada capa es entregable e independiente: añade variables y una modalidad, con t
 - Componentes Na, Pa, Nb, Pb; ventana media; filtro 10–300 Hz.
 - Dependencia de **edad** (Pa madura ~10–12 años), **estado** y **sedación**.
 
-### Capa 5 — ALR / CAEP
+### Capa 5 — ALR / CAEP — ✅ HECHA
 - Componentes P1, N1, P2, N2; ventana larga; filtro 1–30 Hz.
 - Dependencia de **estado de alerta** y **atención**; uso con estímulos de habla.
 

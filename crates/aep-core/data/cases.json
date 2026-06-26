@@ -151,6 +151,48 @@
       "sex": "Male",
       "state": "Sedated",
       "lesions": []
+    },
+    {
+      "id": "alr_despierto_pasivo",
+      "name": "ALR adulto despierto (pasivo)",
+      "description": "Complejo P1-N1-P2-N2 cortical en vigilia, sin atender al estimulo.",
+      "modality": "Alr",
+      "ear": "Right",
+      "intensity_db_nhl": 60.0,
+      "sweeps": 200,
+      "age_years": 30.0,
+      "sex": "Female",
+      "state": "Awake",
+      "attention": "Passive",
+      "lesions": []
+    },
+    {
+      "id": "alr_atento",
+      "name": "ALR atendiendo al estimulo",
+      "description": "Atender al estimulo realza la N1 respecto a la condicion pasiva.",
+      "modality": "Alr",
+      "ear": "Right",
+      "intensity_db_nhl": 60.0,
+      "sweeps": 200,
+      "age_years": 30.0,
+      "sex": "Female",
+      "state": "Awake",
+      "attention": "Active",
+      "lesions": []
+    },
+    {
+      "id": "alr_dormido",
+      "name": "ALR en sueno",
+      "description": "El sueno atenua marcadamente la respuesta cortical tardia.",
+      "modality": "Alr",
+      "ear": "Right",
+      "intensity_db_nhl": 60.0,
+      "sweeps": 200,
+      "age_years": 30.0,
+      "sex": "Female",
+      "state": "NaturalSleep",
+      "attention": "Passive",
+      "lesions": []
     }
   ]
 }

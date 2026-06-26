@@ -108,6 +108,20 @@ impl Protocol {
         }
     }
 
+    /// Protocolo ALR/CAEP: click a 60 dB nHL, tasa muy baja (1.1/s) y ventana
+    /// larga.
+    pub fn alr(ear: Ear) -> Self {
+        let mut stimulus = Stimulus::click_default(ear);
+        stimulus.level = crate::units::Level::DbNhl(60.0);
+        stimulus.rate_hz = 1.1;
+        Self {
+            modality: Modality::Alr,
+            stimulus,
+            acquisition: Acquisition::alr_default(ear),
+            paradigm: Paradigm::Transient,
+        }
+    }
+
     /// Protocolo ECochG: click a alta intensidad (90 dB nHL), ventana corta y
     /// electrodo de promontorio.
     pub fn ecochg(ear: Ear) -> Self {

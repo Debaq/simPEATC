@@ -43,6 +43,7 @@ pub type AbrNorms = NormTable;
 
 const EMBEDDED_ABR: &str = include_str!("../data/norms_abr.json");
 const EMBEDDED_MLR: &str = include_str!("../data/norms_mlr.json");
+const EMBEDDED_ALR: &str = include_str!("../data/norms_alr.json");
 
 impl NormTable {
     /// Parsea una tabla desde texto JSON.
@@ -58,6 +59,11 @@ impl NormTable {
     /// Tabla MLR embebida.
     pub fn embedded_mlr() -> Self {
         Self::from_json(EMBEDDED_MLR).expect("norms_mlr.json embebido invalido")
+    }
+
+    /// Tabla ALR/CAEP embebida.
+    pub fn embedded_alr() -> Self {
+        Self::from_json(EMBEDDED_ALR).expect("norms_alr.json embebido invalido")
     }
 
     /// Validacion minima de esquema.
