@@ -79,18 +79,34 @@ pub fn latency_intensity_curve(
         .collect()
 }
 
-/// Audiograma estimado por ABR: `(frecuencia Hz, umbral dB nHL)` por tone-burst.
+/// Audiograma estimado con un constructor de protocolo por frecuencia.
 ///
-/// El umbral es `None` en las frecuencias sin respuesta a ≤ 100 dB.
-pub fn estimate_audiogram(
+/// Permite estimar el umbral con distintos estimulos especificos en frecuencia
+/// (tone-burst o NB-chirp). El umbral es `None` donde no hay respuesta a ≤100 dB.
+pub fn estimate_audiogram_with(
+    ear: Ear,
+    subject: &Subject,
+    freqs: &[f64],
+    make_protocol: impl Fn(Ear, f64) -> Protocol,
+) -> Vec<(f64, Option<f64>)> {
+    freqs
+        .iter()
+        .map(|&f| (f, estimate_threshold(&make_protocol(ear, f), subject)))
+        .collect()
+}
+
+/// Audiograma estimado por ABR **tone-burst**.
+pub fn estimate_audiogram(ear: Ear, subject: &Subject, freqs: &[f64]) -> Vec<(f64, Option<f64>)> {
+    estimate_audiogram_with(ear, subject, freqs, Protocol::abr_toneburst)
+}
+
+/// Audiograma estimado por ABR **NB-chirp** (banda estrecha).
+pub fn estimate_audiogram_chirp(
     ear: Ear,
     subject: &Subject,
     freqs: &[f64],
 ) -> Vec<(f64, Option<f64>)> {
-    freqs
-        .iter()
-        .map(|&f| (f, estimate_threshold(&Protocol::abr_toneburst(ear, f), subject)))
-        .collect()
+    estimate_audiogram_with(ear, subject, freqs, Protocol::abr_nbchirp)
 }
 
 #[cfg(test)]
@@ -133,6 +149,16 @@ mod tests {
         assert_eq!(curve.len(), 3);
         // A menor intensidad, mayor latencia.
         assert!(curve[0].1 > curve[2].1, "lat@40={} lat@80={}", curve[0].1, curve[2].1);
+    }
+
+    #[test]
+    fn audiograma_por_chirp_tambien_desciende_en_agudos() {
+        let mut s = Subject::default();
+        s.lesions.push(cochlear(55.0, FreqProfile::HighFrequency));
+        let audio = estimate_audiogram_chirp(Ear::Right, &s, &[500.0, 4000.0]);
+        let grave = audio.iter().find(|(f, _)| *f == 500.0).unwrap().1.unwrap();
+        let agudo = audio.iter().find(|(f, _)| *f == 4000.0).unwrap().1.unwrap();
+        assert!(agudo > grave + 20.0, "500={grave} 4000={agudo}");
     }
 
     #[test]

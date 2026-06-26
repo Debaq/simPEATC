@@ -23,7 +23,7 @@ use crate::modulation::{
 };
 use crate::norms::AbrNorms;
 use crate::protocol::Protocol;
-use crate::stimulus::StimulusKind;
+use crate::stimulus::{ChirpKind, StimulusKind};
 use crate::subject::{ArousalState, Ear, Subject};
 use crate::synth::NoiseProfile;
 
@@ -80,6 +80,19 @@ impl AbrModel {
     }
 }
 
+/// Realce de amplitud del chirp por mejor sincronia.
+///
+/// La ventaja es mayor a intensidad baja/media (a alta intensidad el click ya
+/// sincroniza bien). El LS-Chirp mantiene mas ventaja en todo el rango.
+fn chirp_gain(kind: ChirpKind, level_nhl: f64) -> f64 {
+    // 1.0 a 20 dB nHL → 0.0 a 80 dB nHL.
+    let low_level_boost = 1.0 - ((level_nhl - 20.0) / 60.0).clamp(0.0, 1.0);
+    match kind {
+        ChirpKind::CeChirp | ChirpKind::NarrowBand { .. } => 1.15 + 0.35 * low_level_boost,
+        ChirpKind::LsChirp => 1.25 + 0.35 * low_level_boost,
+    }
+}
+
 /// Factor de retraso retrococlear por onda (la onda V se retrasa mas que la I).
 fn retrocochlear_factor(label: &str) -> f64 {
     match label {
@@ -122,7 +135,12 @@ impl ResponseModel for AbrModel {
         let delay = stim.transducer.acoustic_delay_ms();
         let years = subject.age.approx_years();
         let is_tone = matches!(stim.kind, StimulusKind::ToneBurst { .. });
-        let is_chirp = matches!(stim.kind, StimulusKind::Chirp { .. });
+        let chirp = match stim.kind {
+            StimulusKind::Chirp { kind } => Some(kind),
+            _ => None,
+        };
+        // El tone-burst y el NB-chirp son especificos en frecuencia.
+        let freq_specific = is_tone || matches!(chirp, Some(ChirpKind::NarrowBand { .. }));
         let lesions: Vec<&Lesion> = subject.lesions_on(ear).collect();
 
         let th = self.thresholds(&lesions, freq);
@@ -149,13 +167,14 @@ impl ResponseModel for AbrModel {
             apply_sex(&mut c, subject.sex);
             apply_age(&mut c, years);
             apply_polarity(&mut c, stim.polarity);
-            if is_tone {
-                // Estimulo especifico en frecuencia: latencia/amplitud por tono.
+            if freq_specific {
+                // Estimulo especifico en frecuencia (tone-burst o NB-chirp):
+                // latencia/amplitud dependientes de la frecuencia.
                 apply_tone_frequency(&mut c, freq, TONE_FREQ_REF_HZ);
             }
-            if is_chirp {
+            if let Some(kind) = chirp {
                 // El chirp compensa la dispersion coclear → mejor sincronia.
-                c.amplitude_uv *= 1.3;
+                c.amplitude_uv *= chirp_gain(kind, level_nhl);
             }
             c.latency_ms += delay;
             apply_lesion_pattern(&mut c, &lesions);
@@ -390,6 +409,76 @@ mod tests {
             .unwrap()
             .amplitude_uv;
         assert!(v_chirp > v_click, "chirp={v_chirp} click={v_click}");
+    }
+
+    #[test]
+    fn ls_chirp_realza_mas_que_ce_chirp() {
+        let model = AbrModel::new();
+        let s = Subject::default();
+        let v = |k| {
+            model
+                .components(&Protocol::abr_chirp(Ear::Right, k), &s)
+                .iter()
+                .find(|c| c.label == "V")
+                .unwrap()
+                .amplitude_uv
+        };
+        assert!(v(ChirpKind::LsChirp) > v(ChirpKind::CeChirp));
+    }
+
+    #[test]
+    fn chirp_realza_mas_a_baja_intensidad() {
+        let model = AbrModel::new();
+        let s = Subject::default();
+        let amp = |p: &Protocol| {
+            model
+                .components(p, &s)
+                .iter()
+                .find(|c| c.label == "V")
+                .unwrap()
+                .amplitude_uv
+        };
+        let ratio = |lvl| {
+            let mut click = Protocol::abr_click(Ear::Right);
+            click.stimulus.level = Level::DbNhl(lvl);
+            let mut chirp = Protocol::abr_chirp(Ear::Right, ChirpKind::CeChirp);
+            chirp.stimulus.level = Level::DbNhl(lvl);
+            amp(&chirp) / amp(&click)
+        };
+        // El realce del chirp respecto al click es mayor a baja intensidad.
+        assert!(ratio(30.0) > ratio(80.0), "30={} 80={}", ratio(30.0), ratio(80.0));
+    }
+
+    #[test]
+    fn nbchirp_grave_mas_tardio_que_agudo() {
+        let model = AbrModel::new();
+        let s = Subject::default();
+        let v = |f| {
+            model
+                .components(&Protocol::abr_nbchirp(Ear::Right, f), &s)
+                .iter()
+                .find(|c| c.label == "V")
+                .unwrap()
+                .latency_ms
+        };
+        assert!(v(500.0) > v(4000.0));
+    }
+
+    #[test]
+    fn nbchirp_da_mas_amplitud_que_toneburst() {
+        let model = AbrModel::new();
+        let s = Subject::default();
+        let amp = |p| {
+            model
+                .components(&p, &s)
+                .iter()
+                .find(|c| c.label == "V")
+                .unwrap()
+                .amplitude_uv
+        };
+        let tb = amp(Protocol::abr_toneburst(Ear::Right, 2000.0));
+        let ch = amp(Protocol::abr_nbchirp(Ear::Right, 2000.0));
+        assert!(ch > tb, "chirp={ch} tone={tb}");
     }
 
     #[test]

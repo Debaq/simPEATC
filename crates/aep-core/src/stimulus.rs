@@ -16,13 +16,22 @@ pub enum RampWindow {
     Gaussian,
 }
 
-/// Tipo de chirp (compensa la dispersion de la onda viajera coclear).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Tipo de chirp (compensa la dispersion de la onda viajera coclear: emite las
+/// frecuencias graves antes que las agudas para que las respuestas neurales
+/// coincidan, mejorando la sincronia y la amplitud).
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ChirpKind {
-    /// CE-Chirp (banda ancha).
+    /// CE-Chirp de banda ancha, diseno fijo.
     CeChirp,
-    /// LS-Chirp (Level-Specific).
+    /// CE-Chirp Level-Specific: el diseno se ajusta al nivel del estimulo,
+    /// manteniendo la ventaja tambien a intensidades altas.
     LsChirp,
+    /// CE-Chirp de banda estrecha (NB-chirp) centrado en una frecuencia, para
+    /// estimacion de umbral frecuencia-especifica con mejor SNR que el tone-burst.
+    NarrowBand {
+        /// Frecuencia central (Hz).
+        freq_hz: f64,
+    },
 }
 
 /// Token de habla para potenciales cognitivos.
@@ -86,7 +95,11 @@ impl StimulusKind {
     /// perdida. El click (banda ancha) se trata como ~2-4 kHz efectivos.
     pub fn dominant_freq_hz(self) -> f64 {
         match self {
-            StimulusKind::Click { .. } | StimulusKind::Chirp { .. } => 2828.0, // ~media geom. 2-4 kHz
+            StimulusKind::Click { .. } => 2828.0, // ~media geom. 2-4 kHz
+            StimulusKind::Chirp { kind } => match kind {
+                ChirpKind::NarrowBand { freq_hz } => freq_hz,
+                _ => 2828.0, // banda ancha
+            },
             StimulusKind::ToneBurst { freq_hz, .. } => freq_hz,
             StimulusKind::Speech { .. } => 1000.0,
             StimulusKind::Noise { .. } => 2000.0,

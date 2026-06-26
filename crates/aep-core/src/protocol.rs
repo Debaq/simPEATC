@@ -1,7 +1,7 @@
 //! El protocolo: que se estimula, como se adquiere y bajo que paradigma.
 
 use crate::acquisition::Acquisition;
-use crate::stimulus::Stimulus;
+use crate::stimulus::{ChirpKind, Stimulus, StimulusKind};
 use crate::subject::Ear;
 
 /// Modalidad de potencial evocado. Selecciona el `ResponseModel` del motor.
@@ -76,6 +76,23 @@ impl Protocol {
             acquisition: Acquisition::abr_default(ear),
             paradigm: Paradigm::Transient,
         }
+    }
+
+    /// Protocolo ABR por chirp (banda ancha CE/LS o banda estrecha NB).
+    pub fn abr_chirp(ear: Ear, kind: ChirpKind) -> Self {
+        let mut stimulus = Stimulus::click_default(ear);
+        stimulus.kind = StimulusKind::Chirp { kind };
+        Self {
+            modality: Modality::Abr,
+            stimulus,
+            acquisition: Acquisition::abr_default(ear),
+            paradigm: Paradigm::Transient,
+        }
+    }
+
+    /// Protocolo ABR por NB-chirp (banda estrecha) centrado en una frecuencia.
+    pub fn abr_nbchirp(ear: Ear, freq_hz: f64) -> Self {
+        Self::abr_chirp(ear, ChirpKind::NarrowBand { freq_hz })
     }
 
     /// Protocolo ECochG: click a alta intensidad (90 dB nHL), ventana corta y

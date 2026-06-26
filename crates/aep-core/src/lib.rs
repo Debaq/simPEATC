@@ -46,7 +46,10 @@ pub mod waveform;
 pub use acquisition::{
     Acquisition, Bandpass, Channel, ElectrodeSite, Montage, TimeWindow,
 };
-pub use audiometry::{estimate_audiogram, estimate_threshold, latency_intensity_curve};
+pub use audiometry::{
+    estimate_audiogram, estimate_audiogram_chirp, estimate_audiogram_with, estimate_threshold,
+    latency_intensity_curve,
+};
 pub use cases::{CaseCatalog, CaseDef};
 pub use component::{Component, ComponentShape, WavePeak};
 pub use engine::EvokedPotentialEngine;
