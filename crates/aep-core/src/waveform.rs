@@ -3,7 +3,7 @@
 use crate::component::WavePeak;
 
 /// Curva: pares (tiempo en ms, amplitud en µV).
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct Waveform {
     /// Eje temporal en milisegundos (relativo al estimulo).
     pub times_ms: Vec<f64>,
@@ -48,7 +48,7 @@ impl Waveform {
 }
 
 /// Registro completo devuelto por el motor.
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct Recording {
     /// Una curva por canal del montaje.
     pub channels: Vec<Waveform>,
@@ -111,7 +111,7 @@ impl Recording {
 /// al **desviante** (raro) y la **onda diferencia** (desviante − estandar),
 /// donde emergen la MMN y la P300. `detected` lleva los picos medidos sobre la
 /// onda diferencia.
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct OddballRecording {
     /// Respuesta promediada al estimulo estandar.
     pub standard: Waveform,

@@ -3,6 +3,11 @@
 **/*.rs.bk
 Cargo.lock
 
+# Frontend / Tauri
+node_modules
+/app/dist
+/app/src-tauri/gen
+
 # Editor
 /.vscode
 /.idea

@@ -32,7 +32,7 @@ const NOISE_RMS_UV: f64 = 1.0;
 const F_CRIT: f64 = 4.0;
 
 /// Resultado de una deteccion ASSR.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct AssrResult {
     /// Frecuencia portadora (Hz).
     pub carrier_hz: f64,

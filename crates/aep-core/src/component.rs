@@ -107,7 +107,7 @@ impl Component {
 ///
 /// A diferencia de `Component` (la verdad fisiologica), solo lleva lo medible:
 /// etiqueta, latencia y amplitud.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct WavePeak {
     /// Etiqueta de la onda.
     pub label: String,

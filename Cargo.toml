@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/aep-core", "crates/simpeatc-gui"]
+members = ["crates/aep-core", "app/src-tauri"]
 
 [workspace.package]
 version = "0.1.0"
@@ -11,4 +11,3 @@ repository = "https://github.com/Debaq/simPEATC"
 
 [workspace.dependencies]
 aep-core = { path = "crates/aep-core" }
-iced = "0.14"

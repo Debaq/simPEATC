@@ -190,8 +190,13 @@ impl ResponseModel for AbrModel {
     }
 
     fn background_noise(&self, subject: &Subject) -> NoiseProfile {
-        // RMS crudo base (banda ancha) de un adulto despierto.
-        let mut rms = 0.35_f64;
+        // RMS crudo (banda ancha) del EEG/EMG de fondo de un adulto despierto.
+        // Varias veces la señal evocada: un sweep aislado es grande y la onda
+        // SOLO emerge al promediar (el ruido cae ~√N), quedando reconocible hacia
+        // ~2000 sweeps. TODO: la tasa de emergencia (≈ este RMS o el SNR del caso)
+        // debe ser una VARIABLE POR CASO editable en el área docente (como los
+        // `fsp_puntos` del legacy): casos "buenos" emergen antes, los malos después.
+        let mut rms = 1.7_f64;
         rms *= match subject.state {
             ArousalState::Awake => 1.0,
             ArousalState::NaturalSleep => 0.85,

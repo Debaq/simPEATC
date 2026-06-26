@@ -1,0 +1,21 @@
+[package]
+name = "simpeatc"
+description = "simPEATC — simulador de potenciales evocados auditivos (app de escritorio Tauri)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[lib]
+name = "simpeatc_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+aep-core = { workspace = true }

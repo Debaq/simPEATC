@@ -300,6 +300,11 @@ fn detect_peaks(comps: &[Component], times: &[f64], mean: &[f64]) -> Vec<WavePea
 }
 
 /// Semilla determinista derivada del protocolo y el sujeto.
+///
+/// **No** depende de `acquisition.sweeps`: la semilla por-sweep se indexa con un
+/// contador global de sweeps producidos, así el promedio acumulado de
+/// `CaptureSession` tras N sweeps coincide exactamente con `simulate(N)` (G-core,
+/// GUI.md §0.1).
 fn seed(protocol: &Protocol, subject: &Subject) -> u64 {
     let s = &protocol.stimulus;
     let ear = match s.ear {
@@ -308,16 +313,120 @@ fn seed(protocol: &Protocol, subject: &Subject) -> u64 {
     };
     let lvl = (s.level.as_nhl() * 10.0) as i64 as u64;
     let rate = (s.rate_hz * 10.0) as u64;
-    let sweeps = protocol.acquisition.sweeps as u64;
     let temp = (subject.temperature_c * 10.0) as i64 as u64;
     let modal = protocol.modality as u64;
 
     ear.wrapping_mul(0x9E37_79B9)
         .wrapping_add(lvl.wrapping_mul(0x85EB_CA77))
         ^ rate.wrapping_mul(0xC2B2_AE3D)
-        ^ sweeps.wrapping_mul(0x27D4_EB2F)
         ^ temp.wrapping_mul(0x1656_67B1)
         ^ modal.wrapping_mul(0x9E37_79B1)
+}
+
+/// Sesión de captura progresiva: acumula sweeps de **a uno** y mantiene el
+/// promedio en curso (G-core). Reusa el mismo pipeline que `average_response`,
+/// así que tras aceptar N sweeps su promedio coincide **exactamente** con
+/// `simulate(N)`. Sirve a la captura en vivo de la GUI (G3): cada `step` produce
+/// una época cruda y actualiza el promedio acumulado.
+///
+/// Solo para modalidades transitorias (ABR/ECochG/MLR/ALR); oddball/ASSR no son
+/// captura de promedio temporal.
+pub struct CaptureSession {
+    comps: Vec<Component>,
+    noise: NoiseProfile,
+    times: Vec<f64>,
+    filter_template: IirFilter,
+    artifact_reject_uv: f64,
+    base_seed: u64,
+    avg: Averager,
+    produced: u32,
+    rejected: u32,
+    last_epoch: Vec<f64>,
+}
+
+impl CaptureSession {
+    /// Crea una sesión para una modalidad transitoria; `None` para oddball/ASSR.
+    pub fn new(protocol: &Protocol, subject: &Subject) -> Option<Self> {
+        Self::new_with_salt(protocol, subject, 0)
+    }
+
+    /// Como `new`, pero mezcla `salt` en la semilla base para obtener un flujo de
+    /// ruido **independiente** (réplicas A/B: misma señal, ruido distinto).
+    pub fn new_with_salt(protocol: &Protocol, subject: &Subject, salt: u64) -> Option<Self> {
+        if matches!(
+            protocol.modality,
+            Modality::P300 | Modality::Mmn | Modality::Assr
+        ) {
+            return None;
+        }
+        let model = model_for(protocol.modality)?;
+        let acq = &protocol.acquisition;
+        let comps = model.components(protocol, subject);
+        let noise = impedance_noise(model.background_noise(subject), acq);
+        let n = acq.window.n_samples(acq.sample_rate_hz).max(2);
+        let times = synth::time_axis(&acq.window, n);
+        let sp_index = n / 2;
+        Some(Self {
+            comps,
+            noise,
+            times,
+            filter_template: IirFilter::from_bandpass(&acq.filter, acq.sample_rate_hz),
+            artifact_reject_uv: acq.artifact_reject_uv,
+            base_seed: seed(protocol, subject) ^ salt.wrapping_mul(0x9E37_79B9_7F4A_7C15),
+            avg: Averager::new(n, f64::INFINITY, sp_index),
+            produced: 0,
+            rejected: 0,
+            last_epoch: vec![0.0; n],
+        })
+    }
+
+    /// Eje temporal (ms) de la ventana.
+    pub fn times(&self) -> &[f64] {
+        &self.times
+    }
+    /// Sweeps aceptados (promediados) hasta ahora.
+    pub fn accepted(&self) -> u32 {
+        self.avg.accepted()
+    }
+    /// Sweeps rechazados por artefacto hasta ahora.
+    pub fn rejected(&self) -> u32 {
+        self.rejected
+    }
+    /// Promedio acumulado (µV).
+    pub fn mean(&self) -> Vec<f64> {
+        self.avg.mean()
+    }
+    /// F_sp del promedio actual.
+    pub fn fsp(&self) -> f64 {
+        f_sp(&self.avg.mean(), self.avg.sp_samples())
+    }
+    /// Última época cruda aceptada (sweep filtrado + baseline).
+    pub fn last_epoch(&self) -> &[f64] {
+        &self.last_epoch
+    }
+
+    /// Produce el siguiente sweep (síntesis → artefacto → rechazo → filtro →
+    /// baseline → acumulación). Devuelve `true` si fue aceptado. Cuerpo idéntico
+    /// al bucle de `average_response`, paso a paso.
+    pub fn step(&mut self) -> bool {
+        let mut rng = Lcg::new(
+            self.base_seed ^ (self.produced as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15),
+        );
+        self.produced += 1;
+        let mut sweep = synth::synth_sweep(&self.comps, &self.times, &self.noise, &mut rng);
+        inject_artifact(&mut sweep, &mut rng, self.artifact_reject_uv);
+        if sweep.iter().any(|v| v.abs() > self.artifact_reject_uv) {
+            self.rejected += 1;
+            return false;
+        }
+        let mut filt = self.filter_template.clone();
+        filt.reset();
+        filt.process(&mut sweep);
+        baseline_correct(&mut sweep, &self.times);
+        self.avg.add(&sweep);
+        self.last_epoch = sweep;
+        true
+    }
 }
 
 #[cfg(test)]
@@ -326,6 +435,31 @@ mod tests {
     use crate::protocol::Protocol;
     use crate::subject::{Attention, Ear, Subject};
     use crate::units::Level;
+
+    #[test]
+    fn captura_acumulada_igual_a_simulate() {
+        // El promedio de CaptureSession tras N aceptados == simulate(N) (G-core).
+        let mut p = Protocol::abr_click(Ear::Right);
+        p.acquisition.sweeps = 200;
+        let s = Subject::default();
+        let full = EvokedPotentialEngine::simulate(&p, &s);
+
+        let mut cap = CaptureSession::new(&p, &s).expect("ABR es transitoria");
+        let mut guard = 0;
+        while cap.accepted() < 200 && guard < 10_000 {
+            cap.step();
+            guard += 1;
+        }
+        assert_eq!(cap.accepted(), 200);
+        assert_eq!(cap.mean(), full.channels[0].amplitudes_uv);
+        assert_eq!(cap.rejected(), full.rejected_sweeps);
+    }
+
+    #[test]
+    fn captura_oddball_es_none() {
+        let p = Protocol::p300(Ear::Right);
+        assert!(CaptureSession::new(&p, &Subject::default()).is_none());
+    }
 
     #[test]
     fn simula_y_detecta_onda_v() {
