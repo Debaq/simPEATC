@@ -20,11 +20,11 @@ function p3bMedia(age: number): number {
 }
 
 export default function P300View({ caps, age }: { caps: OddballCap[]; age: number }) {
-  // P3b medida por captura (de la onda diferencia detectada).
+  // P3b marcada por el alumno en la onda diferencia.
   const puntos = caps
     .map((c) => {
-      const p = c.rec.detected.find((d) => d.label === "P3b");
-      return p ? { ear: c.ear, lat: p.latency_ms } : null;
+      const m = c.marks.find((d) => d.label === "P3b");
+      return m ? { ear: c.ear, lat: m.t_ms } : null;
     })
     .filter((x): x is { ear: EarSide; lat: number } => x !== null);
 
@@ -128,7 +128,7 @@ export default function P300View({ caps, age }: { caps: OddballCap[]; age: numbe
       <p className="hint" style={{ marginTop: 6 }}>
         A los {num(age, 0)} años: media {num(media, 0)} ms · límite normal {num(limite, 0)} ms (media + 2 DE).{" "}
         {veredictos.length === 0
-          ? "Captura P300 (con atención) para medir la P3b."
+          ? "Marca la P3b en la onda diferencia (botón P3b) para ubicarla aquí."
           : veredictos
               .map((v) => `${v.ear}: ${num(v.lat, 0)} ms ${v.prolongada ? "⚠ prolongada" : "✓ normal"}`)
               .join(" · ")}

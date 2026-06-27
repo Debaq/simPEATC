@@ -175,6 +175,7 @@ export interface OddballCap {
   modality: Modality;
   intensity: number;
   rec: OddballRecording;
+  marks: Mark[]; // marcas del alumno sobre la onda diferencia (MMN/P3a/P3b)
 }
 
 // Captura ASSR acumulada por (oído, frecuencia portadora).

@@ -247,6 +247,7 @@ export default function ClinicalPanel() {
           modality: equipo.modality,
           intensity: equipo.intensity_db,
           rec,
+          marks: [],
         },
       ]);
     } catch (e) {
@@ -380,6 +381,11 @@ export default function ClinicalPanel() {
   function onMark(id: string, mark: Mark) {
     setCurves((cs) =>
       cs.map((c) => (c.id === id ? { ...c, marks: upsertMark(c.marks, mark) } : c))
+    );
+  }
+  function onMarkOddball(id: string, mark: Mark) {
+    setOddballs((o) =>
+      o.map((c) => (c.id === id ? { ...c, marks: upsertMark(c.marks, mark) } : c))
     );
   }
 
@@ -525,7 +531,10 @@ export default function ClinicalPanel() {
                 </button>
               </div>
             )}
-            <OddballView caps={oddballs.filter((c) => c.modality === equipo.modality)} />
+            <OddballView
+              caps={oddballs.filter((c) => c.modality === equipo.modality)}
+              onMark={onMarkOddball}
+            />
           </>
         ) : fam === "assr" ? (
           <AssrView caps={assrs} />
