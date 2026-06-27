@@ -15,9 +15,23 @@ pub mod mlr;
 
 use crate::acquisition::Acquisition;
 use crate::component::Component;
+use crate::lesion::{Lesion, LesionSite};
 use crate::protocol::{Modality, Protocol};
 use crate::subject::Subject;
 use crate::synth::NoiseProfile;
+
+/// Fraccion de amplitud cortical (MLR/ALR/P300) que sobrevive al eje central:
+/// el defecto cortical (TPAC) la atenua aun despierto, y un bloqueo de tronco
+/// severo (muerte encefalica) la suprime. El ABR de tronco no se ve afectado.
+pub(crate) fn central_cortical_keep<'a>(lesions: impl Iterator<Item = &'a Lesion>) -> f64 {
+    lesions
+        .map(|l| match l.site {
+            LesionSite::Cortical => (1.0 - l.severity_db / 60.0).clamp(0.0, 1.0),
+            LesionSite::Brainstem => (1.0 - (l.severity_db - 60.0) / 40.0).clamp(0.0, 1.0),
+            _ => 1.0,
+        })
+        .fold(1.0, f64::min)
+}
 
 /// Modelo de respuesta intercambiable por modalidad.
 pub trait ResponseModel {

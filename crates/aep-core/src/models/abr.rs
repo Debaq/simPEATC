@@ -107,20 +107,66 @@ fn retrocochlear_factor(label: &str) -> f64 {
     }
 }
 
+/// Factor de conduccion central por onda: I-II (perifericas) ~0; el retraso
+/// empieza en III (generadores centrales del tronco) y crece hacia V.
+fn central_conduction_factor(label: &str) -> f64 {
+    match label {
+        // I-III ~periferico (se preserva); el retraso central se concentra en IV-V.
+        "I" | "II" => 0.0,
+        "III" => 0.1,
+        "IV" => 0.6,
+        "V" => 1.0,
+        "VI" => 1.1,
+        "VII" => 1.2,
+        _ => 0.5,
+    }
+}
+
+/// Fraccion de amplitud que sobrevive a un bloqueo de tronco de grado `severity`.
+/// El bloqueo abole de rostral (V) a caudal (II) conforme sube la severidad; la
+/// onda I (coclea/porcion distal del VIII) resiste hasta el total. A `severity`
+/// ~100 solo sobrevive la I (patron de muerte encefalica).
+fn brainstem_keep(label: &str, severity: f64) -> f64 {
+    let onset = match label {
+        "VII" => 2.0,
+        "VI" => 5.0,
+        "V" => 10.0,
+        "IV" => 30.0,
+        "III" => 50.0,
+        "II" => 70.0,
+        "I" => 120.0,
+        _ => 40.0,
+    };
+    (1.0 - (severity - onset) / 30.0).clamp(0.0, 1.0)
+}
+
 /// Aplica el patron especifico del sitio de lesion que NO se reduce a un
-/// desplazamiento de nivel (retrococlear y neural).
+/// desplazamiento de nivel (retrococlear, neural y el eje neurologico central).
 fn apply_lesion_pattern(c: &mut Component, lesions: &[&Lesion]) {
     for l in lesions {
         match l.site {
             LesionSite::Retrocochlear => {
-                c.latency_ms += l.severity_db / 40.0 * 0.8 * retrocochlear_factor(&c.label);
+                let f = retrocochlear_factor(&c.label);
+                // Retrasa las ondas tardias (V mas que I) y, ademas, baja su
+                // amplitud: la V cae (V/I bajo) y puede desaparecer en tumores grandes.
+                c.latency_ms += l.severity_db / 40.0 * 0.8 * f;
+                c.amplitude_uv *= (1.0 - l.severity_db / 100.0 * f).clamp(0.0, 1.0);
             }
             LesionSite::Neural => {
                 let keep = (1.0 - l.severity_db / 60.0).clamp(0.0, 1.0);
                 c.amplitude_uv *= keep;
             }
-            // Conductiva y coclear: via umbral efectivo. Central: sin efecto en
-            // el ABR de tronco (afecta componentes corticales, capas tardias).
+            LesionSite::CentralConduction => {
+                // Desmielinizacion: prolonga la conduccion central (III-V).
+                c.latency_ms += l.severity_db / 40.0 * 0.8 * central_conduction_factor(&c.label);
+            }
+            LesionSite::Brainstem => {
+                // Bloqueo por nivel; lo que sobrevive se retrasa algo.
+                c.latency_ms += l.severity_db / 80.0 * 0.4 * central_conduction_factor(&c.label);
+                c.amplitude_uv *= brainstem_keep(&c.label, l.severity_db);
+            }
+            // Conductiva/coclear: via umbral. Cortical/Cognitive: sin efecto en el
+            // ABR de tronco (actuan sobre componentes corticales y cognitivos).
             _ => {}
         }
     }

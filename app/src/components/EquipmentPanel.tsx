@@ -74,7 +74,10 @@ const TEST_OPTS: { value: Modality; label: string }[] = [
   { value: "Alr", label: "ALR" },
   { value: "P300", label: "P300" },
   { value: "Mmn", label: "MMN" },
+  { value: "Assr", label: "ASSR" },
 ];
+
+const MOD_FREQS = [40, 80];
 
 // Preset clínico por modalidad: estímulo, intensidad, promediaciones y equipo
 // con sentido para esa prueba (todos los valores salen de las listas fijas).
@@ -120,6 +123,12 @@ const MODALITY_PRESETS: Record<string, ModalityPreset> = {
     intensity_db: 70,
     sweeps: 300,
     equipo: { rate_hz: 1.1, polarity: "Alternating", hp_hz: 0.1, lp_hz: 30, pre_ms: 0, post_ms: 300, artifact_reject_uv: 50 },
+  },
+  Assr: {
+    stimulus: "toneburst",
+    intensity_db: 60,
+    sweeps: 200,
+    equipo: { rate_hz: 80, polarity: "Alternating", hp_hz: 30, lp_hz: 300, pre_ms: 0, post_ms: 100, artifact_reject_uv: 50 },
   },
 };
 
@@ -253,10 +262,20 @@ export default function EquipmentPanel({ params, onChange }: Props) {
             ))}
           </select>
         </Row>
-        {usesFreq && (
+        {usesFreq && params.modality !== "Assr" && (
           <Row label="Frecuencia">
             <NumSelect value={params.freq_hz} options={FREQS} unit="Hz" onChange={(v) => patch({ freq_hz: v })} />
           </Row>
+        )}
+        {params.modality === "Assr" && (
+          <>
+            <Row label="Portadora">
+              <NumSelect value={params.carrier_hz} options={FREQS} unit="Hz" onChange={(v) => patch({ carrier_hz: v })} />
+            </Row>
+            <Row label="Modulación">
+              <NumSelect value={params.mod_freq_hz} options={MOD_FREQS} unit="Hz" onChange={(v) => patch({ mod_freq_hz: v })} />
+            </Row>
+          </>
         )}
         {params.stimulus === "toneburst" && (
           <Row label="Ventana (rampa)">

@@ -21,8 +21,38 @@ pub enum LesionSite {
     /// Neural (neuropatia/desincronia): AP/ABR ausentes o muy anomalos con
     /// microfonico coclear (CM) presente.
     Neural,
-    /// Central (tronco/corteza): afecta componentes tardios segun el nivel.
+    /// Central (tronco/corteza): generico. Mantener por compatibilidad; preferir
+    /// las variantes neurologicas especificas de abajo.
     Central,
+    /// Conduccion central prolongada (desmielinizacion / esclerosis multiple):
+    /// retrasa las ondas centrales (III-V) dejando I-III ~normal → intervalos
+    /// I-V e III-V alargados. `severity_db` escala el retraso.
+    CentralConduction,
+    /// Lesion de tronco por nivel (ictus, tumor) hasta muerte encefalica: abole
+    /// las ondas centrales de rostral a caudal segun `severity_db` (V→IV→III…;
+    /// ≥90 dB solo sobrevive la onda I = patron de muerte encefalica).
+    Brainstem,
+    /// Defecto cortical / procesamiento auditivo central (TPAC): el ABR de tronco
+    /// es normal pero atenua las respuestas corticales (MLR Pa, ALR N1) aun
+    /// despierto. `severity_db` escala la atenuacion.
+    Cortical,
+    /// Afectacion cognitiva (demencia, dano prefrontal): alarga la latencia y baja
+    /// la amplitud de la P3b del P300, independiente de la atencion.
+    Cognitive,
+}
+
+impl LesionSite {
+    /// `true` si es una lesion del eje neurologico central (no audiologica).
+    pub fn is_central(self) -> bool {
+        matches!(
+            self,
+            LesionSite::Central
+                | LesionSite::CentralConduction
+                | LesionSite::Brainstem
+                | LesionSite::Cortical
+                | LesionSite::Cognitive
+        )
+    }
 }
 
 /// Perfil frecuencial de la perdida (forma del audiograma).

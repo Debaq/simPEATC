@@ -2,11 +2,16 @@
 
 import { Channel, invoke } from "@tauri-apps/api/core";
 import type {
+  AssrResult,
   AudiogramPoint,
+  Calificacion,
   CapMsg,
+  CaseDef,
   CaseInfo,
+  EntregaDto,
   EstadoSesion,
   Modo,
+  OddballRecording,
   Recording,
   SimOutput,
   SimParams,
@@ -37,26 +42,46 @@ export function audiogram(args: {
   });
 }
 
-/** Lista los casos clinicos del catalogo embebido. */
+/** Lista los pacientes del catalogo embebido. */
 export function listCases(): Promise<CaseInfo[]> {
   return invoke<CaseInfo[]>("list_cases");
 }
 
-/** Ejecuta un caso del catalogo por su id. */
-export function runCase(id: string): Promise<SimOutput> {
-  return invoke<SimOutput>("run_case", { id });
-}
-
 // --- Clínico (G0: invariante verdad/ciego) ---
 
-/** Carga un caso en modo dado; devuelve la vista CIEGA (sin verdad). */
-export function cargarCaso(id: string, modo: Modo): Promise<VistaCiegaCaso> {
-  return invoke<VistaCiegaCaso>("cargar_caso", { id, modo });
+/** Carga un paciente del catálogo en el slot `ear`; devuelve la vista CIEGA. */
+export function cargarCaso(id: string, ear: string, modo: Modo): Promise<VistaCiegaCaso> {
+  return invoke<VistaCiegaCaso>("cargar_caso", { id, ear, modo });
+}
+
+/** Carga un paciente construido/importado en el slot `ear`. */
+export function cargarCasoDef(def: CaseDef, ear: string, modo: Modo): Promise<VistaCiegaCaso> {
+  return invoke<VistaCiegaCaso>("cargar_caso_def", { def, ear, modo });
+}
+
+/** Definición completa de un paciente del catálogo (para editar). Requiere rol docente. */
+export function obtenerCasoDef(id: string): Promise<CaseDef> {
+  return invoke<CaseDef>("obtener_caso_def", { id });
+}
+
+/** Vista previa: simula un examen sobre el paciente del `def` en `ear`. Requiere rol docente. */
+export function previewCaso(def: CaseDef, ear: string, params: SimParams): Promise<SimOutput> {
+  return invoke<SimOutput>("preview_caso", { def, ear, params });
 }
 
 /** Captura clínica (instantánea): el alumno aporta el equipo; el paciente sale de la verdad oculta. */
 export function capturarClinico(params: SimParams): Promise<Recording> {
   return invoke<Recording>("capturar_clinico", { params });
+}
+
+/** Captura clínica oddball (P300/MMN), one-shot. Proyectada ciega según el modo. */
+export function capturarOddballClinico(params: SimParams): Promise<OddballRecording> {
+  return invoke<OddballRecording>("capturar_oddball_clinico", { params });
+}
+
+/** Captura clínica ASSR (estado estable), one-shot. */
+export function capturarAssrClinico(params: SimParams): Promise<AssrResult> {
+  return invoke<AssrResult>("capturar_assr_clinico", { params });
 }
 
 /** Captura progresiva (G3): emite promedio acumulado + época cruda por el Channel.
@@ -84,12 +109,22 @@ export function docenteRelock(): Promise<void> {
   return invoke<void>("docente_relock");
 }
 
-/** Verdad del caso: solo si el rol docente está desbloqueado (si no, rechaza). */
-export function verVerdad(): Promise<VerdadDto> {
-  return invoke<VerdadDto>("ver_verdad");
+/** Quita el caso de un oído (vacía ese slot). */
+export function quitarCaso(ear: string): Promise<void> {
+  return invoke<void>("quitar_caso", { ear });
+}
+
+/** Verdad por oído: solo si el rol docente está desbloqueado (si no, rechaza). */
+export function verVerdad(): Promise<VerdadDto[]> {
+  return invoke<VerdadDto[]>("ver_verdad");
 }
 
 /** Estado de sesión (modo, rol, caso cargado). */
 export function estadoSesion(): Promise<EstadoSesion> {
   return invoke<EstadoSesion>("estado_sesion");
+}
+
+/** Califica la entrega del alumno (diagnóstico + marcado) y revela la verdad. */
+export function calificar(entrega: EntregaDto): Promise<Calificacion> {
+  return invoke<Calificacion>("calificar", { entrega });
 }

@@ -48,8 +48,8 @@ export interface CaseInfo {
   id: string;
   name: string;
   description: string;
-  modality: string;
-  ear: string;
+  // Resumen corto de la patología ("Normal", "Cochlear 50 dB HighFrequency"…).
+  summary: string;
 }
 
 // --- Clínico (G0: invariante verdad/ciego) ---
@@ -59,25 +59,84 @@ export type Modo = "practica" | "evaluacion" | "osce";
 export interface VistaCiegaCaso {
   id: string;
   ear: string;
-  age_years: number;
-  sex: string;
   modo: Modo;
   nombre: string | null;
   descripcion: string | null;
 }
 
+// Lesion dentro de un CaseDef (texto que mapea al dominio del motor).
+export interface CaseLesionDef {
+  site: LesionSite;
+  severity_db: number;
+  profile: FreqProfile;
+}
+
+// Definicion de un caso = PATOLOGÍA (espejo de aep_core::CaseDef). Solo lesiones:
+// no incluye datos del sujeto (edad, sexo, estado…) que son variables externas de
+// la sesión. Es el formato JSON estructurado para importar/exportar.
+export interface CaseDef {
+  id: string;
+  name: string;
+  description: string;
+  lesions: CaseLesionDef[];
+}
+
 export interface VerdadDto {
+  ear: string;
   caso_id: string;
   nombre: string;
   descripcion: string;
   lesiones: string[];
-  verdad_picos: WavePeak[];
 }
 
 export interface EstadoSesion {
   modo: Modo;
   rol_docente: boolean;
   caso_cargado: boolean;
+}
+
+// --- G9: evaluación / scoring ---
+
+export interface DiagEar {
+  ear: string; // "OD" | "OI"
+  sitios: LesionSite[];
+}
+
+export interface MarcaDto {
+  ear: string;
+  modality: string;
+  intensity_db: number;
+  label: string;
+  t_ms: number;
+}
+
+export interface EntregaDto {
+  sujeto: SubjectParams;
+  diagnosticos: DiagEar[];
+  marcas: MarcaDto[];
+}
+
+export interface DxResultado {
+  ear: string;
+  esperado: LesionSite[];
+  respondido: LesionSite[];
+  correcto: boolean;
+  parcial: boolean;
+}
+
+export interface MarcasResumen {
+  correctas: number;
+  incorrectas: number;
+  perdidas: number;
+}
+
+export interface Calificacion {
+  puntaje: number;
+  dx_pct: number;
+  marcas_pct: number;
+  por_oido: DxResultado[];
+  marcas: MarcasResumen;
+  verdad: VerdadDto[];
 }
 
 // Punto del audiograma: [frecuencia_hz, umbral_db | null].
@@ -96,16 +155,34 @@ export interface FspPoint {
   fsp: number;
 }
 
-// Curva ABR capturada en la pila clínica (apilado manual por arrastre).
+// Curva transitoria capturada en la pila clínica (apilado manual por arrastre).
 export interface AbrCurve {
   id: string;
   ear: EarSide;
+  modality: Modality; // examen que la produjo (ABR/ECochG/MLR/ALR): no se mezclan
   intensity: number;
   wave: Waveform;
   gap: number; // offset vertical (µV) del apilado manual
-  marks: Mark[]; // marcas ↓ de onda (I–V)
+  marks: Mark[]; // marcas ↓ de onda
   fsp: FspPoint[]; // historial FSP de su captura
   replica?: Waveform; // segundo buffer A/B (reproducibilidad)
+}
+
+// Captura oddball (P300/MMN) acumulada por (oído, examen).
+export interface OddballCap {
+  id: string;
+  ear: EarSide;
+  modality: Modality;
+  intensity: number;
+  rec: OddballRecording;
+}
+
+// Captura ASSR acumulada por (oído, frecuencia portadora).
+export interface AssrCap {
+  id: string;
+  ear: EarSide;
+  intensity: number;
+  result: AssrResult;
 }
 
 // Mensajes de captura progresiva (G3), por tauri::ipc::Channel.
@@ -132,7 +209,16 @@ export type EarSide = "Left" | "Right";
 export type SexValue = "Male" | "Female";
 export type ArousalState = "Awake" | "NaturalSleep" | "Sedated" | "Anesthetized";
 export type Attention = "Active" | "Passive" | "Ignoring";
-export type LesionSite = "Conductive" | "Cochlear" | "Retrocochlear" | "Neural" | "Central";
+export type LesionSite =
+  | "Conductive"
+  | "Cochlear"
+  | "Retrocochlear"
+  | "Neural"
+  | "Central"
+  | "CentralConduction"
+  | "Brainstem"
+  | "Cortical"
+  | "Cognitive";
 export type FreqProfile = "Flat" | "HighFrequency" | "LowFrequency" | "CookieBite";
 
 export interface LesionParams {

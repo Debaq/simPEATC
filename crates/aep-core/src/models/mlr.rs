@@ -78,7 +78,11 @@ impl ResponseModel for MlrModel {
             .fold(0.0, f64::max);
         let effective = level - threshold;
 
-        let amp_factor = maturity_factor(years) * state_factor(subject.state);
+        // Eje central: TPAC/cortical atenua la respuesta de latencia media aun
+        // despierto; un bloqueo de tronco severo (muerte encefalica) tambien la
+        // suprime. El ABR de tronco, en cambio, puede ser normal.
+        let central_keep = super::central_cortical_keep(subject.lesions_on(ear));
+        let amp_factor = maturity_factor(years) * state_factor(subject.state) * central_keep;
 
         let mut comps = Vec::with_capacity(self.norms.waves.len());
         for w in &self.norms.waves {

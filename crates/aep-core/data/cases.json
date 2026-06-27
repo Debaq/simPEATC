@@ -2,37 +2,48 @@
   "cases": [
     {
       "id": "normal",
-      "name": "Audicion normal",
-      "description": "Adulto sano. Ondas I-V presentes, latencias e intervalos normales.",
-      "ear": "Right",
-      "intensity_db_nhl": 80.0,
-      "sweeps": 2000,
-      "age_years": 30.0,
-      "sex": "Female",
+      "name": "Normal",
+      "description": "Sin patologia. Todas las respuestas presentes y normales en cualquier examen (segun las variables de sesion): ABR I-V, MLR Na-Pa, ALR P1-N1-P2, P300 P3b.",
       "lesions": []
+    },
+
+    {
+      "id": "conductiva_leve",
+      "name": "Hipoacusia conductiva leve",
+      "description": "Oido medio (otitis serosa inicial). Alarga las latencias absolutas por igual y preserva los intervalos interpico; umbral aereo ~25 dB con via osea normal (gap).",
+      "lesions": [
+        { "site": "Conductive", "severity_db": 25.0, "profile": "Flat" }
+      ]
     },
     {
       "id": "conductiva_moderada",
       "name": "Hipoacusia conductiva moderada",
-      "description": "Patologia de oido medio. Alarga las latencias absolutas por igual y preserva los intervalos interpico.",
-      "ear": "Right",
-      "intensity_db_nhl": 80.0,
-      "sweeps": 2000,
-      "age_years": 35.0,
-      "sex": "Male",
+      "description": "Otosclerosis / otitis serosa. Desplaza latencias absolutas y umbral ~40 dB con intervalos interpico normales; mejora por via osea.",
       "lesions": [
         { "site": "Conductive", "severity_db": 40.0, "profile": "Flat" }
       ]
     },
     {
+      "id": "conductiva_severa",
+      "name": "Hipoacusia conductiva severa",
+      "description": "Bloqueo conductivo importante. Umbral aereo muy elevado (~55 dB) con coclea sana y gran gap aereo-oseo.",
+      "lesions": [
+        { "site": "Conductive", "severity_db": 55.0, "profile": "Flat" }
+      ]
+    },
+
+    {
+      "id": "coclear_agudos_leve",
+      "name": "Hipoacusia coclear leve en agudos",
+      "description": "Caida sensorial incipiente en agudos (presbiacusia inicial / ruido). Latencias casi normales a alta intensidad por reclutamiento; amplitudes algo reducidas.",
+      "lesions": [
+        { "site": "Cochlear", "severity_db": 35.0, "profile": "HighFrequency" }
+      ]
+    },
+    {
       "id": "coclear_agudos",
-      "name": "Hipoacusia coclear en agudos",
-      "description": "Perdida sensorial descendente. Reclutamiento: latencias casi normales a alta intensidad, amplitudes reducidas.",
-      "ear": "Left",
-      "intensity_db_nhl": 80.0,
-      "sweeps": 2000,
-      "age_years": 60.0,
-      "sex": "Male",
+      "name": "Presbiacusia (coclear en agudos)",
+      "description": "Perdida sensorial descendente. Reclutamiento: latencias casi normales a alta intensidad, amplitudes reducidas y umbral elevado en agudos (audiograma por tone-burst/ASSR descendente).",
       "lesions": [
         { "site": "Cochlear", "severity_db": 50.0, "profile": "HighFrequency" }
       ]
@@ -40,227 +51,100 @@
     {
       "id": "coclear_plana_severa",
       "name": "Hipoacusia coclear plana severa",
-      "description": "Perdida sensorial plana. Cerca del umbral solo sobrevive la onda V.",
-      "ear": "Right",
-      "intensity_db_nhl": 75.0,
-      "sweeps": 3000,
-      "age_years": 50.0,
-      "sex": "Female",
+      "description": "Perdida sensorial plana severa. Cerca del umbral solo sobrevive la onda V; umbral ~65 dB.",
       "lesions": [
         { "site": "Cochlear", "severity_db": 65.0, "profile": "Flat" }
       ]
     },
     {
+      "id": "coclear_profunda",
+      "name": "Hipoacusia coclear profunda",
+      "description": "Perdida sensorial profunda. Respuestas ausentes salvo a intensidades muy altas; candidato a implante coclear.",
+      "lesions": [
+        { "site": "Cochlear", "severity_db": 85.0, "profile": "Flat" }
+      ]
+    },
+    {
+      "id": "coclear_graves",
+      "name": "Hipoacusia coclear en graves (hidrops)",
+      "description": "Perdida sensorial ascendente (afecta graves), tipica del hidrops/Meniere. En ECochG la razon SP/AP esta elevada.",
+      "lesions": [
+        { "site": "Cochlear", "severity_db": 45.0, "profile": "LowFrequency" }
+      ]
+    },
+    {
+      "id": "cookie_bite",
+      "name": "Hipoacusia en U (cookie-bite)",
+      "description": "Perdida sensorial en frecuencias medias, tipica de etiologia genetica. Audiograma en forma de U.",
+      "lesions": [
+        { "site": "Cochlear", "severity_db": 45.0, "profile": "CookieBite" }
+      ]
+    },
+    {
       "id": "mixta",
       "name": "Hipoacusia mixta",
-      "description": "Componente conductivo + coclear coexistentes en el mismo oido.",
-      "ear": "Right",
-      "intensity_db_nhl": 85.0,
-      "sweeps": 2000,
-      "age_years": 45.0,
-      "sex": "Male",
+      "description": "Componente conductivo + coclear coexistentes: gap aereo-oseo sobre una coclea ya danada.",
       "lesions": [
         { "site": "Conductive", "severity_db": 30.0, "profile": "Flat" },
         { "site": "Cochlear", "severity_db": 40.0, "profile": "Flat" }
       ]
     },
+
     {
       "id": "neurinoma",
-      "name": "Neurinoma del acustico (retrococlear)",
-      "description": "Lesion del VIII par. Alarga selectivamente las ondas tardias: aumenta el intervalo I-V y baja la razon V/I.",
-      "ear": "Left",
-      "intensity_db_nhl": 85.0,
-      "sweeps": 3000,
-      "age_years": 55.0,
-      "sex": "Female",
+      "name": "Schwannoma vestibular (neurinoma)",
+      "description": "Tumor del VIII par. ABR: intervalo I-V alargado y razon V/I baja; ondas tardias retrasadas o ausentes con onda I preservada. Examen clave para el screening retrococlear.",
       "lesions": [
-        { "site": "Retrocochlear", "severity_db": 35.0, "profile": "Flat" }
+        { "site": "Retrocochlear", "severity_db": 40.0, "profile": "Flat" }
       ]
     },
     {
       "id": "neuropatia",
       "name": "Neuropatia / desincronia auditiva",
-      "description": "Desincronia neural. ABR ausente o muy anomalo pese a funcion coclear (CM) conservada.",
-      "ear": "Right",
-      "intensity_db_nhl": 90.0,
-      "sweeps": 4000,
-      "age_years": 8.0,
-      "sex": "Male",
+      "description": "Desincronia neural. ABR ausente o muy anomalo con funcion coclear (CM/OEA) conservada: disociacion ECochG-ABR. ASSR poco fiable.",
       "lesions": [
         { "site": "Neural", "severity_db": 60.0, "profile": "Flat" }
       ]
     },
     {
-      "id": "neonatal_normal",
-      "name": "Recien nacido normal",
-      "description": "Neonato sano. Latencias largas por mielinizacion incompleta; el intervalo I-V tambien esta alargado.",
-      "ear": "Right",
-      "intensity_db_nhl": 80.0,
-      "sweeps": 2000,
-      "age_years": 0.05,
-      "sex": "Female",
-      "lesions": []
-    },
-    {
-      "id": "meniere",
-      "name": "Enfermedad de Meniere (ECochG)",
-      "description": "Hidrops endolinfatico. Electrococleografia con razon SP/AP elevada por aumento del potencial de sumacion.",
-      "modality": "ECochG",
-      "ear": "Left",
-      "intensity_db_nhl": 90.0,
-      "sweeps": 1500,
-      "age_years": 45.0,
-      "sex": "Female",
+      "id": "esclerosis_multiple",
+      "name": "Esclerosis multiple (desmielinizacion)",
+      "description": "Desmielinizacion del tronco: prolonga la conduccion central. ABR con intervalo III-V (e I-V) alargado preservando la porcion periferica I-III. Hallazgo neurologico tipico.",
       "lesions": [
-        { "site": "Cochlear", "severity_db": 40.0, "profile": "LowFrequency" }
+        { "site": "CentralConduction", "severity_db": 45.0, "profile": "Flat" }
       ]
     },
     {
-      "id": "mlr_adulto_normal",
-      "name": "MLR adulto normal",
-      "description": "Respuesta de latencia media normal: Na-Pa-Nb-Pb presentes, Pa robusta.",
-      "modality": "Mlr",
-      "ear": "Right",
-      "intensity_db_nhl": 70.0,
-      "sweeps": 800,
-      "age_years": 30.0,
-      "sex": "Female",
-      "lesions": []
+      "id": "lesion_tronco",
+      "name": "Lesion de tronco (ictus / tumor)",
+      "description": "Bloqueo de la via en el tronco a nivel intermedio. ABR: la onda V (rostral) desaparece mientras I-III se conservan; localiza el nivel de la lesion.",
+      "lesions": [
+        { "site": "Brainstem", "severity_db": 55.0, "profile": "Flat" }
+      ]
     },
     {
-      "id": "mlr_nino_inmaduro",
-      "name": "MLR nino (Pa inmadura)",
-      "description": "La Pa madura hacia los 10-12 años; en el nino pequeño es de menor amplitud.",
-      "modality": "Mlr",
-      "ear": "Right",
-      "intensity_db_nhl": 70.0,
-      "sweeps": 800,
-      "age_years": 3.0,
-      "sex": "Male",
-      "lesions": []
+      "id": "muerte_encefalica",
+      "name": "Muerte encefalica",
+      "description": "Cese de la actividad de tronco. ABR: solo sobrevive la onda I (coclea / porcion distal del VIII); todas las ondas centrales (II-V) y las corticales estan ausentes. Confirmacion objetiva.",
+      "lesions": [
+        { "site": "Brainstem", "severity_db": 100.0, "profile": "Flat" }
+      ]
     },
     {
-      "id": "mlr_sedado",
-      "name": "MLR bajo sedacion",
-      "description": "La sedacion atenua la respuesta cortical de latencia media.",
-      "modality": "Mlr",
-      "ear": "Right",
-      "intensity_db_nhl": 70.0,
-      "sweeps": 800,
-      "age_years": 40.0,
-      "sex": "Male",
-      "state": "Sedated",
-      "lesions": []
+      "id": "tpac",
+      "name": "Trastorno de procesamiento auditivo central (TPAC)",
+      "description": "Defecto del procesamiento cortical con tronco indemne. ABR normal; las respuestas corticales (MLR Pa, ALR N1) estan atenuadas aun despierto y atento.",
+      "lesions": [
+        { "site": "Cortical", "severity_db": 50.0, "profile": "Flat" }
+      ]
     },
     {
-      "id": "alr_despierto_pasivo",
-      "name": "ALR adulto despierto (pasivo)",
-      "description": "Complejo P1-N1-P2-N2 cortical en vigilia, sin atender al estimulo.",
-      "modality": "Alr",
-      "ear": "Right",
-      "intensity_db_nhl": 60.0,
-      "sweeps": 200,
-      "age_years": 30.0,
-      "sex": "Female",
-      "state": "Awake",
-      "attention": "Passive",
-      "lesions": []
-    },
-    {
-      "id": "alr_atento",
-      "name": "ALR atendiendo al estimulo",
-      "description": "Atender al estimulo realza la N1 respecto a la condicion pasiva.",
-      "modality": "Alr",
-      "ear": "Right",
-      "intensity_db_nhl": 60.0,
-      "sweeps": 200,
-      "age_years": 30.0,
-      "sex": "Female",
-      "state": "Awake",
-      "attention": "Active",
-      "lesions": []
-    },
-    {
-      "id": "alr_dormido",
-      "name": "ALR en sueno",
-      "description": "El sueno atenua marcadamente la respuesta cortical tardia.",
-      "modality": "Alr",
-      "ear": "Right",
-      "intensity_db_nhl": 60.0,
-      "sweeps": 200,
-      "age_years": 30.0,
-      "sex": "Female",
-      "state": "NaturalSleep",
-      "attention": "Passive",
-      "lesions": []
-    },
-    {
-      "id": "p300_atento",
-      "name": "P300 atendiendo (cuenta los raros)",
-      "description": "Paradigma oddball con atencion activa: emerge la P3b en la onda diferencia.",
-      "modality": "P300",
-      "ear": "Right",
-      "intensity_db_nhl": 70.0,
-      "sweeps": 300,
-      "age_years": 30.0,
-      "sex": "Female",
-      "state": "Awake",
-      "attention": "Active",
-      "lesions": []
-    },
-    {
-      "id": "p300_ignorando",
-      "name": "P300 ignorando el estimulo",
-      "description": "Mismo oddball pero sin atender: la P3b desaparece y persiste la MMN preatencional.",
-      "modality": "P300",
-      "ear": "Right",
-      "intensity_db_nhl": 70.0,
-      "sweeps": 300,
-      "age_years": 30.0,
-      "sex": "Female",
-      "state": "Awake",
-      "attention": "Ignoring",
-      "lesions": []
-    },
-    {
-      "id": "mmn_basico",
-      "name": "MMN (negatividad de disparidad)",
-      "description": "Respuesta preatencional a un desviante; util en sujetos que no colaboran.",
-      "modality": "Mmn",
-      "ear": "Right",
-      "intensity_db_nhl": 70.0,
-      "sweeps": 300,
-      "age_years": 30.0,
-      "sex": "Female",
-      "state": "Awake",
-      "attention": "Ignoring",
-      "lesions": []
-    },
-    {
-      "id": "assr_normal",
-      "name": "ASSR normal (80 Hz)",
-      "description": "Respuesta de estado estable de tronco (80 Hz) presente: estimacion objetiva de umbral.",
-      "modality": "Assr",
-      "ear": "Right",
-      "intensity_db_nhl": 80.0,
-      "sweeps": 200,
-      "age_years": 30.0,
-      "sex": "Female",
-      "state": "Awake",
-      "lesions": []
-    },
-    {
-      "id": "assr_lactante_dormido",
-      "name": "ASSR lactante dormido (80 Hz)",
-      "description": "El 80 Hz es robusto en sueno: de eleccion para estimar umbrales en el lactante.",
-      "modality": "Assr",
-      "ear": "Right",
-      "intensity_db_nhl": 80.0,
-      "sweeps": 200,
-      "age_years": 0.3,
-      "sex": "Male",
-      "state": "NaturalSleep",
-      "lesions": []
+      "id": "deterioro_cognitivo",
+      "name": "Deterioro cognitivo (demencia)",
+      "description": "Afectacion cognitiva. P300: P3b de latencia alargada y amplitud reducida pese a atencion conservada. ABR y respuestas sensoriales normales.",
+      "lesions": [
+        { "site": "Cognitive", "severity_db": 50.0, "profile": "Flat" }
+      ]
     }
   ]
 }

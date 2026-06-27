@@ -133,7 +133,7 @@ pub enum SimOutput {
     Assr(AssrResult),
 }
 
-/// Resumen de un caso del catalogo.
+/// Resumen de un paciente del catalogo (sin examen: el examen lo elige el equipo).
 #[derive(Debug, Clone, Serialize)]
 pub struct CaseInfo {
     /// Identificador estable.
@@ -142,10 +142,8 @@ pub struct CaseInfo {
     pub name: String,
     /// Descripcion didactica.
     pub description: String,
-    /// Modalidad ("Abr"/"ECochG"/...).
-    pub modality: String,
-    /// Oido explorado ("OD"/"OI").
-    pub ear: String,
+    /// Resumen corto de la patologia ("Normal", "Cochlear 50 dB ...").
+    pub summary: String,
 }
 
 // --- Construccion de tipos del motor ---
@@ -187,6 +185,10 @@ fn parse_site(s: &str) -> LesionSite {
         "Retrocochlear" => LesionSite::Retrocochlear,
         "Neural" => LesionSite::Neural,
         "Central" => LesionSite::Central,
+        "CentralConduction" => LesionSite::CentralConduction,
+        "Brainstem" => LesionSite::Brainstem,
+        "Cortical" => LesionSite::Cortical,
+        "Cognitive" => LesionSite::Cognitive,
         _ => LesionSite::Cochlear,
     }
 }
@@ -200,7 +202,7 @@ fn parse_profile(s: &str) -> FreqProfile {
     }
 }
 
-fn build_subject(p: &SubjectParams, ear: Ear) -> Subject {
+pub(crate) fn build_subject(p: &SubjectParams, ear: Ear) -> Subject {
     let mut subject = Subject {
         age: Age::Years { value: p.age_years },
         sex: parse_sex(&p.sex),
@@ -372,7 +374,7 @@ fn audiogram(
 }
 
 
-/// Lista los casos clinicos del catalogo embebido.
+/// Lista los pacientes del catalogo embebido.
 #[tauri::command]
 fn list_cases() -> Vec<CaseInfo> {
     let catalog = CaseCatalog::embedded();
@@ -383,32 +385,9 @@ fn list_cases() -> Vec<CaseInfo> {
             id: c.id.clone(),
             name: c.name.clone(),
             description: c.description.clone(),
-            modality: c.modality.clone(),
-            ear: c.ear().label().to_string(),
+            summary: c.summary(),
         })
         .collect()
-}
-
-/// Ejecuta un caso del catalogo (sujeto + protocolo predefinidos).
-#[tauri::command]
-fn run_case(id: String) -> Result<SimOutput, String> {
-    let catalog = CaseCatalog::embedded();
-    let case = catalog
-        .get(&id)
-        .ok_or_else(|| format!("caso desconocido: {id}"))?;
-    let subject = case.subject();
-    let protocol = case.protocol();
-
-    let out = match protocol.modality {
-        aep_core::Modality::P300 | aep_core::Modality::Mmn => {
-            SimOutput::Oddball(EvokedPotentialEngine::simulate_oddball(&protocol, &subject))
-        }
-        aep_core::Modality::Assr => {
-            SimOutput::Assr(EvokedPotentialEngine::simulate_assr(&protocol, &subject))
-        }
-        _ => SimOutput::Transient(EvokedPotentialEngine::simulate(&protocol, &subject)),
-    };
-    Ok(out)
 }
 
 /// Punto de entrada de la app Tauri.
@@ -420,15 +399,21 @@ pub fn run() {
             capture,
             audiogram,
             list_cases,
-            run_case,
             // Clínico (G0: invariante verdad/ciego)
             clinical::cargar_caso,
+            clinical::cargar_caso_def,
+            clinical::obtener_caso_def,
+            clinical::preview_caso,
             clinical::capturar_clinico,
+            clinical::capturar_oddball_clinico,
+            clinical::capturar_assr_clinico,
             clinical::iniciar_captura_clinica,
             clinical::detener_captura,
             clinical::docente_desbloquear,
             clinical::docente_relock,
+            clinical::quitar_caso,
             clinical::ver_verdad,
+            clinical::calificar,
             clinical::estado_sesion,
         ])
         .run(tauri::generate_context!())

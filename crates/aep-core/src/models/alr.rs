@@ -80,6 +80,9 @@ impl ResponseModel for AlrModel {
 
         let sf = state_factor(subject.state);
         let af = attention_factor(subject.attention);
+        // Eje central: TPAC/cortical (y la muerte encefalica) atenuan la respuesta
+        // cortical tardia aun despierto y atento.
+        let central_keep = super::central_cortical_keep(subject.lesions_on(ear));
 
         let mut comps = Vec::with_capacity(self.norms.waves.len());
         for w in &self.norms.waves {
@@ -91,7 +94,7 @@ impl ResponseModel for AlrModel {
                 w.generator.clone(),
             );
             apply_intensity(&mut c, effective, effective, self.norms.reference_db_nhl);
-            c.amplitude_uv *= sf;
+            c.amplitude_uv *= sf * central_keep;
             // La atencion realza los componentes negativos tardios (N1/N2).
             if c.label == "N1" || c.label == "N2" {
                 c.amplitude_uv *= af;

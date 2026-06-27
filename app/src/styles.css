@@ -612,3 +612,339 @@ select.abr-set {
   color: #aaa;
   font-size: 11px;
 }
+
+/* --- Modal docente + editor de casos --- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+.modal-card {
+  width: 100%;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-x {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+}
+.modal-x:hover {
+  color: var(--text);
+}
+.modal-body {
+  padding: 12px 14px;
+  overflow-y: auto;
+}
+.modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+}
+.modal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.tabbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+.tab {
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  font-size: 13px;
+}
+.tab.active {
+  color: var(--text);
+  background: var(--panel-2);
+  border-color: var(--border);
+  font-weight: 600;
+}
+.modal-cases {
+  max-height: 320px;
+  overflow-y: auto;
+}
+.modal-cases .case-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+}
+.case-pick {
+  flex: 1;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+/* Editor */
+.case-editor input[type="text"],
+.case-editor input[type="number"],
+.case-editor textarea {
+  width: 100%;
+  padding: 4px 8px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+}
+/* Selects del editor: mismo look compacto que el equipo del alumno. */
+.case-editor select {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 26px;
+  padding: 0 18px 0 8px;
+  font-size: 12px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='6'><path d='M0 0l4 5 4-5z' fill='%239aa0b4'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+}
+.editor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.lesion-block {
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding-top: 8px;
+}
+.lesion-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.lesion-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 8px;
+}
+.danger-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.editor-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.verdad-box {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px dashed var(--accent);
+  border-radius: 8px;
+  background: rgba(54, 179, 126, 0.06);
+}
+
+/* --- Slots OD/OI + catálogo arrastrable --- */
+.slot-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.slot {
+  border: 1.5px dashed var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  min-height: 64px;
+  background: var(--panel-2);
+  transition: border-color 0.12s, background 0.12s;
+}
+.slot.slot-od {
+  border-color: rgba(232, 97, 95, 0.5);
+}
+.slot.slot-oi {
+  border-color: rgba(74, 163, 255, 0.5);
+}
+.slot.over {
+  background: rgba(54, 179, 126, 0.1);
+  border-style: solid;
+  border-color: var(--accent);
+}
+.slot-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.slot-tag {
+  font-weight: 800;
+  font-size: 13px;
+}
+.slot-od .slot-tag {
+  color: #e8615f;
+}
+.slot-oi .slot-tag {
+  color: #4aa3ff;
+}
+.slot-case .cname {
+  font-weight: 600;
+  font-size: 13px;
+}
+.slot-case .cmeta {
+  font-size: 11px;
+  color: var(--muted);
+}
+.slot-empty {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.catalog-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.catalog-filters .search {
+  flex: 1;
+  padding: 6px 8px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.catalog-filters select {
+  width: auto;
+}
+.case-drag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: grab;
+}
+.case-drag:active {
+  cursor: grabbing;
+}
+.drag-grip {
+  color: var(--muted);
+  font-size: 14px;
+}
+.case-info {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --- Informe (estilo papel) --- */
+.report-print {
+  background: #fff;
+  color: #111;
+  padding: 16px 18px;
+  border-radius: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.report-print h2 {
+  font-size: 16px;
+  margin: 14px 0 4px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 2px;
+}
+.report-print h3 {
+  font-size: 13px;
+  margin: 8px 0 2px;
+  color: #333;
+}
+.report-print .muted {
+  color: #666;
+  font-size: 12px;
+}
+.report-print table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 4px 0 8px;
+  font-size: 12px;
+}
+.report-print th,
+.report-print td {
+  border: 1px solid #ccc;
+  padding: 3px 6px;
+  text-align: center;
+}
+.report-print th {
+  background: #f1f1f1;
+}
+.report-impresion {
+  width: 100%;
+  padding: 6px 8px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+}
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .report-print,
+  .report-print * {
+    visibility: visible;
+  }
+  .modal-backdrop {
+    background: #fff;
+  }
+  .report-print {
+    position: fixed;
+    inset: 0;
+    max-height: none;
+    overflow: visible;
+    border-radius: 0;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Selector compacto del gráfico L-I */
+.li-sel {
+  width: auto;
+  height: 22px;
+  padding: 0 6px;
+  font-size: 11px;
+}

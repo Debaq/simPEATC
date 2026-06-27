@@ -2,34 +2,59 @@ import { useEffect, useRef, useState } from "react";
 import { Channel } from "@tauri-apps/api/core";
 import type {
   AbrCurve,
+  AssrCap,
   CapMsg,
+  CaseDef,
   CaseInfo,
   EarSide,
   FspPoint,
   Mark,
+  Modality,
   Modo,
+  OddballCap,
   SimParams,
   SubjectParams,
   VerdadDto,
   VistaCiegaCaso,
   Waveform,
 } from "../types";
+import type { DiagEar } from "../types";
 import {
-  cargarCaso,
+  calificar,
+  capturarAssrClinico,
+  capturarOddballClinico,
+  cargarCasoDef,
   detenerCaptura,
   docenteDesbloquear,
   docenteRelock,
   iniciarCapturaClinica,
   listCases,
+  obtenerCasoDef,
+  quitarCaso,
   verVerdad,
 } from "../api";
 import AbrGraph from "../charts/AbrGraph";
 import FspGraph from "../charts/FspGraph";
 import EegMonitor from "../charts/EegMonitor";
+import LatencyIntensityChart from "../charts/LatencyIntensityChart";
+import Modal from "./Modal";
 import EquipmentPanel, { DEFAULT_EQUIPO } from "./EquipmentPanel";
-import { ChipGroup } from "./widgets";
+import OddballView from "./OddballView";
+import AssrView from "./AssrView";
+import TeachingModal from "./TeachingModal";
+import AnswerModal from "./AnswerModal";
+import ReportModal from "./ReportModal";
+
+// Familia de resultado según el examen: cada una tiene su vista.
+type Family = "transient" | "oddball" | "assr";
+function familyOf(m: Modality): Family {
+  if (m === "P300" || m === "Mmn") return "oddball";
+  if (m === "Assr") return "assr";
+  return "transient";
+}
 import { num } from "../lib/format";
 import { loadDraft, saveDraft } from "../lib/draft";
+import { blankCase } from "../lib/caseFile";
 import { upsertMark } from "../lib/marking";
 import { allWavesOrdered, markSetWaves } from "../lib/marksets";
 
@@ -57,17 +82,15 @@ const DEFAULT_EQUIPO_PARAMS: SimParams = {
   subject: DUMMY_SUBJECT,
 };
 
-const MODO_OPTS: { value: Modo; label: string }[] = [
-  { value: "practica", label: "Práctica" },
-  { value: "evaluacion", label: "Evaluación" },
-  { value: "osce", label: "OSCE" },
-];
-
 export default function ClinicalPanel() {
   const draft = loadDraft();
   const [modo, setModo] = useState<Modo>(draft?.modo ?? "practica");
   const [cases, setCases] = useState<CaseInfo[]>([]);
-  const [blind, setBlind] = useState<VistaCiegaCaso | null>(null);
+  // Caso cargado por oído (slots OD/OI): paciente binaural con patologías asimétricas.
+  const [blindByEar, setBlindByEar] = useState<Record<EarSide, VistaCiegaCaso | null>>({
+    Right: null,
+    Left: null,
+  });
   const [equipo, setEquipo] = useState<SimParams>(draft?.equipo ?? DEFAULT_EQUIPO_PARAMS);
   const [guardado, setGuardado] = useState(false);
 
@@ -88,8 +111,10 @@ export default function ClinicalPanel() {
   const [capturingEar, setCapturingEar] = useState<EarSide | null>(null);
   const liveFspRef = useRef<FspPoint[]>([]);
 
-  // Pila de curvas ABR (apilado manual) + marcado.
-  const [curves, setCurves] = useState<AbrCurve[]>([]);
+  // Resultados por familia (batería del paciente).
+  const [curves, setCurves] = useState<AbrCurve[]>([]); // transitorios (ABR/ECochG/MLR/ALR)
+  const [oddballs, setOddballs] = useState<OddballCap[]>([]); // P300/MMN
+  const [assrs, setAssrs] = useState<AssrCap[]>([]); // ASSR
   // Curva activa POR OÍDO (binaural): se recuerda la última de cada lado.
   const [activeByEar, setActiveByEar] = useState<Record<EarSide, string | null>>({
     Right: null,
@@ -103,7 +128,34 @@ export default function ClinicalPanel() {
   // Rol docente.
   const [pin, setPin] = useState("");
   const [docente, setDocente] = useState(false);
-  const [verdad, setVerdad] = useState<VerdadDto | null>(null);
+  const [verdades, setVerdades] = useState<VerdadDto[]>([]);
+
+  // Área docente (modal): visibilidad + borrador del editor de casos.
+  const [showTeach, setShowTeach] = useState(false);
+  const [editDef, setEditDef] = useState<CaseDef>(blankCase());
+
+  // Evaluación: panel de respuesta del alumno.
+  const [showAnswer, setShowAnswer] = useState(false);
+
+  // Gráfico latencia-intensidad (ABR).
+  const [showLI, setShowLI] = useState(false);
+
+  // Informe (lo redacta el estudiante).
+  const [showReport, setShowReport] = useState(false);
+
+  // Arma la entrega y la califica contra la verdad oculta del backend.
+  function onCalificar(diagnosticos: DiagEar[]) {
+    const marcas = curves.flatMap((c) =>
+      c.marks.map((m) => ({
+        ear: c.ear,
+        modality: c.modality,
+        intensity_db: c.intensity,
+        label: m.label,
+        t_ms: m.t_ms,
+      }))
+    );
+    return calificar({ sujeto: equipo.subject, diagnosticos, marcas });
+  }
 
   useEffect(() => {
     listCases().then(setCases).catch(console.error);
@@ -130,25 +182,92 @@ export default function ClinicalPanel() {
     return () => clearTimeout(t);
   }, [modo, equipo]);
 
-  async function load(c: CaseInfo) {
-    setCurves([]);
-    setActiveByEar({ Right: null, Left: null });
-    setLiveMean(null);
-    setLiveReplica(null);
-    liveReplicaRef.current = null;
-    setLiveEpoch(null);
-    setLiveFsp([]);
-    liveFspRef.current = [];
-    setCapturingEar(null);
-    try {
-      setBlind(await cargarCaso(c.id, modo));
-    } catch (e) {
-      console.error(e);
+  // Limpia los resultados de UN oído (preserva el otro slot, binaural).
+  function resetCapturaEar(ear: EarSide) {
+    setCurves((cs) => cs.filter((c) => c.ear !== ear));
+    setOddballs((o) => o.filter((c) => c.ear !== ear));
+    setAssrs((a) => a.filter((c) => c.ear !== ear));
+    setActiveByEar((p) => ({ ...p, [ear]: null }));
+    if (capturingEar === ear) {
+      setLiveMean(null);
+      setLiveReplica(null);
+      liveReplicaRef.current = null;
+      setLiveEpoch(null);
+      setLiveFsp([]);
+      liveFspRef.current = [];
     }
   }
 
+  // Tras cargar/quitar un caso, si el rol docente está abierto refresca la verdad.
+  async function refrescarVerdad() {
+    if (docente) setVerdades(await verVerdad().catch(() => []));
+  }
+
+  // Carga un paciente en el slot `ear`; preserva el otro oído (binaural).
+  async function loadDef(def: CaseDef, ear: EarSide) {
+    resetCapturaEar(ear);
+    const vista = await cargarCasoDef(def, ear, modo);
+    setBlindByEar((p) => ({ ...p, [ear]: vista }));
+    await refrescarVerdad();
+  }
+
+  // Vacía el slot de un oído → vuelve a paciente normal por defecto en ese oído.
+  async function removeEar(ear: EarSide) {
+    await quitarCaso(ear).catch(() => {});
+    setBlindByEar((p) => ({ ...p, [ear]: null }));
+    resetCapturaEar(ear);
+    await refrescarVerdad();
+  }
+
+  // Despacha la captura según la familia del examen activo.
   async function capturar() {
-    if (!blind || capturing) return;
+    if (capturing) return;
+    const fam = familyOf(equipo.modality);
+    if (fam === "oddball") return capturarOddball();
+    if (fam === "assr") return capturarAssr();
+    return capturarTransitorio();
+  }
+
+  // Oddball (P300/MMN): captura one-shot, se acumula por (oído, examen).
+  async function capturarOddball() {
+    setCapturing(true);
+    try {
+      const rec = await capturarOddballClinico(equipo);
+      setOddballs((o) => [
+        ...o,
+        {
+          id: `o${idSeq.current++}`,
+          ear: equipo.ear,
+          modality: equipo.modality,
+          intensity: equipo.intensity_db,
+          rec,
+        },
+      ]);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCapturing(false);
+    }
+  }
+
+  // ASSR: captura one-shot, se acumula por (oído, portadora).
+  async function capturarAssr() {
+    setCapturing(true);
+    try {
+      const result = await capturarAssrClinico(equipo);
+      setAssrs((a) => [
+        ...a,
+        { id: `a${idSeq.current++}`, ear: equipo.ear, intensity: equipo.intensity_db, result },
+      ]);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCapturing(false);
+    }
+  }
+
+  // Transitorio (ABR/ECochG/MLR/ALR): captura progresiva (promediación A/B).
+  async function capturarTransitorio() {
     setLiveEpoch(null);
     setLiveMean(null);
     setLiveReplica(null);
@@ -157,6 +276,7 @@ export default function ClinicalPanel() {
     setCapturing(true);
     const capEar = equipo.ear;
     const capInt = equipo.intensity_db;
+    const capMod = equipo.modality;
     setCapturingEar(capEar);
     liveFspRef.current = [];
     setLiveFsp([]);
@@ -193,12 +313,13 @@ export default function ClinicalPanel() {
           const id = `c${idSeq.current++}`;
           const fsp = liveFspRef.current;
           setCurves((cs) => {
-            const sameEar = cs.filter((c) => c.ear === capEar).length;
+            const sameEar = cs.filter((c) => c.ear === capEar && c.modality === capMod).length;
             return [
               ...cs,
               {
                 id,
                 ear: capEar,
+                modality: capMod,
                 intensity: capInt,
                 wave: mean,
                 gap: sameEar * 1.2,
@@ -234,12 +355,17 @@ export default function ClinicalPanel() {
   async function desbloquear() {
     const ok = await docenteDesbloquear(pin);
     setDocente(ok);
-    if (ok) setVerdad(await verVerdad().catch(() => null));
+    if (ok) {
+      setPin("");
+      setShowTeach(true);
+      setVerdades(await verVerdad().catch(() => []));
+    }
   }
   async function relock() {
     await docenteRelock();
     setDocente(false);
-    setVerdad(null);
+    setVerdades([]);
+    setShowTeach(false);
   }
 
   function onGap(id: string, gap: number) {
@@ -251,37 +377,63 @@ export default function ClinicalPanel() {
     );
   }
 
-  // Columnas de la tabla: unión de ondas marcadas (soporta ABR+ALR+MMN juntas);
-  // si aún no hay marcas, muestra el set activo como guía.
+  const fam = familyOf(equipo.modality);
+  // Curvas transitorias del examen activo (ABR y MLR no se mezclan: distinta ventana).
+  const transientCurves = curves.filter((c) => c.modality === equipo.modality);
+
+  // Columnas de la tabla: ondas marcadas en el examen activo; si no hay, el set guía.
   const present = allWavesOrdered().filter((w) =>
-    curves.some((c) => c.marks.some((m) => m.label === w))
+    transientCurves.some((c) => c.marks.some((m) => m.label === w))
   );
   const resultCols = present.length ? present : markSetWaves(markSetId);
 
+  // Intervalos interpico (ABR): aparecen cuando ambas ondas del par están marcadas.
+  const IP_PAIRS: [string, string][] = [
+    ["I", "III"],
+    ["III", "V"],
+    ["I", "V"],
+  ];
+  const ipShown = IP_PAIRS.filter(([a, b]) =>
+    transientCurves.some(
+      (c) => c.marks.some((m) => m.label === a) && c.marks.some((m) => m.label === b)
+    )
+  );
+  const ipVal = (c: AbrCurve, a: string, b: string): number | null => {
+    const ma = c.marks.find((m) => m.label === a);
+    const mb = c.marks.find((m) => m.label === b);
+    return ma && mb ? mb.t_ms - ma.t_ms : null;
+  };
+
   const fspFor = (ear: EarSide): FspPoint[] => {
     if (capturingEar === ear) return liveFsp;
-    const ac = curves.find((c) => c.id === activeByEar[ear]);
+    const ac = transientCurves.find((c) => c.id === activeByEar[ear]);
     return ac ? ac.fsp : [];
   };
 
   return (
     <div className="clin">
       <aside className="clin-side">
-        {/* Paciente (vista ciega) */}
-        {blind ? (
-          <div className="card" style={{ marginBottom: 8 }}>
-            <p className="section-title">
-              Paciente {blind.nombre ? `· ${blind.nombre}` : "(ciego)"}
-            </p>
-            <div className="hint">
-              {blind.ear} · {num(blind.age_years, 0)} a · {blind.sex} · {blind.modo}
-            </div>
-          </div>
-        ) : (
-          <div className="card hint" style={{ marginBottom: 8 }}>
-            El docente debe cargar un caso.
-          </div>
-        )}
+        {/* Paciente: patología por oído (slot). Slot vacío = oído normal. */}
+        <div className="card" style={{ marginBottom: 8 }}>
+          <p className="section-title">
+            Paciente · {modo} · {num(equipo.subject.age_years, 0)} a ·{" "}
+            {equipo.subject.sex === "Male" ? "M" : "F"}
+          </p>
+          {EARS.map((ear) => {
+            const b = blindByEar[ear];
+            const tag = ear === "Right" ? "OD" : "OI";
+            return (
+              <div key={ear} className="hint" style={{ marginTop: 2 }}>
+                <b style={{ color: ear === "Right" ? "#e8615f" : "#4aa3ff" }}>{tag}</b>:{" "}
+                {b ? (
+                  b.nombre ?? "(patología ciega)"
+                ) : (
+                  <span style={{ opacity: 0.7 }}>normal (sin patología)</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
 
         <EquipmentPanel params={equipo} onChange={setEquipo} />
 
@@ -291,18 +443,32 @@ export default function ClinicalPanel() {
             Detener ({prog.aceptados}/{prog.objetivo})
           </button>
         ) : (
-          <button className="primary" onClick={capturar} disabled={!blind}>
+          <button className="primary" onClick={capturar}>
             Capturar
           </button>
         )}
+
+        {modo !== "practica" && (
+          <button className="mini" style={{ width: "100%", marginTop: 6 }} onClick={() => setShowAnswer(true)}>
+            Responder y entregar
+          </button>
+        )}
+        <button className="mini" style={{ width: "100%", marginTop: 6 }} onClick={() => setShowReport(true)}>
+          Informe
+        </button>{" "}
 
         {/* Rol docente */}
         <div className="card" style={{ marginTop: 8 }}>
           <p className="section-title">Rol docente</p>
           {docente ? (
-            <button className="mini" onClick={relock}>
-              Bloquear
-            </button>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button className="mini" style={{ flex: 1 }} onClick={() => setShowTeach(true)}>
+                Área docente
+              </button>
+              <button className="mini" onClick={relock} title="Bloquear y entregar al alumno">
+                Bloquear
+              </button>
+            </div>
           ) : (
             <div style={{ display: "flex", gap: 6 }}>
               <input
@@ -334,115 +500,161 @@ export default function ClinicalPanel() {
       </aside>
 
       <main className="clin-main">
-        {/* Área DOCENTE: modo + caso + verdad (oculta al alumno) */}
-        {docente && (
-          <div className="card">
-            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-              <span className="section-title" style={{ margin: 0 }}>
-                Docente · Modo
-              </span>
-              <ChipGroup<Modo> value={modo} options={MODO_OPTS} onChange={setModo} />
-            </div>
-            <div className="case-list" style={{ marginTop: 8, maxHeight: 130, overflowY: "auto" }}>
-              {cases.map((c) => (
-                <button
-                  key={c.id}
-                  className="case-item"
-                  onClick={() => load(c)}
-                  style={blind?.id === c.id ? { borderColor: "var(--accent)" } : undefined}
-                >
-                  <span className="cname">{c.name}</span>
-                  <span className="cmeta"> · {c.modality} · {c.ear}</span>
-                </button>
-              ))}
-            </div>
-            {verdad && (
-              <p className="hint" style={{ marginTop: 6 }}>
-                Verdad: {verdad.descripcion} · Lesiones:{" "}
-                {verdad.lesiones.length ? verdad.lesiones.join(" · ") : "ninguna"} · Clave:{" "}
-                {verdad.verdad_picos.map((p) => `${p.label} ${num(p.latency_ms, 2)}`).join("  ") || "—"}
-              </p>
-            )}
-          </div>
-        )}
-
-        {capturing && (
+        {fam === "transient" && capturing && (
           <div className="hint" style={{ padding: "0 2px" }}>
             Promediando {prog.aceptados}/{prog.objetivo} · FSP {num(prog.fsp, 1)} · rechazadas{" "}
             {prog.rechazados}
           </div>
         )}
+        {fam !== "transient" && capturing && (
+          <div className="hint" style={{ padding: "0 2px" }}>Capturando {equipo.modality}…</div>
+        )}
 
-        {/* Fila superior: tabla de latencias (siempre visible) + EEG */}
-        <div className="toprow">
-          <div className="card results-card">
-            <table className="restab">
-              <thead>
-                <tr>
-                  <th>Oído</th>
-                  <th>dB</th>
-                  {resultCols.map((w) => (
-                    <th key={w}>{w}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {curves.length === 0 ? (
-                  <tr>
-                    <td colSpan={resultCols.length + 2} className="restab-empty">
-                      sin curvas — captura para ver latencias
-                    </td>
-                  </tr>
-                ) : (
-                  curves.map((c) => (
-                    <tr
-                      key={c.id}
-                      className={c.id === activeByEar[c.ear] ? "active" : ""}
-                      onClick={() => setActiveEar(c.ear, c.id)}
+        {fam === "oddball" ? (
+          <OddballView caps={oddballs.filter((c) => c.modality === equipo.modality)} />
+        ) : fam === "assr" ? (
+          <AssrView caps={assrs} />
+        ) : (
+          <>
+            {/* Fila superior: tabla de latencias del examen activo + EEG */}
+            <div className="toprow">
+              <div className="card results-card">
+                {equipo.modality === "Abr" && (
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
+                    <button
+                      className="mini on"
+                      onClick={() => setShowLI(true)}
+                      title="Función latencia-intensidad de la onda V"
                     >
-                      <td style={{ color: c.ear === "Right" ? "#e8615f" : "#4aa3ff", fontWeight: 700 }}>
-                        {c.ear === "Right" ? "OD" : "OI"}
-                      </td>
-                      <td>{num(c.intensity, 0)}</td>
-                      {resultCols.map((w) => {
-                        const m = c.marks.find((x) => x.label === w);
-                        return <td key={w}>{m ? num(m.t_ms, 2) : "—"}</td>;
-                      })}
-                    </tr>
-                  ))
+                      📈 Latencia / Intensidad
+                    </button>
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
-          <EegMonitor wave={capturing ? liveEpoch : null} ear={equipo.ear} />
-        </div>
-
-        {/* Gráficos OD / OI */}
-        <div className="abr-pair">
-          {EARS.map((ear) => (
-            <div className="abr-panel" key={ear}>
-              <div style={{ flex: 1, minHeight: 0 }}>
-                <AbrGraph
-                  ear={ear}
-                  curves={curves.filter((c) => c.ear === ear)}
-                  activeId={activeByEar[ear]}
-                  onActive={(id) => setActiveEar(ear, id)}
-                  onGap={onGap}
-                  onMark={onMark}
-                  liveMean={capturing && equipo.ear === ear ? liveMean : null}
-                  liveReplica={capturing && equipo.ear === ear ? liveReplica : null}
-                  ghost={capturing && equipo.ear === ear ? liveEpoch : null}
-                  preMs={equipo.equipo?.pre_ms ?? 1}
-                  postMs={equipo.equipo?.post_ms ?? 10}
-                  markSetId={markSetId}
-                  onMarkSet={setMarkSetId}
-                />
+                <table className="restab">
+                  <thead>
+                    <tr>
+                      <th>Oído</th>
+                      <th>dB</th>
+                      {resultCols.map((w) => (
+                        <th key={w}>{w}</th>
+                      ))}
+                      {ipShown.map(([a, b]) => (
+                        <th key={`ip${a}${b}`} style={{ color: "var(--accent)" }}>
+                          {a}–{b}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transientCurves.length === 0 ? (
+                      <tr>
+                        <td colSpan={resultCols.length + ipShown.length + 2} className="restab-empty">
+                          sin curvas — captura {equipo.modality} para ver latencias
+                        </td>
+                      </tr>
+                    ) : (
+                      transientCurves.map((c) => (
+                        <tr
+                          key={c.id}
+                          className={c.id === activeByEar[c.ear] ? "active" : ""}
+                          onClick={() => setActiveEar(c.ear, c.id)}
+                        >
+                          <td style={{ color: c.ear === "Right" ? "#e8615f" : "#4aa3ff", fontWeight: 700 }}>
+                            {c.ear === "Right" ? "OD" : "OI"}
+                          </td>
+                          <td>{num(c.intensity, 0)}</td>
+                          {resultCols.map((w) => {
+                            const m = c.marks.find((x) => x.label === w);
+                            return <td key={w}>{m ? num(m.t_ms, 2) : "—"}</td>;
+                          })}
+                          {ipShown.map(([a, b]) => {
+                            const v = ipVal(c, a, b);
+                            return (
+                              <td key={`ip${a}${b}`} style={{ color: "var(--accent)" }}>
+                                {v != null ? num(v, 2) : "—"}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
-              <FspGraph data={fspFor(ear)} ear={ear} />
+              <EegMonitor wave={capturing ? liveEpoch : null} ear={equipo.ear} />
             </div>
-          ))}
-        </div>
+
+            {/* Gráficos OD / OI del examen activo */}
+            <div className="abr-pair">
+              {EARS.map((ear) => (
+                <div className="abr-panel" key={ear}>
+                  <div style={{ flex: 1, minHeight: 0 }}>
+                    <AbrGraph
+                      ear={ear}
+                      curves={transientCurves.filter((c) => c.ear === ear)}
+                      activeId={activeByEar[ear]}
+                      onActive={(id) => setActiveEar(ear, id)}
+                      onGap={onGap}
+                      onMark={onMark}
+                      liveMean={capturing && equipo.ear === ear ? liveMean : null}
+                      liveReplica={capturing && equipo.ear === ear ? liveReplica : null}
+                      ghost={capturing && equipo.ear === ear ? liveEpoch : null}
+                      preMs={equipo.equipo?.pre_ms ?? 1}
+                      postMs={equipo.equipo?.post_ms ?? 10}
+                      markSetId={markSetId}
+                      onMarkSet={setMarkSetId}
+                    />
+                  </div>
+                  <FspGraph data={fspFor(ear)} ear={ear} />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </main>
+
+      {showTeach && docente && (
+        <TeachingModal
+          modo={modo}
+          setModo={setModo}
+          cases={cases}
+          blindByEar={blindByEar}
+          verdades={verdades}
+          sessionVars={equipo.subject}
+          onSessionVars={(s) => setEquipo({ ...equipo, subject: s })}
+          editDef={editDef}
+          onEditDef={setEditDef}
+          onLoadDef={loadDef}
+          onFetchDef={(id) => obtenerCasoDef(id)}
+          onRemoveEar={removeEar}
+          onClose={() => setShowTeach(false)}
+        />
+      )}
+
+      {showAnswer && (
+        <AnswerModal onCalificar={onCalificar} onClose={() => setShowAnswer(false)} />
+      )}
+
+      {showReport && (
+        <ReportModal subject={equipo.subject} modo={modo} onClose={() => setShowReport(false)} />
+      )}
+
+      {showLI && (
+        <Modal title="ABR · función latencia-intensidad" onClose={() => setShowLI(false)} width={620}>
+          <div style={{ height: 360 }}>
+            <LatencyIntensityChart
+              curves={curves.filter((c) => c.modality === "Abr")}
+              subject={equipo.subject}
+              insert={(equipo.equipo?.transducer ?? "Insert") === "Insert"}
+            />
+          </div>
+          <p className="hint" style={{ marginTop: 6 }}>
+            Latencia de cada onda marcada vs. intensidad. La banda verde es la zona de normalidad
+            de la onda V (sujeto normal de la misma edad/condición); las marcas fuera de ella
+            sugieren patología.
+          </p>
+        </Modal>
+      )}
     </div>
   );
 }

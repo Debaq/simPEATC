@@ -15,6 +15,7 @@
 
 use crate::acquisition::Acquisition;
 use crate::component::Component;
+use crate::lesion::{Lesion, LesionSite};
 use crate::models::alr::AlrModel;
 use crate::models::ResponseModel;
 use crate::protocol::{Modality, Paradigm, Protocol};
@@ -60,13 +61,20 @@ impl CognitiveModel {
     ) -> Vec<Component> {
         let discrim = discriminability(standard, deviant);
         let years = subject.age.approx_years();
+        let ear = standard.ear;
+        // Eje central: TPAC/cortical (y muerte encefalica) suprimen las respuestas
+        // corticales de la diferencia; la afectacion cognitiva, ademas, alarga y
+        // baja selectivamente la P3b aun con atencion conservada.
+        let central_keep = super::central_cortical_keep(subject.lesions_on(ear));
+        let cog_amp = cognitive_amp(subject.lesions_on(ear));
+        let cog_lat = cognitive_latency(subject.lesions_on(ear));
         let mut comps = Vec::new();
 
         // MMN: preatencional (no depende de la atencion), escala con disparidad.
         comps.push(Component::gaussian(
             "MMN",
             180.0,
-            -1.5 * discrim,
+            -1.5 * discrim * central_keep,
             20.0,
             "Corteza auditiva (deteccion preatencional de disparidad)",
         ));
@@ -76,19 +84,20 @@ impl CognitiveModel {
             comps.push(Component::gaussian(
                 "P3a",
                 260.0,
-                0.8 * discrim,
+                0.8 * discrim * central_keep,
                 22.0,
                 "Corteza frontal (orientacion atencional)",
             ));
 
-            // P3b: requiere atencion activa; crece con la rareza y decae con edad.
+            // P3b: requiere atencion activa; crece con la rareza, decae con edad y
+            // con la afectacion cognitiva (que ademas la retrasa).
             let rarity = (1.0 - deviant_prob).clamp(0.0, 1.0);
             let att = p3b_attention(subject.attention);
-            let amp = 1.6 * discrim * rarity * att * p3b_age_amplitude(years);
+            let amp = 1.6 * discrim * rarity * att * p3b_age_amplitude(years) * central_keep * cog_amp;
             if amp > 1e-3 {
                 comps.push(Component::gaussian(
                     "P3b",
-                    320.0 + p3b_age_latency(years),
+                    320.0 + p3b_age_latency(years) + cog_lat,
                     amp,
                     35.0,
                     "Corteza parietal (actualizacion de contexto)",
@@ -97,6 +106,27 @@ impl CognitiveModel {
         }
         comps
     }
+}
+
+/// Atenuacion de la P3b por afectacion cognitiva (1.0 = intacta; 0 = ausente).
+fn cognitive_amp<'a>(lesions: impl Iterator<Item = &'a Lesion>) -> f64 {
+    lesions
+        .map(|l| {
+            if l.site == LesionSite::Cognitive {
+                (1.0 - l.severity_db / 80.0).clamp(0.0, 1.0)
+            } else {
+                1.0
+            }
+        })
+        .fold(1.0, f64::min)
+}
+
+/// Retraso (ms) de la P3b por afectacion cognitiva.
+fn cognitive_latency<'a>(lesions: impl Iterator<Item = &'a Lesion>) -> f64 {
+    lesions
+        .filter(|l| l.site == LesionSite::Cognitive)
+        .map(|l| l.severity_db * 0.6)
+        .fold(0.0, f64::max)
 }
 
 /// Discriminabilidad estandar/desviante en `[0.05, 1]` (por frecuencia o nivel).

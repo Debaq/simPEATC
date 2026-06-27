@@ -52,7 +52,7 @@ pub use audiometry::{
     estimate_audiogram, estimate_audiogram_chirp, estimate_audiogram_with, estimate_threshold,
     latency_intensity_curve,
 };
-pub use cases::{CaseCatalog, CaseDef};
+pub use cases::{CaseCatalog, CaseDef, CaseLesionDef};
 pub use component::{Component, ComponentShape, WavePeak};
 pub use engine::{CaptureSession, EvokedPotentialEngine};
 pub use lesion::{FreqProfile, Lesion, LesionSite};
