@@ -202,6 +202,22 @@ export type CapMsg =
     }
   | { event: "finalizada"; data: { aceptados: number; rechazados: number } };
 
+// Mensajes de captura oddball progresiva (P300/MMN), por tauri::ipc::Channel.
+export type OddCapMsg =
+  | { event: "iniciada"; data: { objetivo: number; timesMs: number[] } }
+  | {
+      event: "refresco";
+      data: {
+        aceptados: number;
+        rechazados: number;
+        fsp: number;
+        estandar: number[];
+        desviante: number[];
+        diferencia: number[];
+      };
+    }
+  | { event: "finalizada"; data: { aceptados: number; rechazados: number } };
+
 // --- Parametros de entrada ---
 
 export type Modality = "ECochG" | "Abr" | "Mlr" | "Alr" | "P300" | "Mmn" | "Assr";

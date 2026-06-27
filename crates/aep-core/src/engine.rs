@@ -405,6 +405,31 @@ impl CaptureSession {
         &self.last_epoch
     }
 
+    /// Construye una sesión a partir de componentes ya calculados (núcleo común;
+    /// lo usa también la captura oddball, que promedia dos flujos).
+    pub(crate) fn from_comps(
+        comps: Vec<Component>,
+        noise: NoiseProfile,
+        acq: &Acquisition,
+        base_seed: u64,
+    ) -> Self {
+        let n = acq.window.n_samples(acq.sample_rate_hz).max(2);
+        let times = synth::time_axis(&acq.window, n);
+        let sp_index = n / 2;
+        Self {
+            comps,
+            noise,
+            times,
+            filter_template: IirFilter::from_bandpass(&acq.filter, acq.sample_rate_hz),
+            artifact_reject_uv: acq.artifact_reject_uv,
+            base_seed,
+            avg: Averager::new(n, f64::INFINITY, sp_index),
+            produced: 0,
+            rejected: 0,
+            last_epoch: vec![0.0; n],
+        }
+    }
+
     /// Produce el siguiente sweep (síntesis → artefacto → rechazo → filtro →
     /// baseline → acumulación). Devuelve `true` si fue aceptado. Cuerpo idéntico
     /// al bucle de `average_response`, paso a paso.
@@ -426,6 +451,76 @@ impl CaptureSession {
         self.avg.add(&sweep);
         self.last_epoch = sweep;
         true
+    }
+}
+
+/// Sesión de captura progresiva **oddball** (P300/MMN): promedia en paralelo el
+/// flujo estándar y el desviante; la onda diferencia (desviante − estándar)
+/// emerge sweep a sweep, como en el equipo real. `None` si el protocolo no es
+/// oddball.
+pub struct OddballSession {
+    std: CaptureSession,
+    dev: CaptureSession,
+}
+
+impl OddballSession {
+    pub fn new_with_salt(protocol: &Protocol, subject: &Subject, salt: u64) -> Option<Self> {
+        let Paradigm::Oddball {
+            standard,
+            deviant,
+            deviant_prob,
+        } = protocol.paradigm
+        else {
+            return None;
+        };
+        if !matches!(protocol.modality, Modality::P300 | Modality::Mmn) {
+            return None;
+        }
+        let cog = CognitiveModel::new(protocol.modality);
+        let acq = &protocol.acquisition;
+        let noise = impedance_noise(NoiseProfile::new(2.0), acq);
+        let obligatory = cog.obligatory(&standard, subject);
+        let diff_comps = cog.difference(&standard, &deviant, deviant_prob, subject);
+        let std_comps = obligatory.clone();
+        let dev_comps: Vec<Component> = obligatory.into_iter().chain(diff_comps).collect();
+        let base = seed(protocol, subject) ^ salt.wrapping_mul(0x9E37_79B9_7F4A_7C15);
+        Some(Self {
+            std: CaptureSession::from_comps(std_comps, noise.clone(), acq, base ^ 0x5101),
+            dev: CaptureSession::from_comps(dev_comps, noise, acq, base ^ 0xD202),
+        })
+    }
+
+    /// Avanza un sweep en cada flujo.
+    pub fn step(&mut self) {
+        self.std.step();
+        self.dev.step();
+    }
+    /// Sweeps aceptados (mínimo de ambos flujos).
+    pub fn accepted(&self) -> u32 {
+        self.std.accepted().min(self.dev.accepted())
+    }
+    pub fn rejected(&self) -> u32 {
+        self.std.rejected() + self.dev.rejected()
+    }
+    pub fn times(&self) -> &[f64] {
+        self.dev.times()
+    }
+    pub fn standard(&self) -> Vec<f64> {
+        self.std.mean()
+    }
+    pub fn deviant(&self) -> Vec<f64> {
+        self.dev.mean()
+    }
+    pub fn difference(&self) -> Vec<f64> {
+        self.dev
+            .mean()
+            .iter()
+            .zip(self.std.mean().iter())
+            .map(|(d, s)| d - s)
+            .collect()
+    }
+    pub fn fsp(&self) -> f64 {
+        self.dev.fsp()
     }
 }
 

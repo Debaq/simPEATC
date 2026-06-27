@@ -54,7 +54,7 @@ pub use audiometry::{
 };
 pub use cases::{CaseCatalog, CaseDef, CaseLesionDef};
 pub use component::{Component, ComponentShape, WavePeak};
-pub use engine::{CaptureSession, EvokedPotentialEngine};
+pub use engine::{CaptureSession, EvokedPotentialEngine, OddballSession};
 pub use lesion::{FreqProfile, Lesion, LesionSite};
 pub use models::{model_for, ResponseModel};
 pub use modulation::{

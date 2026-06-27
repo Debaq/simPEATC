@@ -12,6 +12,8 @@ import type {
   Modality,
   Modo,
   OddballCap,
+  OddballRecording,
+  OddCapMsg,
   SimParams,
   SubjectParams,
   VerdadDto,
@@ -22,7 +24,7 @@ import type { DiagEar } from "../types";
 import {
   calificar,
   capturarAssrClinico,
-  capturarOddballClinico,
+  iniciarCapturaOddballClinica,
   cargarCasoDef,
   detenerCaptura,
   docenteDesbloquear,
@@ -234,25 +236,59 @@ export default function ClinicalPanel() {
     return capturarTransitorio();
   }
 
-  // Oddball (P300/MMN): captura one-shot, se acumula por (oído, examen).
+  // Oddball (P300/MMN): captura progresiva (promedia estándar y desviante; la onda
+  // diferencia emerge). Se acumula por (oído, examen) y queda marcable.
   async function capturarOddball() {
     setCapturing(true);
+    const id = `o${idSeq.current++}`;
+    const capEar = equipo.ear;
+    const capMod = equipo.modality;
+    const capInt = equipo.intensity_db;
+    setProg({ aceptados: 0, objetivo: equipo.sweeps, fsp: 0, rechazados: 0 });
+    let times: number[] = [];
+    const wf = (a: number[]): Waveform => ({ times_ms: times, amplitudes_uv: a });
+    const buildRec = (
+      estandar: number[],
+      desviante: number[],
+      diferencia: number[],
+      fsp: number,
+      acc: number,
+      rej: number
+    ): OddballRecording => ({
+      standard: wf(estandar),
+      deviant: wf(desviante),
+      difference: wf(diferencia),
+      detected: [],
+      fsp,
+      accepted_sweeps: acc,
+      rejected_sweeps: rej,
+    });
+
+    const channel = new Channel<OddCapMsg>();
+    channel.onmessage = (msg) => {
+      if (msg.event === "iniciada") {
+        times = msg.data.timesMs;
+        const z = times.map(() => 0);
+        setProg((p) => ({ ...p, objetivo: msg.data.objetivo }));
+        setOddballs((o) => [
+          ...o,
+          { id, ear: capEar, modality: capMod, intensity: capInt, rec: buildRec(z, z, z, 0, 0, 0), marks: [] },
+        ]);
+      } else if (msg.event === "refresco") {
+        const d = msg.data;
+        setProg((p) => ({ aceptados: d.aceptados, objetivo: p.objetivo, fsp: d.fsp, rechazados: d.rechazados }));
+        const rec = buildRec(d.estandar, d.desviante, d.diferencia, d.fsp, d.aceptados, d.rechazados);
+        setOddballs((o) => o.map((c) => (c.id === id ? { ...c, rec } : c)));
+      } else if (msg.event === "finalizada") {
+        setCapturing(false);
+      }
+    };
+
     try {
-      const rec = await capturarOddballClinico(equipo);
-      setOddballs((o) => [
-        ...o,
-        {
-          id: `o${idSeq.current++}`,
-          ear: equipo.ear,
-          modality: equipo.modality,
-          intensity: equipo.intensity_db,
-          rec,
-          marks: [],
-        },
-      ]);
+      const salt = Math.floor(Math.random() * 1_000_000_000);
+      await iniciarCapturaOddballClinica(equipo, channel, salt);
     } catch (e) {
       console.error(e);
-    } finally {
       setCapturing(false);
     }
   }

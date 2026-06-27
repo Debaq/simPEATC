@@ -406,6 +406,7 @@ pub fn run() {
             clinical::preview_caso,
             clinical::capturar_clinico,
             clinical::capturar_oddball_clinico,
+            clinical::iniciar_captura_oddball_clinica,
             clinical::capturar_assr_clinico,
             clinical::iniciar_captura_clinica,
             clinical::detener_captura,

@@ -13,7 +13,7 @@ use std::time::Duration;
 
 use aep_core::{
     AssrResult, CaptureSession, CaseCatalog, CaseDef, Ear, EvokedPotentialEngine, Lesion,
-    LesionSite, OddballRecording, Recording, Subject,
+    LesionSite, OddballRecording, OddballSession, Recording, Subject,
 };
 use serde::{Deserialize, Serialize};
 
@@ -454,6 +454,86 @@ pub fn iniciar_captura_clinica(
         let _ = channel.send(CapMsg::Finalizada {
             aceptados: a.accepted() + b.accepted(),
             rechazados: a.rejected() + b.rejected(),
+        });
+    });
+    Ok(())
+}
+
+/// Mensaje de captura oddball en vivo: promedios estándar/desviante + diferencia.
+#[derive(Clone, Serialize)]
+#[serde(
+    tag = "event",
+    content = "data",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
+pub enum OddCapMsg {
+    Iniciada { objetivo: u32, times_ms: Vec<f64> },
+    Refresco {
+        aceptados: u32,
+        rechazados: u32,
+        fsp: f64,
+        estandar: Vec<f64>,
+        desviante: Vec<f64>,
+        diferencia: Vec<f64>,
+    },
+    Finalizada { aceptados: u32, rechazados: u32 },
+}
+
+/// Captura oddball progresiva (P300/MMN): un hilo promedia en paralelo el flujo
+/// estándar y el desviante; la onda diferencia emerge sweep a sweep por `channel`.
+#[tauri::command]
+pub fn iniciar_captura_oddball_clinica(
+    params: SimParams,
+    channel: tauri::ipc::Channel<OddCapMsg>,
+    salt: u64,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    let ear = parse_ear(&params.ear);
+    let (lesions, cancel) = {
+        let mut s = state.lock().unwrap();
+        let lesions = s.truth_for(ear).map(|t| t.lesions.clone()).unwrap_or_default();
+        let cancel = Arc::new(AtomicBool::new(false));
+        s.cancel = cancel.clone();
+        (lesions, cancel)
+    };
+    let subject = subject_para_captura(&params, ear, lesions);
+    let protocol = build_protocol(&params, ear);
+    let target = protocol.acquisition.sweeps.max(2);
+    let mut sess = OddballSession::new_with_salt(&protocol, &subject, salt)
+        .ok_or("modalidad no soportada para captura oddball")?;
+
+    thread::spawn(move || {
+        const MAX_PTS: usize = 600;
+        let idx = decim_indices(sess.times().len(), MAX_PTS);
+        let _ = channel.send(OddCapMsg::Iniciada {
+            objetivo: target,
+            times_ms: pick(sess.times(), &idx),
+        });
+        let refresh_every = (target / 120).max(1);
+        let max_attempts = target.saturating_mul(3).max(target + 200);
+        let mut attempts = 0u32;
+        let mut last_emit = 0u32;
+        while sess.accepted() < target && attempts < max_attempts && !cancel.load(Ordering::Relaxed) {
+            sess.step();
+            attempts += 1;
+            let acc = sess.accepted();
+            if acc.saturating_sub(last_emit) >= refresh_every || acc >= target {
+                last_emit = acc;
+                let _ = channel.send(OddCapMsg::Refresco {
+                    aceptados: acc,
+                    rechazados: sess.rejected(),
+                    fsp: sess.fsp(),
+                    estandar: pick(&sess.standard(), &idx),
+                    desviante: pick(&sess.deviant(), &idx),
+                    diferencia: pick(&sess.difference(), &idx),
+                });
+                thread::sleep(Duration::from_millis(28));
+            }
+        }
+        let _ = channel.send(OddCapMsg::Finalizada {
+            aceptados: sess.accepted(),
+            rechazados: sess.rejected(),
         });
     });
     Ok(())

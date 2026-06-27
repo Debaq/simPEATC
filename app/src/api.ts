@@ -12,6 +12,7 @@ import type {
   EstadoSesion,
   Modo,
   OddballRecording,
+  OddCapMsg,
   Recording,
   SimOutput,
   SimParams,
@@ -77,6 +78,15 @@ export function capturarClinico(params: SimParams): Promise<Recording> {
 /** Captura clínica oddball (P300/MMN), one-shot. Proyectada ciega según el modo. */
 export function capturarOddballClinico(params: SimParams): Promise<OddballRecording> {
   return invoke<OddballRecording>("capturar_oddball_clinico", { params });
+}
+
+/** Captura oddball progresiva (P300/MMN): emite estándar/desviante/diferencia por el Channel. */
+export function iniciarCapturaOddballClinica(
+  params: SimParams,
+  channel: Channel<OddCapMsg>,
+  salt: number
+): Promise<void> {
+  return invoke<void>("iniciar_captura_oddball_clinica", { params, channel, salt });
 }
 
 /** Captura clínica ASSR (estado estable), one-shot. */
