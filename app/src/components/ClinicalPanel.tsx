@@ -38,6 +38,7 @@ import FspGraph from "../charts/FspGraph";
 import EegMonitor from "../charts/EegMonitor";
 import LatencyIntensityChart from "../charts/LatencyIntensityChart";
 import EcochgRatioView from "./EcochgRatioView";
+import P300View from "./P300View";
 import Modal from "./Modal";
 import EquipmentPanel, { DEFAULT_EQUIPO } from "./EquipmentPanel";
 import OddballView from "./OddballView";
@@ -142,6 +143,8 @@ export default function ClinicalPanel() {
   const [showLI, setShowLI] = useState(false);
   // Razón SP/AP (ECochG).
   const [showSpap, setShowSpap] = useState(false);
+  // P3b vs edad (P300).
+  const [showP3b, setShowP3b] = useState(false);
 
   // Informe (lo redacta el estudiante).
   const [showReport, setShowReport] = useState(false);
@@ -514,7 +517,16 @@ export default function ClinicalPanel() {
         )}
 
         {fam === "oddball" ? (
-          <OddballView caps={oddballs.filter((c) => c.modality === equipo.modality)} />
+          <>
+            {equipo.modality === "P300" && (
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button className="mini on" onClick={() => setShowP3b(true)} title="Latencia de P3b vs edad">
+                  📊 P3b vs edad
+                </button>
+              </div>
+            )}
+            <OddballView caps={oddballs.filter((c) => c.modality === equipo.modality)} />
+          </>
         ) : fam === "assr" ? (
           <AssrView caps={assrs} />
         ) : (
@@ -671,6 +683,15 @@ export default function ClinicalPanel() {
       {showSpap && (
         <Modal title="ECochG · razón SP/AP" onClose={() => setShowSpap(false)} width={560}>
           <EcochgRatioView curves={curves.filter((c) => c.modality === "ECochG")} />
+        </Modal>
+      )}
+
+      {showP3b && (
+        <Modal title="P300 · latencia de P3b vs edad" onClose={() => setShowP3b(false)} width={620}>
+          <P300View
+            caps={oddballs.filter((c) => c.modality === "P300")}
+            age={equipo.subject.age_years}
+          />
         </Modal>
       )}
     </div>
