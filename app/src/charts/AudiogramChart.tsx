@@ -10,7 +10,7 @@ export default function AudiogramChart({ data }: { data: AudiogramPoint[] }) {
   const pairs = data.map(([f, thr]) => [f, thr] as [number, number | null]);
 
   const option = {
-    backgroundColor: "transparent",
+    backgroundColor: "#ffffff",
     grid: { left: 56, right: 24, top: 24, bottom: 44 },
     tooltip: {
       trigger: "axis",
@@ -24,8 +24,8 @@ export default function AudiogramChart({ data }: { data: AudiogramPoint[] }) {
       nameGap: 28,
       min: 250,
       max: 8000,
-      axisLine: { lineStyle: { color: "#3a3f52" } },
-      splitLine: { lineStyle: { color: "#20242f" } },
+      axisLine: { lineStyle: { color: "#b9bfca" } },
+      splitLine: { lineStyle: { color: "#e8eaef" } },
     },
     yAxis: {
       type: "value",
@@ -35,8 +35,8 @@ export default function AudiogramChart({ data }: { data: AudiogramPoint[] }) {
       inverse: true,
       min: -10,
       max: 100,
-      axisLine: { lineStyle: { color: "#3a3f52" } },
-      splitLine: { lineStyle: { color: "#20242f" } },
+      axisLine: { lineStyle: { color: "#b9bfca" } },
+      splitLine: { lineStyle: { color: "#e8eaef" } },
     },
     series: [
       {

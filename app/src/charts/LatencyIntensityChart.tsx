@@ -103,7 +103,7 @@ export default function LatencyIntensityChart({
               type: "text",
               x: label[0] + 6,
               y: label[1],
-              style: { text: w, fill: "#aeb4c6", fontSize: 11, fontWeight: "bold", verticalAlign: "middle" },
+              style: { text: w, fill: "#555a66", fontSize: 11, fontWeight: "bold", verticalAlign: "middle" },
             },
           ],
         };
@@ -138,11 +138,11 @@ export default function LatencyIntensityChart({
   }
 
   const option = {
-    backgroundColor: "transparent",
+    backgroundColor: "#ffffff",
     grid: { left: 48, right: 16, top: 28, bottom: 38 },
     legend: {
       top: 2,
-      textStyle: { color: "#9aa0b4", fontSize: 10 },
+      textStyle: { color: "#555a66", fontSize: 10 },
       itemHeight: 8,
       data: series.filter((s) => s.type === "line").map((s) => s.name),
     },
@@ -154,8 +154,8 @@ export default function LatencyIntensityChart({
       nameGap: 24,
       min: 0,
       max: 110,
-      axisLine: { lineStyle: { color: "#3a3f52" } },
-      splitLine: { lineStyle: { color: "#20242f" } },
+      axisLine: { lineStyle: { color: "#b9bfca" } },
+      splitLine: { lineStyle: { color: "#e8eaef" } },
     },
     yAxis: {
       type: "value",
@@ -164,8 +164,8 @@ export default function LatencyIntensityChart({
       nameGap: 32,
       min: 0,
       max: 12,
-      axisLine: { lineStyle: { color: "#3a3f52" } },
-      splitLine: { lineStyle: { color: "#20242f" } },
+      axisLine: { lineStyle: { color: "#b9bfca" } },
+      splitLine: { lineStyle: { color: "#e8eaef" } },
     },
     series,
   };

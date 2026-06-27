@@ -8,7 +8,7 @@ const SNR_THRESHOLD_DB = 10 * Math.log10(4.0);
 export default function SpectrumChart({ res }: { res: AssrResult }) {
   const color = res.detected ? "#36b37e" : "#e07070";
   const option = {
-    backgroundColor: "transparent",
+    backgroundColor: "#ffffff",
     grid: { left: 56, right: 18, top: 30, bottom: 40 },
     tooltip: {
       trigger: "axis",
@@ -17,15 +17,15 @@ export default function SpectrumChart({ res }: { res: AssrResult }) {
     xAxis: {
       type: "category",
       data: [`${res.mod_freq_hz.toFixed(0)} Hz (f_mod)`],
-      axisLine: { lineStyle: { color: "#3a3f52" } },
+      axisLine: { lineStyle: { color: "#b9bfca" } },
     },
     yAxis: {
       type: "value",
       name: "SNR (dB)",
       nameLocation: "middle",
       nameGap: 40,
-      axisLine: { lineStyle: { color: "#3a3f52" } },
-      splitLine: { lineStyle: { color: "#20242f" } },
+      axisLine: { lineStyle: { color: "#b9bfca" } },
+      splitLine: { lineStyle: { color: "#e8eaef" } },
     },
     series: [
       {
@@ -37,10 +37,10 @@ export default function SpectrumChart({ res }: { res: AssrResult }) {
           symbol: "none",
           label: {
             formatter: `umbral ${SNR_THRESHOLD_DB.toFixed(1)} dB`,
-            color: "#ffd23a",
+            color: "#b8860b",
             fontSize: 11,
           },
-          lineStyle: { color: "#ffd23a", type: "dashed" },
+          lineStyle: { color: "#b8860b", type: "dashed" },
           data: [{ yAxis: SNR_THRESHOLD_DB }],
         },
       },

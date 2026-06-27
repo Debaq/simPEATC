@@ -59,7 +59,7 @@ export default function P300View({ caps, age }: { caps: OddballCap[]; age: numbe
       name: "Media",
       type: "line",
       data: centros,
-      lineStyle: { color: "#9aa0b4", width: 1, type: "dashed" },
+      lineStyle: { color: "#555a66", width: 1, type: "dashed" },
       symbol: "none",
       silent: true,
       z: 2,
@@ -80,11 +80,11 @@ export default function P300View({ caps, age }: { caps: OddballCap[]; age: numbe
   }
 
   const option = {
-    backgroundColor: "transparent",
+    backgroundColor: "#ffffff",
     grid: { left: 52, right: 16, top: 26, bottom: 38 },
     legend: {
       top: 2,
-      textStyle: { color: "#9aa0b4", fontSize: 10 },
+      textStyle: { color: "#555a66", fontSize: 10 },
       itemHeight: 8,
       data: series.filter((s) => s.type === "scatter").map((s) => s.name),
     },
@@ -96,8 +96,8 @@ export default function P300View({ caps, age }: { caps: OddballCap[]; age: numbe
       nameGap: 24,
       min: 0,
       max: 90,
-      axisLine: { lineStyle: { color: "#3a3f52" } },
-      splitLine: { lineStyle: { color: "#20242f" } },
+      axisLine: { lineStyle: { color: "#b9bfca" } },
+      splitLine: { lineStyle: { color: "#e8eaef" } },
     },
     yAxis: {
       type: "value",
@@ -106,8 +106,8 @@ export default function P300View({ caps, age }: { caps: OddballCap[]; age: numbe
       nameGap: 38,
       min: 250,
       max: 500,
-      axisLine: { lineStyle: { color: "#3a3f52" } },
-      splitLine: { lineStyle: { color: "#20242f" } },
+      axisLine: { lineStyle: { color: "#b9bfca" } },
+      splitLine: { lineStyle: { color: "#e8eaef" } },
     },
     series,
   };
