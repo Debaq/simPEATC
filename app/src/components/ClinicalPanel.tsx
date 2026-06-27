@@ -645,7 +645,6 @@ export default function ClinicalPanel() {
             <LatencyIntensityChart
               curves={curves.filter((c) => c.modality === "Abr")}
               subject={equipo.subject}
-              insert={(equipo.equipo?.transducer ?? "Insert") === "Insert"}
             />
           </div>
           <p className="hint" style={{ marginTop: 6 }}>

@@ -1,8 +1,11 @@
-// Gráfico latencia-intensidad (L-I) del ABR. Dibuja las MARCAS del alumno (onda V,
-// y I/III si las marca) sobre un ÁREA ACHURADA de normalidad para que el evaluador
-// vea visualmente si caen dentro o fuera. La banda es una NORMA CLÍNICA FIJA (no
-// tiene nada que ver con el motor): tabla por intensidad, ajustada por grupo etario,
-// sexo y transductor. Eje positivo/positivo (intensidad → ; latencia ↑).
+// Gráfico latencia-intensidad (L-I) del ABR. Dibuja las MARCAS del alumno (ondas
+// I, III, V) sobre ÁREAS ACHURADAS de normalidad, para que el evaluador vea si
+// caen dentro o fuera. Las bandas son NORMAS CLÍNICAS FIJAS (no tienen nada que
+// ver con el motor): tabla por onda e intensidad, ajustable por grupo y sexo.
+//
+// Norma: inserto (ER-3C), 80 dB nHL, ±2 DE — datos de 73 normo-oyentes
+// (PMC9595029). Mujer adulta = referencia; hombre algo mayor. Pendiente L-I
+// ~0.3 ms/10 dB (las ondas se desplazan en paralelo, interpicos constantes).
 
 import { useState } from "react";
 import ReactECharts from "echarts-for-react";
@@ -10,17 +13,29 @@ import type { AbrCurve, EarSide, SexValue, SubjectParams } from "../types";
 
 const EAR_COLOR: Record<EarSide, string> = { Right: "#e8615f", Left: "#4aa3ff" };
 const EARS: EarSide[] = ["Right", "Left"];
-const WAVES = ["I", "III", "V"];
 
-// --- Norma clínica de la onda V (latencia, ms) ---
-// Referencia: mujer adulta, supraaural, 80 dB nHL = 5.6 ms; pendiente 0.3 ms/10 dB;
-// semiancho (±DE) 0.4 ms. Hombre +0.2; inserto +0.9; ajuste por grupo etario.
-const V80_FEMALE = 5.6;
+// Norma por onda (mujer adulta, inserto, 80 dB nHL).
+interface Norma {
+  c80: number; // latencia central a 80 dB
+  sd2: number; // ±2 DE (semiancho de la banda)
+  sexM: number; // desfase del hombre (ms)
+  ageK: number; // cuánto le pega la edad (las tardías maduran más tarde)
+  minDb: number; // intensidad mínima a la que la onda suele estar presente
+}
+// Color neutro para todas las bandas (no compite con el color de oído de las
+// marcas: OD rojo / OI azul). Cada banda se identifica con su etiqueta de onda.
+const BAND_FILL = "rgba(150,160,180,0.16)";
+const BAND_LINE = "rgba(150,160,180,0.45)";
+const NORMA: Record<string, Norma> = {
+  V: { c80: 5.6, sd2: 0.42, sexM: 0.15, ageK: 1.0, minDb: 20 },
+  III: { c80: 3.7, sd2: 0.34, sexM: 0.08, ageK: 0.7, minDb: 40 },
+  I: { c80: 1.55, sd2: 0.34, sexM: 0.0, ageK: 0.4, minDb: 60 },
+};
+const WAVES = ["I", "III", "V"];
 const SLOPE_PER_DB = 0.03; // 0.3 ms / 10 dB
-const SD_MS = 0.4;
-const SEX_OFFSET = { Female: 0, Male: 0.2 };
-const TRANSDUCER_INSERT_MS = 0.9;
-const AGE_OFFSET: Record<string, number> = { lactante: 0.8, nino: 0.1, adulto: 0, mayor: 0.25 };
+// Desfase por grupo etario a la onda V (escalado por ondas con ageK).
+const AGE_V: Record<string, number> = { lactante: 0.8, nino: 0.1, adulto: 0, mayor: 0.25 };
+const INTENSIDADES = [100, 90, 80, 70, 60, 50, 40, 30, 20];
 
 const GRUPOS: { value: string; label: string }[] = [
   { value: "lactante", label: "Lactante" },
@@ -28,7 +43,6 @@ const GRUPOS: { value: string; label: string }[] = [
   { value: "adulto", label: "Adulto" },
   { value: "mayor", label: "Adulto mayor" },
 ];
-
 function grupoDeEdad(age: number): string {
   if (age < 2) return "lactante";
   if (age < 15) return "nino";
@@ -36,57 +50,66 @@ function grupoDeEdad(age: number): string {
   return "mayor";
 }
 
-/** Latencia normal central de la onda V para una intensidad y población dadas. */
-function vCentro(intensity: number, grupo: string, sexo: SexValue, insert: boolean): number {
+function centro(wave: string, intensity: number, grupo: string, sexo: SexValue): number {
+  const n = NORMA[wave];
   return (
-    V80_FEMALE +
+    n.c80 +
     (80 - intensity) * SLOPE_PER_DB +
-    SEX_OFFSET[sexo] +
-    (AGE_OFFSET[grupo] ?? 0) +
-    (insert ? TRANSDUCER_INSERT_MS : 0)
+    (sexo === "Male" ? n.sexM : 0) +
+    (AGE_V[grupo] ?? 0) * n.ageK
   );
 }
-
-const INTENSIDADES = [100, 90, 80, 70, 60, 50, 40, 30, 20];
 
 export default function LatencyIntensityChart({
   curves,
   subject,
-  insert,
 }: {
   curves: AbrCurve[];
   subject: SubjectParams;
-  insert: boolean;
 }) {
   const [grupo, setGrupo] = useState(() => grupoDeEdad(subject.age_years));
   const [sexo, setSexo] = useState<SexValue>(subject.sex);
 
   const series: any[] = [];
 
-  // Área achurada de normalidad de la onda V (debajo de las marcas).
-  const xs = [...INTENSIDADES].sort((a, b) => a - b);
-  const lower = xs.map((i) => [i, vCentro(i, grupo, sexo, insert) - SD_MS]);
-  series.push({
-    name: "_lo",
-    type: "line",
-    data: lower,
-    stack: "bandaV",
-    lineStyle: { opacity: 0 },
-    symbol: "none",
-    silent: true,
-    z: 1,
-  });
-  series.push({
-    name: "Normal V (±DE)",
-    type: "line",
-    data: xs.map((i) => [i, SD_MS * 2]),
-    stack: "bandaV",
-    lineStyle: { opacity: 0 },
-    areaStyle: { color: "rgba(54, 179, 126, 0.18)" },
-    symbol: "none",
-    silent: true,
-    z: 1,
-  });
+  // Bandas de normalidad (polígonos custom; el apilado de áreas de ECharts no
+  // funciona en un eje X de tipo value).
+  for (const w of WAVES) {
+    const n = NORMA[w];
+    const xs = INTENSIDADES.filter((i) => i >= n.minDb).sort((a, b) => a - b);
+    const centros = xs.map((i) => [i, centro(w, i, grupo, sexo)]);
+    series.push({
+      name: `Normal ${w}`,
+      type: "custom",
+      data: centros,
+      silent: true,
+      z: 1,
+      renderItem: (params: any, api: any) => {
+        if (params.dataIndex !== 0) return;
+        const pts: [number, number][] = [];
+        for (const [x, c] of centros) pts.push(api.coord([x, c + n.sd2]));
+        for (let k = centros.length - 1; k >= 0; k--) {
+          const [x, c] = centros[k];
+          pts.push(api.coord([x, c - n.sd2]));
+        }
+        // Etiqueta de la onda a la izquierda (intensidad alta) de la banda.
+        const [lx, lc] = centros[centros.length - 1];
+        const label = api.coord([lx, lc]);
+        return {
+          type: "group",
+          children: [
+            { type: "polygon", shape: { points: pts }, style: { fill: BAND_FILL, stroke: BAND_LINE, lineWidth: 1 } },
+            {
+              type: "text",
+              x: label[0] + 6,
+              y: label[1],
+              style: { text: w, fill: "#aeb4c6", fontSize: 11, fontWeight: "bold", verticalAlign: "middle" },
+            },
+          ],
+        };
+      },
+    });
+  }
 
   // Marcas del alumno por oído.
   for (const ear of EARS) {
@@ -121,7 +144,7 @@ export default function LatencyIntensityChart({
       top: 2,
       textStyle: { color: "#9aa0b4", fontSize: 10 },
       itemHeight: 8,
-      data: series.filter((s) => s.name !== "_lo").map((s) => s.name),
+      data: series.filter((s) => s.type === "line").map((s) => s.name),
     },
     tooltip: { trigger: "item" },
     xAxis: {
@@ -162,7 +185,6 @@ export default function LatencyIntensityChart({
           <option value="Female">Mujer</option>
           <option value="Male">Hombre</option>
         </select>
-        <span className="hint">{insert ? "inserto" : "supraaural"}</span>
       </div>
       <div style={{ flex: 1, minHeight: 0 }}>
         <ReactECharts option={option} style={{ height: "100%", width: "100%" }} notMerge />
