@@ -37,6 +37,7 @@ import AbrGraph from "../charts/AbrGraph";
 import FspGraph from "../charts/FspGraph";
 import EegMonitor from "../charts/EegMonitor";
 import LatencyIntensityChart from "../charts/LatencyIntensityChart";
+import EcochgRatioView from "./EcochgRatioView";
 import Modal from "./Modal";
 import EquipmentPanel, { DEFAULT_EQUIPO } from "./EquipmentPanel";
 import OddballView from "./OddballView";
@@ -139,6 +140,8 @@ export default function ClinicalPanel() {
 
   // Gráfico latencia-intensidad (ABR).
   const [showLI, setShowLI] = useState(false);
+  // Razón SP/AP (ECochG).
+  const [showSpap, setShowSpap] = useState(false);
 
   // Informe (lo redacta el estudiante).
   const [showReport, setShowReport] = useState(false);
@@ -530,6 +533,17 @@ export default function ClinicalPanel() {
                     </button>
                   </div>
                 )}
+                {equipo.modality === "ECochG" && (
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
+                    <button
+                      className="mini on"
+                      onClick={() => setShowSpap(true)}
+                      title="Razón SP/AP (hidrops / Ménière)"
+                    >
+                      📊 Razón SP/AP
+                    </button>
+                  </div>
+                )}
                 <table className="restab">
                   <thead>
                     <tr>
@@ -648,10 +662,15 @@ export default function ClinicalPanel() {
             />
           </div>
           <p className="hint" style={{ marginTop: 6 }}>
-            Latencia de cada onda marcada vs. intensidad. La banda verde es la zona de normalidad
-            de la onda V (sujeto normal de la misma edad/condición); las marcas fuera de ella
-            sugieren patología.
+            Latencia de cada onda marcada vs. intensidad. Las áreas grises son las zonas de
+            normalidad (I, III, V) según grupo y sexo; las marcas fuera de ellas sugieren patología.
           </p>
+        </Modal>
+      )}
+
+      {showSpap && (
+        <Modal title="ECochG · razón SP/AP" onClose={() => setShowSpap(false)} width={560}>
+          <EcochgRatioView curves={curves.filter((c) => c.modality === "ECochG")} />
         </Modal>
       )}
     </div>
