@@ -41,6 +41,7 @@ import EegMonitor from "../charts/EegMonitor";
 import LatencyIntensityChart from "../charts/LatencyIntensityChart";
 import EcochgRatioView from "./EcochgRatioView";
 import P300View from "./P300View";
+import AlrP1View from "./AlrP1View";
 import Modal from "./Modal";
 import EquipmentPanel, { DEFAULT_EQUIPO } from "./EquipmentPanel";
 import OddballView from "./OddballView";
@@ -147,6 +148,8 @@ export default function ClinicalPanel() {
   const [showSpap, setShowSpap] = useState(false);
   // P3b vs edad (P300).
   const [showP3b, setShowP3b] = useState(false);
+  // P1 vs edad (ALR, maduración cortical).
+  const [showP1, setShowP1] = useState(false);
 
   // Informe (lo redacta el estudiante).
   const [showReport, setShowReport] = useState(false);
@@ -601,6 +604,17 @@ export default function ClinicalPanel() {
                     </button>
                   </div>
                 )}
+                {equipo.modality === "Alr" && (
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
+                    <button
+                      className="mini on"
+                      onClick={() => setShowP1(true)}
+                      title="Latencia de P1 vs edad (maduración cortical)"
+                    >
+                      📊 P1 vs edad
+                    </button>
+                  </div>
+                )}
                 <table className="restab">
                   <thead>
                     <tr>
@@ -735,6 +749,15 @@ export default function ClinicalPanel() {
         <Modal title="P300 · latencia de P3b vs edad" onClose={() => setShowP3b(false)} width={620}>
           <P300View
             caps={oddballs.filter((c) => c.modality === "P300")}
+            age={equipo.subject.age_years}
+          />
+        </Modal>
+      )}
+
+      {showP1 && (
+        <Modal title="ALR · latencia de P1 vs edad (maduración)" onClose={() => setShowP1(false)} width={620}>
+          <AlrP1View
+            curves={curves.filter((c) => c.modality === "Alr")}
             age={equipo.subject.age_years}
           />
         </Modal>
