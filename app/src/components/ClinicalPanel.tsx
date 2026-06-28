@@ -42,6 +42,7 @@ import LatencyIntensityChart from "../charts/LatencyIntensityChart";
 import EcochgRatioView from "./EcochgRatioView";
 import P300View from "./P300View";
 import AlrP1View from "./AlrP1View";
+import MlrPaView from "./MlrPaView";
 import Modal from "./Modal";
 import EquipmentPanel, { DEFAULT_EQUIPO } from "./EquipmentPanel";
 import OddballView from "./OddballView";
@@ -150,6 +151,8 @@ export default function ClinicalPanel() {
   const [showP3b, setShowP3b] = useState(false);
   // P1 vs edad (ALR, maduración cortical).
   const [showP1, setShowP1] = useState(false);
+  // Pa latencia-intensidad (MLR, umbral).
+  const [showPa, setShowPa] = useState(false);
 
   // Informe (lo redacta el estudiante).
   const [showReport, setShowReport] = useState(false);
@@ -615,6 +618,17 @@ export default function ClinicalPanel() {
                     </button>
                   </div>
                 )}
+                {equipo.modality === "Mlr" && (
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
+                    <button
+                      className="mini on"
+                      onClick={() => setShowPa(true)}
+                      title="Pa latencia-intensidad (umbral)"
+                    >
+                      📊 Pa / Intensidad
+                    </button>
+                  </div>
+                )}
                 <table className="restab">
                   <thead>
                     <tr>
@@ -758,6 +772,15 @@ export default function ClinicalPanel() {
         <Modal title="ALR · latencia de P1 vs edad (maduración)" onClose={() => setShowP1(false)} width={620}>
           <AlrP1View
             curves={curves.filter((c) => c.modality === "Alr")}
+            age={equipo.subject.age_years}
+          />
+        </Modal>
+      )}
+
+      {showPa && (
+        <Modal title="MLR · Pa latencia-intensidad (umbral)" onClose={() => setShowPa(false)} width={620}>
+          <MlrPaView
+            curves={curves.filter((c) => c.modality === "Mlr")}
             age={equipo.subject.age_years}
           />
         </Modal>
