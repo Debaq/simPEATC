@@ -41,19 +41,14 @@ simPEATC/
 │   │   │       ├── conbinaciones.py       # Casos clínicos
 │   │   │       └── ...
 │   │   └── resources/
-│   │       └── base/
-│   │           ├── json/            # Configuraciones
-│   │           │   ├── ABR.json
-│   │           │   ├── normative_data.json
-│   │           │   └── abr_confg.json
-│   │           ├── cases/           # Casos clínicos
-│   │           │   └── cases.json
-│   │           └── qss/             # Estilos Qt
-│   └── build/
-│       └── settings/                # Configuración de empaquetado
-│           ├── base.json
-│           ├── linux.json
-│           └── mac.json
+│   │       ├── json/                # Configuraciones
+│   │       │   ├── ABR.json
+│   │       │   ├── normative_data.json
+│   │       │   └── abr_confg.json
+│   │       ├── cases/               # Casos clínicos
+│   │       │   └── cases.json
+│   │       └── styles/              # Estilos Qt (.qss)
+│   │           └── style_base.qss
 ├── Images/                          # Imágenes y recursos gráficos
 ├── target/                          # Build output (PyInstaller)
 ├── README.md
@@ -229,10 +224,40 @@ Estructura en memoria:
 pyinstaller --noconfirm --windowed --name simPEATC src/main/python/main.py
 ```
 
-> La app resuelve sus assets en runtime vía `core.base.context.get_resource()`,
+> La app resuelve sus assets en runtime vía `context.get_resource()`,
 > que apunta a `src/main/resources/` cuando se ejecuta desde código fuente,
 > o al directorio temporal de PyInstaller (`sys._MEIPASS/resources`) en el
 > binario congelado. Ver `src/main/python/base.py`.
+
+## Resolución de Paths
+
+Dos helpers en `base.py`:
+
+- `context.get_resource('json/ABR.json')` → archivo read-only dentro de `resources/`.
+  Usar siempre para assets del bundle (JSON de config, casos, stylesheets,
+  íconos, normativas).
+- `context.cache_path('temp', 'GFG.pdf')` → archivo escribible bajo
+  `~/.cache/simpeatc/` (Linux, respeta `$XDG_CACHE_HOME`) o
+  `%LOCALAPPDATA%/simpeatc/Cache/` (Windows). El directorio se crea lazy.
+  Usar para imágenes scratch, PDFs en construcción, exports de pyqtgraph.
+
+`BASE_DIR` también se exporta desde `base.py`: apunta a `src/main/` en dev o
+`sys._MEIPASS` en binario. Usar cuando se necesita la raíz del bundle sin
+prefijo `resources/` (ej. escribir `resultados_osce/` al lado de `resources/`).
+
+`fbs_runtime` ya no se usa — la dependencia se quitó de `install.txt` y la
+sección de build apunta solo a PyInstaller.
+
+## Tareas Pendientes (no parte de esta limpieza)
+
+- **`image_0.png` / `image_1.png` faltan**: `lib/pdf_abr.image_ABR()` los
+  busca en `resources/img/` pero nunca se agregaron al repo. La generación
+  del PDF compuesto (OD/OI lado a lado) falla hasta que se suba el asset.
+- **`lib/AbrLatSelect.py` huérfano**: importa `UI.Ui_ABR_lat_select` que no
+  existe. Nadie lo usa en `main.py`. Borrarlo o completar el `.ui` y el
+  wiring.
+- **`lib/CaseSelect.py` huérfano**: widget selector de caso vía `QSpinBox`.
+  Nadie lo importa. Decidir si se reutiliza en el flujo OSCE o se borra.
 
 ## Áreas Clave para Modificaciones
 
