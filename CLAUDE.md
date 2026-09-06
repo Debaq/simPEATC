@@ -12,6 +12,13 @@
 - **Framework**: PySide6 (Qt6) + PyInstaller para empaquetado
 - **GUI**: PySide6 (Qt6)
 
+## Integración con LabSim (en curso)
+
+Se está integrando este simulador como subventana MDI dentro de LabSim (botón "ABR"). Como parte de esa integración:
+
+- **`verificacion.py` y `abr_activate.php` fueron borrados** (2026-09-06): chequeo de licencia standalone contra `tmeduca.org/abr_activate.php`, ya no aplica porque el acceso pasa por el login de LabSim. El resto de este documento (sección "Sistema de Verificación") describe código que ya no existe.
+- **El modo OSCE fue removido de `main.py`** (clase `CuadroDialogoOSCE`, sección `################METODOS OSCE` completa, ~1470 líneas): decisión deliberada para simplificar la integración MDI ahora, no un descarte definitivo. `STATE_INIT` quedó en `"exam"` (flujo `CuadroDialogoExamen`, pide nombre completo — pendiente reemplazar por `data_login` de LabSim en el siguiente paso de la integración). El código OSCE sigue disponible en el historial de git de este mismo branch (commit anterior a esta limpieza) si se decide reintroducirlo más adelante, probablemente ya no como estaciones con diálogo propio sino integrado al flujo de agenda/casos de LabSim. Referencias a OSCE que quedan en el resto de este documento describen ese código ya retirado.
+
 ## Arquitectura del Proyecto
 
 ### Estructura de Directorios
