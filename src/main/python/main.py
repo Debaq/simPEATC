@@ -29,10 +29,9 @@ from lib.FSP import FSP
 from lib.PdfCreator import PDFCreator
 from PySide6.QtCore import QCoreApplication, Qt, QTimer, Signal
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import (QComboBox, QDialog, QFrame, QGroupBox,
-                               QFormLayout, QHBoxLayout, QLabel, QLineEdit,
+from PySide6.QtWidgets import (QComboBox, QDialog, QLabel,
                                QMainWindow, QPushButton, QSizePolicy,
-                               QSpacerItem, QTextEdit, QVBoxLayout,
+                               QSpacerItem, QVBoxLayout,
                                QMessageBox)
 from UI.AbrAdvanceSettings_ui import Ui_AdvanceSettings
 from UI.AbrMain_ui import Ui_MainWindow
@@ -138,115 +137,14 @@ class CuadroDialogoTest(QDialog):
         return self.combo_box.currentIndex()
 
 
-class CuadroDialogoExamen(QDialog):
-    def __init__(self, parent=None, x_numero = None):
-        super().__init__(parent)
-        self.setWindowTitle('Comenzar PEATC')
-
-        # Hacer que la ventana sea modal
-        self.setModal(True)
-
-        # Crear el ComboBox y el botón dentro de la ventana de diálogo
-        layout = QVBoxLayout(self)
-        text = QTextEdit(f"""<p style="text-align: center;"><strong>Inicio de PEATC</strong></p>
-<p style="text-align: justify;">A continuaci&oacute;n posee {TIEMPO_TEST} minutos para la realizaci&oacute;n de cada caso de un total de 2</p>
-<p style="text-align: justify;">Favor ponga su nombre a continuaci&oacute;n:</p>
-<p style="text-align: justify;">&nbsp;</p>
-<p style="text-align: justify;">*estos casos no son aleatorios son los correspondientes al práctico</p>
-                         """)
-        text.setReadOnly(True)
-        text.setFrameShape(QFrame.NoFrame)
-        text.setReadOnly(True)
-        text.setTextInteractionFlags(Qt.NoTextInteraction)
-        layout.addWidget(text)
-        self.name = QLineEdit()
-        self.name.setPlaceholderText("Nombre Completo")
-        layout.addWidget(self.name)
-        
-        #self.case = self.generar_numero_aleatorio(x_numeros=x_numero)
-        self.case = elegir_combinacion_especifica()
-        case = self.actualizar_label()
-        layout.addWidget(case)
-
-        self.accept_button = QPushButton("Iniciar")
-        self.accept_button.clicked.connect(self.on_accept_clicked)
-        layout.addWidget(self.accept_button)
-        self.center_on_screen()
-
-    def actualizar_label(self):
-        # Convertir todos los elementos a string y sumar 1 a cada uno
-        casos_formato = [str(caso + 1) for caso in self.case]
-
-        if len(casos_formato) > 1:
-            # Si hay más de un elemento, inserta 'y' antes del último elemento
-            casos_texto = ", ".join(casos_formato[:-1]) + " y " + casos_formato[-1]
-        else:
-            # Si solo hay un elemento, solo usa ese elemento
-            casos_texto = casos_formato[0]
-
-        return QLabel(f"Casos: {casos_texto}")
-
-
-    def center_on_screen(self):
-        # Obtener la resolución de la pantalla
-        screen_resolution = QGuiApplication.primaryScreen().geometry()
-
-        # Calcular la posición central para el diálogo
-        x = (screen_resolution.width() - self.width()) / 2
-        y = (screen_resolution.height() - self.height()) / 2
-
-        # Establecer la posición del diálogo en el centro de la pantalla
-        self.move(x, y)
-
-
-    def generar_numero_aleatorio(self, minimo=0, maximo=1,  x_numeros=2):
-        if minimo > maximo:
-            minimo, maximo = maximo, minimo  # Intercambiar los valores si minimo es mayor que maximo
-
-        if x_numeros > (maximo - minimo + 1):
-            raise ValueError("No es posible generar la cantidad solicitada de números únicos en el rango dado")
-
-        numeros_generados = set()
-
-        while len(numeros_generados) < x_numeros:
-            numero = random.randint(minimo, maximo)
-            numeros_generados.add(numero)
-
-        return list(numeros_generados)
-
-    def create_list(self):
-        for i in range(26):
-            self.combo_box.addItem(f'Caso {i+1}')
-
-    def on_accept_clicked(self):
-        if not self.name.text().strip():
-            # Si el campo 'name' está vacío, mostrar un mensaje de error
-            QMessageBox.warning(self, "Error", "Por favor, ingrese su nombre.")
-        else:
-            # Si 'name' tiene un valor, cerrar la ventana
-            self.accept()  # Esto cerrará la ventana de diálogo
-            return self.case
-    
-    def reject(self):
-        # Se llama cuando se presiona Escape. Evita que la ventana se cierre.
-        # Puedes dejarlo vacío o mostrar un mensaje, según tus necesidades.
-        pass
-
-    def closeEvent(self, event):
-        # Se llama cuando se intenta cerrar la ventana (p. ej., con Alt+F4).
-        if not self.name.text().strip():
-            # Si el campo 'name' está vacío, rechazar el evento de cierre
-            QMessageBox.warning(self, "Error", "Por favor, ingrese su nombre antes de cerrar.")
-            event.ignore()  # Ignora el evento de cierre
-        else:
-            event.accept()  # Acepta el evento de cierre
-
-
 class MainWindow(QMainWindow, Ui_MainWindow):
-    def __init__(self, modo_desarrollo=False) -> None:
+    def __init__(self, modo_desarrollo=False, data_login=None) -> None:
         QMainWindow.__init__(self)
         self.setupUi(self)
         self.estacion_desarrollo = modo_desarrollo
+        # data_login: dict de la sesión de LabSim (user/name/permission), lo
+        # entrega la ventana principal al montar esta subventana MDI.
+        self.data_login = data_login
         self.setWindowTitle("simPeatc")
         #self.showFullScreen()
 
@@ -318,7 +216,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.time_eva = TIEMPO_TEST*60
         self.segundos_restantes = self.time_eva
         self.timer.timeout.connect(self.actualizar_tiempo)
-        self.n_cases = 2
         self.current_case = 0
 
         ######Variables de almacenamiento
@@ -434,12 +331,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Esta función crea y abre la ventana de diálogo
 
         if STATE_INIT == "exam":
-            dialog = CuadroDialogoExamen(self, x_numero=self.n_cases)
-            exam = True
-            dialog.exec()
-            self.cases = dialog.case
-            name_user = dialog.name.text()
-            self.report.set_le_eva(name_user)
+            # Antes pedía nombre/id por un QDialog propio (CuadroDialogoExamen).
+            # Ahora el usuario viene de la sesión de LabSim (data_login).
+            self.cases = elegir_combinacion_especifica()
+            nombre_evaluador = self.data_login.get("name", "") if self.data_login else ""
+            self.report.set_le_eva(nombre_evaluador)
             self.report.case = self.cases[0]
             self.case = self.cases[0]
             self.lbl_info.setText(f"Estamos evaluando el caso {self.cases[self.current_case]+1}")
