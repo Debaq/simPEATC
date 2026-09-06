@@ -400,7 +400,7 @@ class AbrGraph(GraphicsLayoutWidgetMod):
         export = pg.exporters.ImageExporter(self.pw)
 
         # Usar context.get_resource para el directorio, luego construir la ruta del archivo
-        temp_dir = context.get_resource('temp')
+        temp_dir = context.cache_path('temp')
         output_file = os.path.join(temp_dir, f'{self.side}.png')
         export.export(output_file)
 

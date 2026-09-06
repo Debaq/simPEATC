@@ -12,7 +12,7 @@ import json
 import random
 import sys
 
-from base import context
+from base import context, BASE_DIR
 from lib.ABR_generator_v2 import ABR_Curve
 from lib.AbrControl import AbrControl
 from lib.AbrDetail import AbrDetail
@@ -1094,10 +1094,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.graph_l.export_()
         text1 = self.report.text_edit_1.toHtml()
         text2 = self.report.text_edit_2.toHtml()
-        image_r = context.get_resource('temp/0.png')
-        image_l = context.get_resource('temp/1.png')
-        image_lat = context.get_resource('temp/LatInt.png')
-        file_pdf = context.get_resource('temp/GFG.pdf')
+        image_r = context.cache_path('temp', '0.png')
+        image_l = context.cache_path('temp', '1.png')
+        image_lat = context.cache_path('temp', 'LatInt.png')
+        file_pdf = context.cache_path('temp', 'GFG.pdf')
         evaluator = self.report.le_eva.text()
         PDFCreator(title="PEATC", html1=text1, html2=text2, images=[image_r,image_l], image_lat=image_lat,data_dict=self.memory, output=file_pdf, evaluator=evaluator)
 
@@ -2157,9 +2157,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         import os
 
         # Crear directorio de resultados si no existe
-        # Usar context.get_resource para el directorio base, luego construir la ruta
-        base_dir = context.get_resource('')
-        resultados_dir = os.path.join(base_dir, 'resultados_osce')
+        # base_dir = raíz del bundle (src/main/ en dev, sys._MEIPASS en binario)
+        resultados_dir = os.path.join(str(BASE_DIR), 'resultados_osce')
         if not os.path.exists(resultados_dir):
             os.makedirs(resultados_dir)
 
@@ -2262,7 +2261,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 # Copiar imágenes exportadas al directorio del OSCE
                 import shutil
-                temp_dir = context.get_resource('temp')
+                temp_dir = context.cache_path('temp')
 
                 img_od = os.path.join(temp_dir, '0.png')
                 img_oi = os.path.join(temp_dir, '1.png')
@@ -2487,13 +2486,19 @@ if __name__ == '__main__':
     # Crear ventana principal con flag de desarrollo
     window = MainWindow(modo_desarrollo=args.dev)
 
-    style_file = context.get_resource('qss/style_base.qss')
+    style_file = context.get_resource('styles/style_base.qss')
 
     with open(style_file, 'r', encoding='utf-8') as f:
         style = f.read()
 
     window.setStyleSheet(style)
     window.show()
+
+    # base.py no crea QApplication (lo manejaba fbs antes); lo aseguramos
+    # acá para que context.app.exec() funcione igual que antes.
+    from PySide6.QtWidgets import QApplication
+    app = QApplication.instance() or QApplication(sys.argv)
+    context.set_app(app)
 
     exit_code = context.app.exec()
 

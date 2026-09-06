@@ -65,7 +65,7 @@ class AbrReport(QWidget, Ui_AbrReport):
         self.layout_pdf.addWidget(self.pdf_widget)
     
     def update_pdf(self):
-        self.file_pdf = context.get_resource('temp/GFG.pdf')
+        self.file_pdf = context.cache_path('temp', 'GFG.pdf')
         self.pdf_widget.load_pdf(self.file_pdf)
     
     def print_pdf(self):
