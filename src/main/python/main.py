@@ -2453,6 +2453,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 if __name__ == '__main__':
+    # QApplication ANTES de cualquier QWidget. fbs lo creaba implícitamente
+    # en base.py al import; ahora hay que hacerlo explícito y antes de
+    # instanciar MainWindow (que hereda de QMainWindow).
+    from PySide6.QtWidgets import QApplication
+    app = QApplication.instance() or QApplication(sys.argv)
+
     # Parsear argumentos de línea de comandos (para desarrollo/testing)
     parser = argparse.ArgumentParser(description='Simulador PEATC - OSCE')
     parser.add_argument('--dev', '--desarrollo', action='store_true',
@@ -2479,8 +2485,6 @@ if __name__ == '__main__':
     window.setStyleSheet(style)
     window.show()
 
-    from PySide6.QtWidgets import QApplication
-    app = QApplication.instance() or QApplication(sys.argv)
     exit_code = app.exec()
 
     sys.exit(exit_code)
