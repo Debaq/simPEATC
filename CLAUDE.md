@@ -22,7 +22,6 @@ simPEATC/
 │   ├── main/
 │   │   ├── python/
 │   │   │   ├── main.py              # Punto de entrada principal
-│   │   │   ├── base.py              # Contexto de la aplicación
 │   │   │   ├── verificacion.py     # Sistema de activación online
 │   │   │   ├── UI/                  # Interfaces Qt generadas
 │   │   │   │   ├── AbrMain_ui.py
@@ -47,8 +46,11 @@ simPEATC/
 │   │       │   └── abr_confg.json
 │   │       ├── cases/               # Casos clínicos
 │   │       │   └── cases.json
-│   │       └── styles/              # Estilos Qt (.qss)
-│   │           └── style_base.qss
+│   │       ├── styles/              # Estilos Qt (.qss)
+│   │       │   └── style_base.qss
+│   │       └── local_cache/         # Runtime escribible (no se borra en update)
+│   │           └── simpeatc/
+│   │               └── temp/        # PDFs/imágenes scratch de simPEATC
 ├── Images/                          # Imágenes y recursos gráficos
 ├── target/                          # Build output (PyInstaller)
 ├── README.md
@@ -224,26 +226,38 @@ Estructura en memoria:
 pyinstaller --noconfirm --windowed --name simPEATC src/main/python/main.py
 ```
 
-> La app resuelve sus assets en runtime vía `context.get_resource()`,
-> que apunta a `src/main/resources/` cuando se ejecuta desde código fuente,
-> o al directorio temporal de PyInstaller (`sys._MEIPASS/resources`) en el
-> binario congelado. Ver `src/main/python/base.py`.
+> La app resuelve sus assets en runtime con `pathlib` inline en cada
+> módulo — no hay un módulo central de paths. Ver "Resolución de Paths"
+> más abajo.
 
 ## Resolución de Paths
 
-Dos helpers en `base.py`:
+**No hay `base.py` ni `context`**. Cada archivo define localmente:
 
-- `context.get_resource('json/ABR.json')` → archivo read-only dentro de `resources/`.
-  Usar siempre para assets del bundle (JSON de config, casos, stylesheets,
-  íconos, normativas).
-- `context.cache_path('temp', 'GFG.pdf')` → archivo escribible bajo
-  `~/.cache/simpeatc/` (Linux, respeta `$XDG_CACHE_HOME`) o
-  `%LOCALAPPDATA%/simpeatc/Cache/` (Windows). El directorio se crea lazy.
-  Usar para imágenes scratch, PDFs en construcción, exports de pyqtgraph.
+```python
+from pathlib import Path
+_RESOURCES = Path(__file__).resolve().parent.parent / "resources"
+```
 
-`BASE_DIR` también se exporta desde `base.py`: apunta a `src/main/` en dev o
-`sys._MEIPASS` en binario. Usar cuando se necesita la raíz del bundle sin
-prefijo `resources/` (ej. escribir `resultados_osce/` al lado de `resources/`).
+Y arma paths con `str(_RESOURCES / "json/ABR.json")` o similar.
+
+`main.py` además define `_BASE_DIR = Path(__file__).resolve().parent.parent`
+para paths fuera de `resources/` (ej. `resultados_osce/` al lado del bundle).
+
+### Assets read-only vs runtime escribible
+
+- **Read-only** (JSON de config, casos, stylesheets, normativas): siempre
+  dentro de `resources/`.
+- **Runtime escribible** (PDFs en construcción, exports de pyqtgraph, imágenes
+  scratch): van a `resources/local_cache/simpeatc/temp/`. Este directorio sigue
+  el patrón de LabSim — `local_cache/` queda preservado en swaps de update.
+
+### Decisión de integración con LabSim
+
+Cuando simPEATC se monte como subventana MDI en LabSim, los paths runtime
+los va a inyectar LabSim (no simPEATC). El árbol `_RESOURCES / "local_cache/..."`
+queda como placeholder razonable hasta ese momento — funciona standalone y
+se redirige sin reescribir lógica de negocio al integrar.
 
 `fbs_runtime` ya no se usa — la dependencia se quitó de `install.txt` y la
 sección de build apunta solo a PyInstaller.
