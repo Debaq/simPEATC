@@ -137,7 +137,6 @@ fpdf==1.7.2                 # Generación de PDFs
 PyMuPDF==1.26.4             # Manipulación de PDFs
 pyinstaller==6.16.0         # Empaquetado
 requests==2.32.5            # Verificación online
-watchdog==6.0.0             # Monitor de archivos
 ```
 
 ## Flujo de Trabajo de la Aplicación

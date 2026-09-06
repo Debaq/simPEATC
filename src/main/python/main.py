@@ -36,8 +36,6 @@ from PySide6.QtWidgets import (QComboBox, QDialog, QFrame, QGroupBox,
                                QMessageBox)
 from UI.AbrAdvanceSettings_ui import Ui_AdvanceSettings
 from UI.AbrMain_ui import Ui_MainWindow
-from watchdog.events import FileSystemEventHandler
-from watchdog.observers import Observer
 from lib.conbinaciones import elegir_combinacion_especifica, casos, namecasos, combinaciones
 from lib.casos_estacion_3 import CASOS_ESTACION_3, get_descripcion_caso, validar_configuracion
 from lib.InformeEstacion5 import DialogoInformeEstacion5
@@ -53,19 +51,6 @@ TIEMPO_ESTACION_OSCE = 5  # 5 minutos por estación en modo OSCE
 TIEMPO_ENTR_PROM = 300
 N_CASES = 2
 N_ESTACIONES = 3  # Número de estaciones OSCE
-
-class JSONFileHandler(FileSystemEventHandler):
-    def __init__(self, json_file_path, callback):
-        super().__init__()
-        self.json_file_path = json_file_path
-        self.callback = callback
-
-    def on_modified(self, event):
-        if event.src_path == self.json_file_path:
-            print(f"El archivo JSON ha sido modificado: {event.src_path}")
-            self.callback()
-
-
 
 class IsOver(QDialog):
     def __init__(self, parent=None, modo_osce=False, estacion=None):
@@ -1158,14 +1143,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def inicializar_observador(self):
+        # Antes instanciaba watchdog.Observer() sobre cases.json para refrescar
+        # al detectar cambios en disco. La implementación quedó comentada y la
+        # dependencia (watchdog) no estaba en install.txt al final -- el código
+        # no se ejecutaba. Si en el futuro se quiere reactividad real sobre
+        # cases.json, re-introducir watchdog aquí.
         pass
-        # Inicializar el observador de cambios
-        #self.observer = Observer()
-        #data = str(_RESOURCES / f'cases/{self.json_file_path}')
-
-        #handler = JSONFileHandler(data, self.actualizar_datos)
-        #self.observer.schedule(handler, path='.', recursive=False)
-        #self.observer.start()
     
     def actualizar_datos(self):
         self.data = self.cargar_json(self.json_file_path)

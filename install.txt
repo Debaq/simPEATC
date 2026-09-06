@@ -18,4 +18,3 @@ scipy                     1.16.2
 setuptools                80.9.0
 shiboken6                 6.9.3
 urllib3                   2.5.0
-watchdog                  6.0.0
