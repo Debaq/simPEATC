@@ -8,17 +8,19 @@ import json
 import random
 import numpy as np
 import scipy.signal as signal
-from base import context
+from pathlib import Path
+
+_RESOURCES = Path(__file__).resolve().parent.parent / "resources"
 
 
 class ABRGenerator:
     """
     Generador de curvas ABR con sistema FSP progresivo
     """
-    
+
     def __init__(self, normative_data_path=None):
         if normative_data_path is None:
-            normative_data_path = context.get_resource('json/normative_data.json')
+            normative_data_path = str(_RESOURCES / 'json/normative_data.json')
         
         with open(normative_data_path, 'r', encoding='utf-8') as f:
             self.norms = json.load(f)

@@ -19,7 +19,9 @@ Store: clase para crear almacenamientos
 
 import json
 import codecs
-from base import context
+from pathlib import Path
+
+_RESOURCES = Path(__file__).resolve().parent.parent / "resources"
 
 
 class CasesOffline():
@@ -36,7 +38,7 @@ class CasesOffline():
         Args:
             username (str): username del login
         """
-        cases_file = context.get_resource(f'cases/{username}.json')
+        cases_file = str(_RESOURCES / f'cases/{username}.json')
 
         with codecs.open(cases_file, 'r', 'utf-8') as json_file:
             list_data = json.load(json_file)
@@ -49,13 +51,13 @@ class CasesOffline():
             username (str): username del login
             cases (dict): casos del usuario
         """
-        cases_file = context.get_resource(f'cases/{username}.json')
+        cases_file = str(_RESOURCES / f'cases/{username}.json')
         with codecs.open(cases_file, 'w', 'utf-8') as json_file:
             json.dump(cases, json_file, ensure_ascii=False)
 
 class Shedule:
     def __init__(self):
-        preferences_file = context.get_resource('json/schedule.json')
+        preferences_file = str(_RESOURCES / 'json/schedule.json')
         with codecs.open(preferences_file, 'r', 'utf-8') as json_file:
             list_data = json.load(json_file)
         self.data = list_data
@@ -78,12 +80,12 @@ class Preferences:
     """
 
     def __init__(self):
-        preferences_file = context.get_resource('json/json_list.json')
+        preferences_file = str(_RESOURCES / 'json/json_list.json')
         with codecs.open(preferences_file, 'r', 'utf-8') as json_file:
             list_data = json.load(json_file)
         self.data = {}
         for i in list_data:
-            file = context.get_resource(f'json/{list_data[i]}')
+            file = str(_RESOURCES / f'json/{list_data[i]}')
             with codecs.open(file, 'r', 'utf-8') as json_file:
                 data = json.load(json_file)
             self.data.update(data)
@@ -117,7 +119,7 @@ class Preferences:
         #####ESTO NO DEBERIA ESTAR AQUI, hay que cambiarlo a un gui_helpers#####
         style_pred = self.data["styles"][0]
         style = self.data["styles"][1][style_pred]
-        style = context.get_resource(f'styles/{style}.qss')
+        style = str(_RESOURCES / f'styles/{style}.qss')
         with open(style,"r",encoding="utf8") as f_h:
             wid.setStyleSheet(f_h.read())
 
@@ -142,7 +144,7 @@ class Lang:
     def __init__(self):
         class_pref = Preferences()
         lang = class_pref.get("Lang")
-        file_po = context.get_resource(f'json/{lang}.json')
+        file_po = str(_RESOURCES / f'json/{lang}.json')
         with codecs.open(file_po, 'r', 'utf-8') as json_file:
             self.lng_po = json.load(json_file)
 

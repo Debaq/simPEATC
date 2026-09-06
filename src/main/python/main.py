@@ -12,7 +12,10 @@ import json
 import random
 import sys
 
-from base import context, BASE_DIR
+from pathlib import Path
+
+_BASE_DIR = Path(__file__).resolve().parent.parent
+_RESOURCES = _BASE_DIR / "resources"
 from lib.ABR_generator_v2 import ABR_Curve
 from lib.AbrControl import AbrControl
 from lib.AbrDetail import AbrDetail
@@ -1094,10 +1097,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.graph_l.export_()
         text1 = self.report.text_edit_1.toHtml()
         text2 = self.report.text_edit_2.toHtml()
-        image_r = context.cache_path('temp', '0.png')
-        image_l = context.cache_path('temp', '1.png')
-        image_lat = context.cache_path('temp', 'LatInt.png')
-        file_pdf = context.cache_path('temp', 'GFG.pdf')
+        image_r = str(_RESOURCES / "local_cache" / "simpeatc" / "temp" / "0.png")
+        image_l = str(_RESOURCES / "local_cache" / "simpeatc" / "temp" / "1.png")
+        image_lat = str(_RESOURCES / "local_cache" / "simpeatc" / "temp" / "LatInt.png")
+        file_pdf = str(_RESOURCES / "local_cache" / "simpeatc" / "temp" / "GFG.pdf")
         evaluator = self.report.le_eva.text()
         PDFCreator(title="PEATC", html1=text1, html2=text2, images=[image_r,image_l], image_lat=image_lat,data_dict=self.memory, output=file_pdf, evaluator=evaluator)
 
@@ -1149,7 +1152,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 ################data
 
     def cargar_json(self, json_file_path):
-        data = context.get_resource(f'cases/{json_file_path}')
+        data = str(_RESOURCES / f'cases/{json_file_path}')
         with open(data, 'r', encoding='utf-8') as archivo:
             return json.load(archivo)
 
@@ -1158,7 +1161,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         pass
         # Inicializar el observador de cambios
         #self.observer = Observer()
-        #data = context.get_resource(f'cases/{self.json_file_path}')
+        #data = str(_RESOURCES / f'cases/{self.json_file_path}')
 
         #handler = JSONFileHandler(data, self.actualizar_datos)
         #self.observer.schedule(handler, path='.', recursive=False)
@@ -2157,8 +2160,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         import os
 
         # Crear directorio de resultados si no existe
-        # base_dir = raíz del bundle (src/main/ en dev, sys._MEIPASS en binario)
-        resultados_dir = os.path.join(str(BASE_DIR), 'resultados_osce')
+        resultados_dir = os.path.join(str(_BASE_DIR), 'resultados_osce')
         if not os.path.exists(resultados_dir):
             os.makedirs(resultados_dir)
 
@@ -2261,7 +2263,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 # Copiar imágenes exportadas al directorio del OSCE
                 import shutil
-                temp_dir = context.cache_path('temp')
+                temp_dir = str(_RESOURCES / "local_cache" / "simpeatc" / "temp")
 
                 img_od = os.path.join(temp_dir, '0.png')
                 img_oi = os.path.join(temp_dir, '1.png')
@@ -2486,7 +2488,7 @@ if __name__ == '__main__':
     # Crear ventana principal con flag de desarrollo
     window = MainWindow(modo_desarrollo=args.dev)
 
-    style_file = context.get_resource('styles/style_base.qss')
+    style_file = str(_RESOURCES / 'styles/style_base.qss')
 
     with open(style_file, 'r', encoding='utf-8') as f:
         style = f.read()
@@ -2494,12 +2496,8 @@ if __name__ == '__main__':
     window.setStyleSheet(style)
     window.show()
 
-    # base.py no crea QApplication (lo manejaba fbs antes); lo aseguramos
-    # acá para que context.app.exec() funcione igual que antes.
     from PySide6.QtWidgets import QApplication
     app = QApplication.instance() or QApplication(sys.argv)
-    context.set_app(app)
-
-    exit_code = context.app.exec()
+    exit_code = app.exec()
 
     sys.exit(exit_code)

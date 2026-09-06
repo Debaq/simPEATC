@@ -1,6 +1,8 @@
 from PIL import Image
 from fpdf import FPDF
-from base import context
+from pathlib import Path
+
+_RESOURCES = Path(__file__).resolve().parent.parent / "resources"
 
 
 
@@ -27,14 +29,14 @@ def dataset(data):
     return data_c
 
 def image_ABR():
-    image_od = Image.open(context.get_resource("img/image_0.png"))
-    image_oi = Image.open(context.get_resource("img/image_1.png"))
+    image_od = Image.open(str(_RESOURCES / "img/image_0.png"))
+    image_oi = Image.open(str(_RESOURCES / "img/image_1.png"))
     image1_size = image_od.size
     image2_size = image_oi.size
     new_image = Image.new('RGB',(2*image1_size[0], image1_size[1]), (250,250,250))
     new_image.paste(image_od,(0,0))
     new_image.paste(image_oi,(image1_size[0],0))
-    new_image.save(context.cache_path("temp", "merged_image.jpg"),"JPEG")
+    new_image.save(str(_RESOURCES / "local_cache" / "simpeatc" / "temp" / "merged_image.jpg"),"JPEG")
     
     
 def create_pdf(table, n, dir):
@@ -45,7 +47,7 @@ def create_pdf(table, n, dir):
     text = f"caso: {n}"
     pdf.cell(200, 10, txt = text, ln = 1, align = 'C')
 
-    pdf.image(context.cache_path("temp", "merged_image.jpg"), 15, 35, 180)
+    pdf.image(str(_RESOURCES / "local_cache" / "simpeatc" / "temp" / "merged_image.jpg"), 15, 35, 180)
     pdf.ln(100)
 
     # Setting font: Times 12

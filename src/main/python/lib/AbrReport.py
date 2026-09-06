@@ -1,9 +1,9 @@
 import shutil
 import os
 from datetime import datetime
+from pathlib import Path
 
 # fitz (PyMuPDF) se importa solo cuando se necesita para evitar errores al inicio
-from base import context
 from PySide6.QtCore import QCoreApplication, Qt, Signal
 from PySide6.QtGui import QColor, QImage, QPainter, QPixmap
 from PySide6.QtPrintSupport import QPrintDialog, QPrinter
@@ -11,6 +11,8 @@ from PySide6.QtWidgets import (QFileDialog, QGraphicsDropShadowEffect,
                                QGraphicsRectItem, QGraphicsScene,
                                QGraphicsView, QWidget)
 from UI.AbrReport_ui import Ui_AbrReport
+
+_RESOURCES = Path(__file__).resolve().parent.parent / "resources"
 
 tr = QCoreApplication.translate
 
@@ -65,7 +67,7 @@ class AbrReport(QWidget, Ui_AbrReport):
         self.layout_pdf.addWidget(self.pdf_widget)
     
     def update_pdf(self):
-        self.file_pdf = context.cache_path('temp', 'GFG.pdf')
+        self.file_pdf = str(_RESOURCES / "local_cache" / "simpeatc" / "temp" / "GFG.pdf")
         self.pdf_widget.load_pdf(self.file_pdf)
     
     def print_pdf(self):

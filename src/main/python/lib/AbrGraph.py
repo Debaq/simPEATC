@@ -2,7 +2,7 @@
 
 import numpy as np
 import pyqtgraph as pg
-from base import context
+from pathlib import Path
 from lib.smooth import smooth_curve_gaussian
 from lib.WidgetsMods import (GraphicsLayoutWidgetMod, InfiniteLineMod,
                              TextItemMod)
@@ -11,6 +11,8 @@ from PySide6.QtGui import QFont
 
 
 class AbrGraph(GraphicsLayoutWidgetMod):
+    _RESOURCES = Path(__file__).resolve().parent.parent / "resources"
+
     sig_data_info = Signal(dict)
     sig_del_curve = Signal(str)
     sig_change_value_mark = Signal(dict)
@@ -399,8 +401,8 @@ class AbrGraph(GraphicsLayoutWidgetMod):
         #export = generateSvg(self.pw, options=options)
         export = pg.exporters.ImageExporter(self.pw)
 
-        # Usar context.get_resource para el directorio, luego construir la ruta del archivo
-        temp_dir = context.cache_path('temp')
+        # Usar _RESOURCES para el directorio, luego construir la ruta del archivo
+        temp_dir = str(self._RESOURCES / "local_cache" / "simpeatc" / "temp")
         output_file = os.path.join(temp_dir, f'{self.side}.png')
         export.export(output_file)
 

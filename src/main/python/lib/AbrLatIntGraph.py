@@ -1,7 +1,9 @@
 
 import pyqtgraph as pg
 from pyqtgraph import exporters
-from base import context
+from pathlib import Path
+
+_RESOURCES = Path(__file__).resolve().parent.parent / "resources"
 
 
 class GraphLatInt(pg.GraphicsLayoutWidget):
@@ -106,8 +108,8 @@ class GraphLatInt(pg.GraphicsLayoutWidget):
         height = self.pw.size().height()
         export = exporters.ImageExporter(self.pw)
 
-        # Usar context.get_resource para el directorio, luego construir la ruta del archivo
-        temp_dir = context.cache_path('temp')
+        # Usar _RESOURCES para el directorio, luego construir la ruta del archivo
+        temp_dir = str(_RESOURCES / "local_cache" / "simpeatc" / "temp")
         output_file = os.path.join(temp_dir, 'LatInt.png')
         export.export(output_file)
 
