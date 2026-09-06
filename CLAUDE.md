@@ -9,7 +9,7 @@
 - **Versión**: 0.0.0
 - **Autor Principal**: Nicolás Quezada Quezada (código base) / David Ávila Quezada (investigador principal)
 - **Licencia**: MIT
-- **Framework**: fbs (fman build system) para empaquetado
+- **Framework**: PySide6 (Qt6) + PyInstaller para empaquetado
 - **GUI**: PySide6 (Qt6)
 
 ## Arquitectura del Proyecto
@@ -139,7 +139,6 @@ pyqtgraph==0.13.7           # Gráficos científicos
 fpdf==1.7.2                 # Generación de PDFs
 PyMuPDF==1.26.4             # Manipulación de PDFs
 pyinstaller==6.16.0         # Empaquetado
-fbs==1.1.2                  # Build system
 requests==2.32.5            # Verificación online
 watchdog==6.0.0             # Monitor de archivos
 ```
@@ -224,19 +223,16 @@ Estructura en memoria:
 
 ## Empaquetado y Distribución
 
-### Build con fbs/PyInstaller
-```bash
-# Instalar fbs pro
-pip install https://build-system.fman.io/pro/12a9a98c-755b-4d95-9c60-a17ae1a74d6c/0.9.8#egg=fbs
+### Build con PyInstaller
 
-# Generar ejecutable
-fbs freeze
+```bash
+pyinstaller --noconfirm --windowed --name simPEATC src/main/python/main.py
 ```
 
-### Configuración
-- **Linux**: `src/build/settings/linux.json`
-- **Mac**: `src/build/settings/mac.json`
-- **Base**: `src/build/settings/base.json`
+> La app resuelve sus assets en runtime vía `core.base.context.get_resource()`,
+> que apunta a `src/main/resources/` cuando se ejecuta desde código fuente,
+> o al directorio temporal de PyInstaller (`sys._MEIPASS/resources`) en el
+> binario congelado. Ver `src/main/python/base.py`.
 
 ## Áreas Clave para Modificaciones
 

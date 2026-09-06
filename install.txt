@@ -1,7 +1,6 @@
 altgraph                  0.17.4
 certifi                   2025.10.5
 charset-normalizer        3.4.4
-fbs                       1.1.2
 fpdf                      1.7.2
 idna                      3.11
 numpy                     2.3.3
@@ -20,4 +19,3 @@ setuptools                80.9.0
 shiboken6                 6.9.3
 urllib3                   2.5.0
 watchdog                  6.0.0
-pip install https://build-system.fman.io/pro/12a9a98c-755b-4d95-9c60-a17ae1a74d6c/0.9.8#egg=fbs
