@@ -128,3 +128,4 @@ dmypy.json
 # Archivos temporales generados en runtime
 src/main/resources/base/temp/*.png
 src/main/resources/base/temp/*.txt
+src/build/
